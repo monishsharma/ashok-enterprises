@@ -1,0 +1,13 @@
+.attendanceWrapper {
+    margin-top: 20px;
+}
+.checkBtn button {
+    width: 50%;
+}
+.name {
+    font-size: 20px;
+    text-transform: capitalize;
+}
+.tableWrapper {
+    padding: 20px;
+}
