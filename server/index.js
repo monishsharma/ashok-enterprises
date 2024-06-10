@@ -9,7 +9,7 @@ const app = express();
 
 // Allow requests from http://localhost:5173
 const corsOptions = {
-  origin: 'https://ashok-enterprises-fe.vercel.app',
+  origin: 'https://ashok-enterprises.vercel.app',
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 
