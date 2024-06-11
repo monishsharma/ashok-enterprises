@@ -6,17 +6,24 @@ import styles from "./attendance.module.css";
 import {tableConstants} from "../../constants/tableConstant"
 import { employeeList, markAttendance } from "../../store/employee/action";
 import moment from "moment";
+import PageLoader from "../../shared/component/page-loader";
 
 const Attendance = () => {
 
   const {sanitizedDate, date} = getTodayDate();
   const [employees, setEmployees] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const employeeListHandler = () => {
+    setIsLoading(true);
     employeeList()
     .then((res) => {
       setEmployees(res);
-    });
+      setIsLoading(false)
+    })
+    .catch(() => {
+      setIsLoading(false);
+    })
   }
 
   useEffect(() => {
@@ -25,6 +32,7 @@ const Attendance = () => {
 
 
   const handleAttendance = ({rowData}) => async() => {
+    setIsLoading(true);
     const {_id: id } = rowData;
     const payload = {
       date: sanitizedDate,
@@ -34,11 +42,18 @@ const Attendance = () => {
       month: getMonth()
     }
     markAttendance(id, payload)
-    .then(() => employeeListHandler())
-    .catch((err) => console.log(err))
+    .then(() => {
+      employeeListHandler();
+      setIsLoading(false);
+    })
+    .catch((err) => {
+      setIsLoading(false);
+      console.log(err)
+    })
   }
 
   const handleCheckoutAttendance = ({rowData}) => async() => {
+    setIsLoading(true);
     const {_id: id } = rowData;
     const payload = {
       date: sanitizedDate,
@@ -46,11 +61,17 @@ const Attendance = () => {
       checkoutTime: date.getTime()
     };
     markAttendance(id, payload)
-    .then(() => employeeListHandler())
-    .catch((err) => console.log(err))
+    .then(() => {
+      employeeListHandler();
+      setIsLoading(false);
+    })
+    .catch((err) => {
+      setIsLoading(false);
+      console.log(err)
+    })
   }
 
-
+if (isLoading) return <PageLoader />;
 
   return (
     <React.Fragment>
