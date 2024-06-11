@@ -3,6 +3,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import Employee from "./routes/employee/employee.js";
 import Attendance from "./routes/attendance/attendance.js";
+import {cron} from "./controller.js"
 
 const PORT = process.env.PORT || 5050;
 const app = express();
@@ -17,6 +18,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 // api routes
+app.use('/cron', cron)
 app.use("/employee", Employee);
 app.use("/attendance", Attendance);
 
