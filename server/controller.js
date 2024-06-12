@@ -13,9 +13,9 @@ export const cron = async() => {
 
         // Construct the attendance object for the next day
         const attendanceObj = {
-            date: tomorrow.toISOString().split('T')[0],
+            date: today.toISOString().split('T')[0],
             status: false,
-            isSunday: tomorrow.getDay() === 0, // Check if tomorrow is Sunday
+            isSunday: today.getDay() === 0, // Check if tomorrow is Sunday
             checkinTime: "",
             checkoutTime: "",
             isOverTime: false
