@@ -3,40 +3,6 @@ import db from "../../db/connection.js";
 import Employees from "./employeeSchema.js";
 import { ObjectId } from "mongodb";
 
-import cron from 'node-cron';
-
-async function updateAttendance() {
-    try {
-
-        // Access the collection
-        const collection = db.collection('employeeDetails');
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
-
-        // Construct the attendance object for the next day
-        const attendanceObj = {
-            date: tomorrow.toISOString().split('T')[0],
-            status: false,
-            isSunday: tomorrow.getDay() === 0, // Check if tomorrow is Sunday
-            checkinTime: "",
-            checkoutTime: ""
-        };
-
-        // Update attendance for all employees
-        await collection.updateMany({}, { $push: { attendance: attendanceObj } });
-
-        console.log('Attendance updated successfully for all employees.');
-    } catch (err) {
-        console.error('Error updating attendance:', err);
-    }
-}
-
-cron.schedule('0 0 * * *', () => {
-    // Your task code here
-    updateAttendance()
-    console.log('Task running at midnight!');
-  });
 
 
 const router = express.Router();
