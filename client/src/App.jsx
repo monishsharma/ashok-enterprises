@@ -16,9 +16,7 @@ function App() {
     <>
       <Layout>
         <SideBar isActive={isActive}  />
-        <div className={isActive ? "main active" : "main"} style={{
-          width: isActive ?  'calc(100% - 100px)' :  'calc(100% - 310px)'
-        }}>
+        <div className={isActive ? "main active bigmain" : "main smallmain"}>
           <div className="topbar">
             <div className="toggle" onClick={toggleNavigation}>
                 <ion-icon name="menu-outline"></ion-icon>

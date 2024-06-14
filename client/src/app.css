@@ -11,7 +11,12 @@
       "sidebar header"
       "sidebar main";
   }
-
+  .bigmain {
+    width: calc(100% - 100px);
+  }
+  .smallmain {
+    width: calc(100% - 310px);
+  }
   .main-header {
     grid-area: header;
     padding: 0.5rem;
@@ -44,6 +49,8 @@
 .main.active {
   left: 80px;
 }
+
+
 
 .topbar {
   width: 100%;
@@ -115,4 +122,17 @@
 
 .scrollableDiv {
   border-radius: 125px solid blue;
+}
+
+
+@media only screen and (max-width: 600px) {
+  .main.active {
+    left: 0 !important;
+  }
+  .bigmain {
+    width: 100%;
+  }
+  .smallmain {
+    width: 100%;
+  }
 }

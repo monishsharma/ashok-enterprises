@@ -1,5 +1,5 @@
-export const getTodayDate = () => {
-  const todayDate = new Date();
+export const getTodayDate = (providedDate = "") => {
+  const todayDate = providedDate ? new Date(providedDate) :  new Date();
   const month =
     todayDate.getMonth() > 9
       ? parseInt(todayDate.getMonth()) + 1

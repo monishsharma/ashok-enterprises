@@ -1,9 +1,19 @@
 import { EmployeeService } from "../../services";
+import  Types from './actionTypes';
 
-export const employeeList = () => {
+
+const setData = (data) => ({
+    type: Types.SET_EMPLOYEE_DATA,
+    data
+});
+
+
+
+export const employeeList = () => (dispatch) => {
     return new Promise((resolve, reject) => {
         EmployeeService.getEmployeeList()
         .then((res) => {
+            dispatch(setData(res.data));
             resolve(res.data);
         })
         .catch((err) => {
@@ -12,7 +22,7 @@ export const employeeList = () => {
     })
 }
 
-export const addEmployee = (payload) => {
+export const addEmployee = (payload) => () => {
     return new Promise((resolve, reject) => {
         EmployeeService.postEmployee(payload)
         .then((res) => {
@@ -24,7 +34,7 @@ export const addEmployee = (payload) => {
     })
 }
 
-export const editEmployee = (id, payload) => {
+export const editEmployee = (id, payload) => () => {
     return new Promise((resolve, reject) => {
         EmployeeService.editEmployee(id, payload)
         .then((res) => {
@@ -36,7 +46,7 @@ export const editEmployee = (id, payload) => {
     })
 }
 
-export const deleteEmployee = (id) => {
+export const deleteEmployee = (id) => () => {
     return new Promise((resolve, reject) => {
         EmployeeService.deleteEmployee(id)
         .then((res) => {
@@ -49,7 +59,7 @@ export const deleteEmployee = (id) => {
 }
 
 
-export const markAttendance = (id, payload) => {
+export const markAttendance = (id, payload) => () => {
     return new Promise((resolve, reject) => {
         EmployeeService.markAttendance(id, payload)
         .then((res) => {

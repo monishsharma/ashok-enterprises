@@ -147,3 +147,9 @@
   box-shadow: 35px -35px 0 10px var(--white);
   pointer-events: none;
 }
+
+@media only screen and (max-width: 600px) {
+  .navigation.active {
+    left: 15px;
+  }
+}

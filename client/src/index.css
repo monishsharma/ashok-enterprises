@@ -83,3 +83,20 @@ input[type=number] {
 h1,h2,h3,h4,h5 {
   margin: 0 !important;
 }
+.timepicker-ui-wrapper, .timepicker-ui-wrapper.mobile {
+  height: auto !important;
+}
+
+.timepicker-ui-invalid-text {
+  display: none !important;
+}
+
+@media only screen and (max-width: 600px) {
+  table {
+    font-size: 14px !important;
+    text-wrap: nowrap !important;
+  }
+  h5 {
+    font-size: 15px !important;
+  }
+}

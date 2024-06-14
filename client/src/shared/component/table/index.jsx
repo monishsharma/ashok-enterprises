@@ -9,15 +9,15 @@ const Table = ({ cols, data, bordered, hoverable, striped, isDark }) => {
                 <thead>
                     <tr>
                         {cols.map((headerItem, index) => (
-                            <th key={index}>{headerItem.title}</th>
+                            <th  key={index}>{headerItem.title}</th>
                         ))}
                     </tr>
                 </thead>
                 <tbody>
                     {data.map((item, index) => (
-                        <tr key={index}>
+                        <tr   key={index}>
                             {cols.map((col, key) => (
-                                <td  key={key}>{col.render({...item, id: index+1})}</td>
+                                <td key={key}>{col.render({...item, id: index+1})}</td>
                             ))}
                         </tr>
                     ))}

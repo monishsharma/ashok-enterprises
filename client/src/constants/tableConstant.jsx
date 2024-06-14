@@ -2,6 +2,7 @@ import { Badge, Button } from "react-bootstrap";
 import styles from "./attendance.module.css";
 import moment from "moment";
 import { getTodayDate } from "../helpers/today-date";
+import TimePicker from "../shared/component/time=picker";
 
 // This is the table constant/settings which needed to render table elements
 export const tableConstants = ({handleAttendance, handleCheckoutAttendance}) => {
@@ -13,9 +14,11 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance}) => 
   };
 
   const getOverTimeValue = (rowData) => {
-    if (rowData.attendance && rowData.attendance.length) {
-      return rowData.attendance.every((list) => list.date === sanitizedDate && list.isOverTime)
-    }
+    const filterData = rowData.attendance.find(list => list.date === sanitizedDate && list.isOverTime);
+    return !!(filterData && filterData.isOverTime);
+    // if (rowData.attendance && rowData.attendance.length) {
+    //   return rowData.attendance.every((list) => list.date === sanitizedDate && list.isOverTime)
+    // }
   }
 
 
@@ -26,11 +29,25 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance}) => 
         size="sm"
         variant={variant}
         disabled={key==="checkoutTime"}
-        onClick={onClick({rowData, key})}
+        // onClick={onClick({rowData, key})}
       >
         {btnText}
       </Button>
     );
+
+    const callBack = ({punchedTime, list}) => {
+      const selectedTime = new Date(punchedTime).getHours();
+      console.log(list)
+      if (list.checkinTime) {
+        const storedPunchedInTime = new Date(parseInt(list.checkinTime)).getHours();
+        if (parseInt(storedPunchedInTime) > parseInt(selectedTime)){
+          alert("checkout time cannout be less than checkin time");
+          return;
+        }
+      }
+      onClick({rowData, punchedTime})
+    }
+
     if (rowData.attendance && rowData.attendance.length) {
       rowData.attendance.map((list) => {
         const disabledState = variant === "warning" && !list.checkinTime
@@ -38,14 +55,17 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance}) => 
           component = list[key] ? (
             <span>{formatTime(list[key])}</span>
           ) : (
-            <Button
-              size="sm"
-              variant={variant}
-              disabled={disabledState}
-              onClick={onClick({rowData, list, key})}
-            >
-              {btnText}
-            </Button>
+            <TimePicker callBack={({punchedTime}) => callBack({punchedTime, list})} isDisabled={disabledState}>
+              <Button
+                size="sm"
+                variant={variant}
+                disabled={disabledState}
+                // onClick={onClick({rowData, list, key})}
+              >
+                {btnText}
+              </Button>
+            </TimePicker>
+
           );
         }
       });

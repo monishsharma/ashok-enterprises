@@ -2,8 +2,10 @@ import React, {useState, useEffect} from 'react'
 import PropTypes from 'prop-types'
 import { Form, InputGroup } from "react-bootstrap";
 import ModalWrapper from '../../shared/component/modal';
-import { addEmployee, editEmployee } from '../../store/employee/action';
+import { addEmployee, editEmployee, employeeList } from '../../store/employee/action';
 import PageLoader from "../../shared/component/page-loader"
+import { connect } from 'react-redux';
+import {bindActionCreators} from "redux";
 
 const AddEmployee = ({
     isEditing,
@@ -11,6 +13,9 @@ const AddEmployee = ({
     selectedName,
     selectedSalary,
     showModal,
+    editEmployeeConnect,
+    addEmployeeConnect,
+    employeeListConnect,
     addEmployeeHandlerToggle
 }) => {
 
@@ -36,12 +41,13 @@ const AddEmployee = ({
         };
         try {
             if (isEditing) {
-                await editEmployee(employeeId, payload)
+                await editEmployeeConnect(employeeId, payload)
             } else {
-                await addEmployee(payload)
+                await addEmployeeConnect(payload)
             }
             setName("");
             setSalary("");
+            employeeListConnect()
             setIsLoading(false);
             addEmployeeHandlerToggle();
         } catch(err) {
@@ -83,7 +89,26 @@ AddEmployee.propTypes = {
     employeeId: PropTypes.any,
     selectedName: PropTypes.string,
     selectedSalary: PropTypes.any,
-    addEmployeeHandlerToggle: PropTypes.func
+    addEmployeeHandlerToggle: PropTypes.func,
+    addEmployeeConnect: PropTypes.func,
+    editEmployeeConnect: PropTypes.func,
+    employeeListConnect: PropTypes.func
+
 }
 
-export default AddEmployee
+const mapStateToProps = ({
+    employee: {
+      data: employeeData
+    }
+  }) => ({
+    employeeData
+  });
+
+  const mapDispatchToProps = (dispatch) => bindActionCreators({
+      addEmployeeConnect: addEmployee,
+      employeeListConnect: employeeList,
+      editEmployeeConnect: editEmployee
+  }, dispatch);
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(AddEmployee);

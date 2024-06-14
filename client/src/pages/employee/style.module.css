@@ -9,3 +9,6 @@
     color: red;
   }
 
+.end {
+  justify-content: flex-start;
+}
