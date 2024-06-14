@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import "./styles.css";
 import PropTypes from "prop-types";
 import { useLocation } from 'react-router-dom';
+import { isMobileDevice } from "../../../helpers/is-mobile-device";
 
 const Side = ({
     isActive,
@@ -10,6 +11,14 @@ const Side = ({
 }) => {
     const location = useLocation();
     const { pathname } = location;
+
+    const onClick = () => {
+        if (isMobileDevice()) {
+            toggleNavigation(true)
+        }
+    }
+
+
     return (
         <React.Fragment>
             <div className={isActive ? "navigation active" : "navigation"}>
@@ -18,7 +27,7 @@ const Side = ({
                 </div>
                 <ul>
 
-                    <li className={pathname === "/attendance" ? "activeLi" : ""} onClick={() => toggleNavigation(true)}>
+                    <li className={pathname === "/attendance" ? "activeLi" : ""} onClick={onClick}>
                         <Link to="/attendance">
                             <span className="icon">
                                 <ion-icon name="time-outline"></ion-icon>
@@ -27,7 +36,7 @@ const Side = ({
                         </Link>
                     </li>
 
-                    <li className={pathname === "/employee" ? "activeLi" : ""} onClick={() => toggleNavigation(true)}>
+                    <li className={pathname === "/employee" ? "activeLi" : ""} onClick={onClick}>
                         <Link to="/employee">
                             <span className="icon">
                                 <ion-icon name="people-outline"></ion-icon>
@@ -36,7 +45,7 @@ const Side = ({
                         </Link>
                     </li>
 
-                    <li className={pathname === "/salary" ? "activeLi" : ""} onClick={() => toggleNavigation(true)}>
+                    <li className={pathname === "/salary" ? "activeLi" : ""} onClick={onClick}>
                         <Link to="/employee">
                             <span className="icon">
                                 <ion-icon name="wallet-outline"></ion-icon>

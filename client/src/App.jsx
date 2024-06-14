@@ -3,10 +3,11 @@ import "./app.css"
 import {useState} from "react";
 import Layout from "./shared/layout";
 import { Outlet } from "react-router-dom";
+import { isMobileDevice } from "./helpers/is-mobile-device";
 
 function App() {
 
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(isMobileDevice() ? true : false);
 
   const toggleNavigation = () => {
     setIsActive(!isActive);
