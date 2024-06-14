@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, forwardRef } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { Col, Container, Form, Row } from "react-bootstrap";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import Table from "../../shared/component/table";
 import { getMonth, getTodayDate } from "../../helpers/today-date";
 import styles from "./attendance.module.css";
 import {tableConstants} from "../../constants/tableConstant"
 import { employeeList, markAttendance } from "../../store/employee/action";
 import PageLoader from "../../shared/component/page-loader";
-import PropTypes from "prop-types"
+import PropTypes from "prop-types";
+import DatePicker from "react-datepicker";
 
 const Attendance = ({
   employeeData,
@@ -81,7 +82,19 @@ const Attendance = ({
       setIsLoading(false);
       console.log(err)
     })
-  }
+  };
+
+  const handleDateChange = (date) => {
+    setDateValue(date);
+  };
+
+  const ExampleCustomInput = forwardRef(({ value, onClick }, ref) => (
+   <div className="d-grid">
+     <Button variant="dark" className="example-custom-input" onClick={onClick} ref={ref}>
+      {value}
+    </Button>
+   </div>
+  ));
 
   if (isLoading) return <PageLoader />;
 
@@ -91,12 +104,14 @@ const Attendance = ({
           <h2 className="fw-bold">Attendance List</h2>
           <Row className="pt-4 ">
             <Col sm={3}>
-            <Form.Control
-              type="date"
-              value={dateValue}
-              placeholder="Enter name"
-              min={`${year}-${month}-01`}
-              max={`${year}-${month}-${day}`}
+            <DatePicker
+              selected={dateValue}
+              minDate={`${year}-${month}-01`}
+              maxDate={`${year}-${month}-${day}`}
+              onChange={handleDateChange}
+              withPortal
+              customInput={<ExampleCustomInput />}
+              // filterDate={isSelectableDate}
             />
             </Col>
           </Row>
