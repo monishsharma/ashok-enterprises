@@ -15,7 +15,7 @@ function App() {
   return (
     <>
       <Layout>
-        <SideBar isActive={isActive}  />
+        <SideBar isActive={isActive} toggleNavigation={setIsActive}  />
         <div className={isActive ? "main active bigmain" : "main smallmain"}>
           <div className="topbar">
             <div className="toggle" onClick={toggleNavigation}>

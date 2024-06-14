@@ -5,7 +5,8 @@ import PropTypes from "prop-types";
 import { useLocation } from 'react-router-dom';
 
 const Side = ({
-    isActive
+    isActive,
+    toggleNavigation
 }) => {
     const location = useLocation();
     const { pathname } = location;
@@ -17,7 +18,7 @@ const Side = ({
                 </div>
                 <ul>
 
-                    <li className={pathname === "/attendance" ? "activeLi" : ""}>
+                    <li className={pathname === "/attendance" ? "activeLi" : ""} onClick={() => toggleNavigation(true)}>
                         <Link to="/attendance">
                             <span className="icon">
                                 <ion-icon name="time-outline"></ion-icon>
@@ -26,7 +27,7 @@ const Side = ({
                         </Link>
                     </li>
 
-                    <li className={pathname === "/employee" ? "activeLi" : ""}>
+                    <li className={pathname === "/employee" ? "activeLi" : ""} onClick={() => toggleNavigation(true)}>
                         <Link to="/employee">
                             <span className="icon">
                                 <ion-icon name="people-outline"></ion-icon>
@@ -35,7 +36,7 @@ const Side = ({
                         </Link>
                     </li>
 
-                    <li className={pathname === "/salary" ? "activeLi" : ""}>
+                    <li className={pathname === "/salary" ? "activeLi" : ""} onClick={() => toggleNavigation(true)}>
                         <Link to="/employee">
                             <span className="icon">
                                 <ion-icon name="wallet-outline"></ion-icon>
@@ -60,7 +61,8 @@ const Side = ({
 };
 
 Side.propTypes = {
-    isActive: PropTypes.bool
+    isActive: PropTypes.bool,
+    toggleNavigation: PropTypes.func
 }
 
 export default Side;
