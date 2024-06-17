@@ -9,9 +9,32 @@ const router = express.Router();
 
 
     router.get("/list", async(req, res) => {
+
+        let query = {};
+        let options = {};
+        const {date} = req.query;
+        if (date) {
+            query = { "attendance.date": date };
+            options = {
+                projection: {
+                  _id: 1,
+                  name: 1,
+                  salaryPerDay: 1,
+                  attendance: {
+                    $filter: {
+                      input: "$attendance",
+                      as: "item",
+                      cond: { $eq: ["$$item.date", date] }
+                    }
+                  }
+                }
+              };
+        }
+
+
         try {
             let collection = db.collection("employeeDetails");
-            let results = await collection.find({}).toArray();
+            const results = await collection.find(query, options).toArray();
             res.send(results).status(200);
         } catch (err) {
             console.error(err);
@@ -19,17 +42,16 @@ const router = express.Router();
         }
     });
 
-    // router.get("/list/:data", async(req, res) => {
-    //     console.log(date);
-    //     try {
-    //         let collection = db.collection("employeeDetails");
-    //         let results = await collection.find({}).toArray();
-    //         res.send(results).status(200);
-    //     } catch (err) {
-    //         console.error(err);
-    //         res.status(500).send("Error retrieving employee details");
-    //     }
-    // });
+    router.get("/detail/:id", async(req, res) => {
+        try {
+            let collection = db.collection("employeeDetails");
+            let results = await collection.find({_id: new ObjectId(req.params.id)}).toArray();
+            res.send(results).status(200);
+        } catch (err) {
+            console.error(err);
+            res.status(500).send("Error retrieving employee details");
+        }
+    });
 
 
   router.post("/new", async (req, res) => {
