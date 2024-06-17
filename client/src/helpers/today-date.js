@@ -1,3 +1,5 @@
+import moment from "moment";
+
 export const getTodayDate = (providedDate = "") => {
   const todayDate = providedDate ? new Date(providedDate) :  new Date();
   const month =
@@ -30,4 +32,9 @@ export const getMonth = () => {
   const d = new Date();
   let monthName = month[d.getMonth()];
   return monthName;
+};
+
+export const  formatTime = (time) => {
+  const formattedTime = moment(parseInt(time)).format("hh:mm: a");
+  return time ? formattedTime : 'N/A';
 };

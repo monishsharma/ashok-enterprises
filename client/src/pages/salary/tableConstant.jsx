@@ -1,18 +1,9 @@
 import { Badge } from "react-bootstrap";
 import priceFormatter from "../../helpers/price-formatter";
+import { getTotalAbsent, getTotalPresent } from "../../helpers/employee-detal";
 
 // This is the table constant/settings which needed to render table elements
 export const tableConstants = () => {
-
-  const getTotalPresent = (rowData) => {
-    const presentCount =  rowData.attendance.filter(list => list.status);
-    return presentCount && presentCount.length ? presentCount.length : 0;
-  };
-
-  const getTotalAbsent = (rowData) => {
-    const presentCount =  rowData.attendance.filter(list => !list.status);
-    return presentCount && presentCount.length ? presentCount.length : 0;
-  }
 
   return [
     {

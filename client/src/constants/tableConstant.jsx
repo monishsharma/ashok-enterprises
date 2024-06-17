@@ -1,15 +1,11 @@
 import { Badge, Button } from "react-bootstrap";
-import styles from "./attendance.module.css";
-import moment from "moment";
 import TimePicker from "../shared/component/time=picker";
+import { formatTime } from "../helpers/today-date";
 
 // This is the table constant/settings which needed to render table elements
 export const tableConstants = ({handleAttendance, handleCheckoutAttendance, dateValue}) => {
 
 
-  const formatTime = (time) => {
-    return moment(parseInt(time)).format("hh:mm: a");
-  };
 
   const getOverTimeValue = (rowData) => {
     const filterData = rowData.attendance.find(list => list.date === dateValue && list.isOverTime);
@@ -80,7 +76,7 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
     {
       title: "Name",
       render: (rowData) => {
-        return <h5 className={styles.name}>{rowData.name}</h5>;
+        return <h5 className={"name"}>{rowData.name}</h5>;
       },
     },
     {

@@ -10,7 +10,6 @@ import { employeeList, markAttendance, employeeDetail } from "../../store/employ
 import PageLoader from "../../shared/component/page-loader";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
-import { calculateTime } from "../../helpers/calculate-time";
 import { filterEmployee, totalHoursWork, totalOverTime } from "./selector";
 
 const Attendance = ({
@@ -149,7 +148,8 @@ const Attendance = ({
 Attendance.propTypes = {
   employeeData: PropTypes.array,
   employeeListConnect: PropTypes.func,
-  markAttendanceConnect: PropTypes.func
+  markAttendanceConnect: PropTypes.func,
+  employeeDetailConnect: PropTypes.func
 }
 
 const mapStateToProps = ({
