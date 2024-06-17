@@ -8,12 +8,31 @@ const setData = (data) => ({
 });
 
 
+const setEmployeeDetail = (data) => ({
+    type: Types.SET_EMPLOYEE_DETAIL,
+    data
+});
 
-export const employeeList = () => (dispatch) => {
+
+
+export const employeeList = (query) => (dispatch) => {
     return new Promise((resolve, reject) => {
-        EmployeeService.getEmployeeList()
+        EmployeeService.getEmployeeList(query)
         .then((res) => {
             dispatch(setData(res.data));
+            resolve(res.data);
+        })
+        .catch((err) => {
+            reject(err);
+        })
+    })
+}
+
+export const employeeDetail = (id) => (dispatch) => {
+    return new Promise((resolve, reject) => {
+        EmployeeService.getEmployeeDetail(id)
+        .then((res) => {
+            dispatch(setEmployeeDetail(res.data));
             resolve(res.data);
         })
         .catch((err) => {

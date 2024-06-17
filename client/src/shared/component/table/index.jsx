@@ -1,11 +1,14 @@
-import React from 'react';
 import "./table.css"
 import PropTypes from 'prop-types'
 
-const Table = ({ cols, data, bordered, hoverable, striped, isDark }) => {
+const Table = ({ cols, data, bordered, hoverable, striped, isDark, isClickable, onClick=() => {} }) => {
+
+    const onClickHandler = (item) => {
+        if (isClickable) onClick(item);
+    }
     return (
         <div className="table-responsive">
-            <table className={`table ${bordered ? 'table-bordered' : 'table-borderless'} ${hoverable && 'table-hover'} ${striped && 'table-striped'} ${isDark && 'table-dark'}`}>
+            <table className={`table ${bordered ? 'table-bordered' : 'table-borderless'} ${hoverable && 'table-hover'} ${striped && 'table-striped'} ${isDark && 'table-dark'} ${isClickable && 'pointer-cursor'}`}>
                 <thead>
                     <tr>
                         {cols.map((headerItem, index) => (
@@ -14,15 +17,21 @@ const Table = ({ cols, data, bordered, hoverable, striped, isDark }) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {data.map((item, index) => (
-                        <tr   key={index}>
-                            {cols.map((col, key) => (
-                                <td key={key}>{col.render({...item, id: index+1})}</td>
-                            ))}
-                        </tr>
-                    ))}
+                        {
+                            data.map((item, index) => (
+                                <tr onClick={() => onClickHandler(item)} key={index}>
+                                    {cols.map((col, key) => (
+                                        <td key={key}>{col.render({...item, id: index+1})}</td>
+                                    ))}
+                                </tr>
+                            ))
+                        }
                 </tbody>
             </table>
+            {
+                !(data.length) &&
+                    <p className="text-danger text-center ">No Date Found</p>
+            }
         </div>
     )
 }
@@ -34,6 +43,8 @@ Table.propTypes = {
     hoverable: PropTypes.bool,
     striped: PropTypes.bool,
     isDark: PropTypes.bool,
+    isClickable: PropTypes.bool,
+    onClick: PropTypes.func
 }
 
 Table.defaultProps = {

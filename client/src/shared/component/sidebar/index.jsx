@@ -36,7 +36,7 @@ const Side = ({
                         </Link>
                     </li>
 
-                    <li className={pathname === "/employee" ? "activeLi" : ""} onClick={onClick}>
+                    <li className={pathname .includes("/employee") ? "activeLi" : ""} onClick={onClick}>
                         <Link to="/employee">
                             <span className="icon">
                                 <ion-icon name="people-outline"></ion-icon>
@@ -45,8 +45,8 @@ const Side = ({
                         </Link>
                     </li>
 
-                    <li className={pathname === "/salary" ? "activeLi" : ""} onClick={onClick}>
-                        <Link to="/employee">
+                    <li className={pathname .includes("/salary") ? "activeLi" : ""} onClick={onClick}>
+                        <Link to="/salary">
                             <span className="icon">
                                 <ion-icon name="wallet-outline"></ion-icon>
                             </span>

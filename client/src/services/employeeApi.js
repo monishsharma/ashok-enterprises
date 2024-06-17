@@ -1,9 +1,17 @@
 
 export default (api) => {
 
-    const getEmployeeList = () => {
-        return api.get("/employee/list");
+    const getEmployeeList = (query) => {
+        let queryParams = "";
+        if (query && query.date) {
+            queryParams = `?date=${query.date}`
+        }
+        return api.get(`/employee/list${queryParams}`);
     };
+
+    const getEmployeeDetail = (id) => {
+        return api.get(`/employee/detail/${id}`);
+    }
 
     const getEmployeeAttendanceList = () => {
         return api.get("/attendance/list");
@@ -33,6 +41,7 @@ export default (api) => {
         editEmployee,
         deleteEmployee,
         markAttendance,
+        getEmployeeDetail,
         getEmployeeAttendanceList
     };
 };

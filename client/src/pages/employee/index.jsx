@@ -9,6 +9,7 @@ import { deleteEmployee, employeeList } from "../../store/employee/action";
 import PageLoader from "../../shared/component/page-loader";
 import AddEmployee from "../../components/add-employee"
 import styles from "./style.module.css";
+import { useNavigate } from 'react-router-dom';
 
 
 const Employee = ({
@@ -17,6 +18,7 @@ const Employee = ({
   deleteEmployeeConnect
 }) => {
 
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -65,6 +67,11 @@ const Employee = ({
     })
   }
 
+  const onClickTable = (list) => {
+    const {_id} = list;
+    navigate(`/employee/detail/${_id}`)
+  }
+
   if (isLoading) return <PageLoader />;
 
   return (
@@ -86,7 +93,7 @@ const Employee = ({
           </Button>
         </div>
         <div className="pt-4">
-          <Table hoverable={true} cols={tableConstants({editEmployee, deleteEmployeeHandler})} data={employeeData} />
+          <Table isClickable={false} onClick={onClickTable} hoverable={true} cols={tableConstants({editEmployee, deleteEmployeeHandler})} data={employeeData} />
         </div>
     </React.Fragment>
   );

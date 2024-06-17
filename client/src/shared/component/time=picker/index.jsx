@@ -5,7 +5,8 @@
     const TimePicker = ({
         isDisabled = false,
         callBack,
-        children
+        children,
+        dateValue
     }) => {
 
         const tmRef = useRef(null);
@@ -13,7 +14,7 @@
 
 
     const handleTimeChange = useCallback(({ detail: { hour, minutes } }) => {
-        const date = new Date().setHours(hour, minutes);(
+        const date = new Date(`${dateValue}`).setHours(parseInt(hour), parseInt(minutes), 0);(
         callBack({punchedTime: date}));
         setInputValue(`${hour}:${minutes}}`);
     }, []);
@@ -21,10 +22,10 @@
     useEffect(() => {
         const tm = tmRef && tmRef.current;
         if (tm) {
-            const newPicker = new TimepickerUI(tm, {
-                clockType: '24h'
-            });
-            newPicker.create();
+            // const newPicker = new TimepickerUI(tm, {
+            //     clockType: '24h'
+            // });
+            // newPicker.create();
 
             tm.addEventListener("accept", handleTimeChange);
 
@@ -62,7 +63,8 @@
     TimePicker.propTypes = {
         callBack: PropTypes.func,
         isDisabled: PropTypes.bool,
-        children: PropTypes.any
+        children: PropTypes.any,
+        dateValue: PropTypes.string
     }
 
     export default TimePicker

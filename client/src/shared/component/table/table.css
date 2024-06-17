@@ -4,3 +4,6 @@
     display: inline-block;
     white-space: nowrap;
 } */
+ .pointer-cursor {
+    cursor: pointer;
+ }
