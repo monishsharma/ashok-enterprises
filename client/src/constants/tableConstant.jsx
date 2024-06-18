@@ -15,6 +15,8 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
 
   const renderAction = ({ rowData, btnText, key, variant }) => {
 
+    let btnDisabled = variant === "warning";
+
     const callBack = ({punchedTime}) => {
 
       onClick({rowData, punchedTime})
@@ -22,10 +24,11 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
 
     const onClick = key === "checkinTime" ? handleAttendance : handleCheckoutAttendance;
     let component = (
-      <TimePicker dateValue={dateValue} callBack={({punchedTime}) => callBack({punchedTime})}>
+      <TimePicker dateValue={dateValue} callBack={({punchedTime}) => callBack({punchedTime})} isDisabled={btnDisabled}>
       <Button
         size="sm"
         variant={variant}
+        disabled={btnDisabled}
         // onClick={onClick({rowData, list, key})}
       >
         {btnText}
@@ -37,16 +40,16 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
 
     if (rowData.attendance && rowData.attendance.length) {
       rowData.attendance.map((list, index) => {
-        const disabledState = variant === "warning" && !list.checkinTime
+        btnDisabled = variant === "warning" && !list.checkinTime
         if (list.date === dateValue) {
           component = list[key] ? (
             <span>{formatTime(list[key])}</span>
           ) : (
-            <TimePicker dateValue={dateValue} callBack={({punchedTime}) => callBack({punchedTime, list, index})} isDisabled={disabledState}>
+            <TimePicker dateValue={dateValue} callBack={({punchedTime}) => callBack({punchedTime, list, index})} isDisabled={btnDisabled}>
               <Button
                 size="sm"
                 variant={variant}
-                disabled={disabledState}
+                disabled={btnDisabled}
                 // onClick={onClick({rowData, list, key})}
               >
                 {btnText}
