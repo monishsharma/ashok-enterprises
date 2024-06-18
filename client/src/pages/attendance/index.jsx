@@ -11,6 +11,7 @@ import PageLoader from "../../shared/component/page-loader";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import { filterEmployee, totalHoursWork, totalOverTime } from "./selector";
+import { sortData } from "../../helpers/sort-data";
 
 const Attendance = ({
   employeeData,
@@ -20,7 +21,6 @@ const Attendance = ({
 }) => {
 
   const {date} = getTodayDate();
-
   const day = String(date.getDate()).padStart(2, '0');
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -147,7 +147,7 @@ const Attendance = ({
           </Row>
         </div>
         <div className="pt-4">
-          <Table cols={tableConstants({handleAttendance, handleCheckoutAttendance, dateValue})} data={employeeData} />
+          <Table cols={tableConstants({handleAttendance, handleCheckoutAttendance, dateValue})} data={sortData(employeeData)} />
         </div>
     </React.Fragment>
   );

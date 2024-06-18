@@ -7,6 +7,7 @@ import PageLoader from '../../shared/component/page-loader';
 import { Button, Col, Row } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import { getMonth } from '../../helpers/today-date';
+import { sortData } from '../../helpers/sort-data';
 
 const Salary = ({
     employeeData,
@@ -73,7 +74,7 @@ const Salary = ({
             </Col>
           </Row>
         <div className="pt-4">
-            <Table isClickable={true} onClick={onClickTable} hoverable={true} cols={tableConstants()} data={employeeData} />
+            <Table isClickable={true} onClick={onClickTable} hoverable={true} cols={tableConstants()} data={sortData(employeeData)} />
         </div>
     </React.Fragment>
     )

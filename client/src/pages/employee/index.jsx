@@ -10,6 +10,7 @@ import PageLoader from "../../shared/component/page-loader";
 import AddEmployee from "../../components/add-employee"
 import styles from "./style.module.css";
 import { useNavigate } from 'react-router-dom';
+import { sortData } from "../../helpers/sort-data";
 
 
 const Employee = ({
@@ -93,7 +94,7 @@ const Employee = ({
           </Button>
         </div>
         <div className="pt-4">
-          <Table isClickable={false} onClick={onClickTable} hoverable={true} cols={tableConstants({editEmployee, deleteEmployeeHandler})} data={employeeData} />
+          <Table isClickable={false} onClick={onClickTable} hoverable={true} cols={tableConstants({editEmployee, deleteEmployeeHandler})} data={sortData(employeeData)} />
         </div>
     </React.Fragment>
   );
