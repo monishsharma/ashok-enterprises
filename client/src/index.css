@@ -124,3 +124,13 @@ h1,h2,h3,h4,h5 {
     grid-gap: 15px !important;
   }
 }
+
+input[type=checkbox] {
+  outline: 2px solid #c00 !important;
+  accent-color: red;
+}
+
+.form-check-input:checked  {
+  background-color: #c00 !important;
+    border-color: #c00 !important;
+}

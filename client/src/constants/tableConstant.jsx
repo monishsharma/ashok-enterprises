@@ -1,9 +1,9 @@
-import { Badge, Button } from "react-bootstrap";
+import { Badge, Button, Form } from "react-bootstrap";
 import TimePicker from "../shared/component/time=picker";
 import { formatTime } from "../helpers/today-date";
 
 // This is the table constant/settings which needed to render table elements
-export const tableConstants = ({handleAttendance, handleCheckoutAttendance, dateValue}) => {
+export const tableConstants = ({handleAttendance, handleCheckoutAttendance, dateValue, markAbsent}) => {
 
 
 
@@ -63,6 +63,14 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
     return component;
   };
 
+  const isAbsent = (rowData) => {
+    return rowData.attendance.map((item) => {
+      if (item.date === dateValue) {
+        return !!(item.status)
+      }
+    })
+  }
+
   return [
     {
       title: "ID",
@@ -74,6 +82,17 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
       title: "Name",
       render: (rowData) => {
         return <h5 className={"name"}>{rowData.name}</h5>;
+      },
+    },
+    {
+      title: "Absent",
+      render: (rowData) => {
+        return (<Form.Check // prettier-ignore
+                type="checkbox"
+                id="custom-switch"
+                checked={!isAbsent(rowData)}
+                onChange={(e) => markAbsent({e, rowData})}
+              />);
       },
     },
     {

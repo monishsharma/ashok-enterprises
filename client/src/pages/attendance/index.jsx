@@ -43,6 +43,26 @@ const Attendance = ({
    employeeListHandler()
   }, [dateValue]);
 
+  const markAbsent = async({rowData, e}) => {
+      const {_id: id } = rowData;
+      setIsLoading(true);
+      const payload = {
+        date: dateValue,
+        status: !e.target.checked,
+        isSunday: new Date(`${dateValue}`).getDay() == 0,
+        checkinTime: ``,
+        month: getMonth()
+      };
+      markAttendanceConnect(id, payload)
+      .then(() => {
+        employeeListHandler();
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        setIsLoading(false);
+        console.log(err)
+      })
+  }
 
   const handleAttendance = async({rowData, punchedTime}) => {
     const punchInTime = new Date(punchedTime);
@@ -147,7 +167,7 @@ const Attendance = ({
           </Row>
         </div>
         <div className="pt-4">
-          <Table cols={tableConstants({handleAttendance, handleCheckoutAttendance, dateValue})} data={sortData(employeeData)} />
+          <Table cols={tableConstants({handleAttendance, handleCheckoutAttendance, dateValue, markAbsent})} data={sortData(employeeData)} />
         </div>
     </React.Fragment>
   );
