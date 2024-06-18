@@ -10,9 +10,6 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
   const getOverTimeValue = (rowData) => {
     const filterData = rowData.attendance.find(list => list.date === dateValue && list.isOverTime);
     return !!(filterData && filterData.isOverTime);
-    // if (rowData.attendance && rowData.attendance.length) {
-    //   return rowData.attendance.every((list) => list.date === sanitizedDate && list.isOverTime)
-    // }
   }
 
 
@@ -64,15 +61,9 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
   };
 
   const isAbsent = (rowData) => {
-    return rowData.attendance.find((item) => {
-      if (item.date === dateValue) {
-         if (item.status) {
-          return false;
-         } else {
-          return true;
-         }
-      }
-    })
+    const filterData =  rowData.attendance.find((item) => item.date === dateValue);
+    if (filterData) return !filterData.status;
+    return true;
   }
 
   return [
@@ -91,7 +82,6 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
     {
       title: "Absent",
       render: (rowData) => {
-        console.log(isAbsent(rowData))
         return (<Form.Check // prettier-ignore
                 type="checkbox"
                 id="custom-switch"
