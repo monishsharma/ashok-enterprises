@@ -20,7 +20,7 @@ export const totalWorkingHours = (rowData, key, getTimeOnly = false) => {
   if (getTimeOnly) return time;
 
   const duration = moment.duration(time, "minutes")
-  return `${duration.asHours()}h ${duration.minutes()}min`
+  return `${duration.asHours()} h ${duration.minutes()} min`
 }
 
 export const getDailySalary = (rowData) => {
