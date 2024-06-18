@@ -15,7 +15,7 @@ export const totalHoursWork = (checkinTime, punchOutTime, dateValue) => {
     const lunchTimingEnds = new Date(dateValue).setHours(13, 30, 0);
     const checkCheckoutTime = checkTime(punchOutTime) ? logOffTime : punchOutTime ;
     const {differenceHrs, differenceMin} = calculateTime(parseInt(checkinTime), parseInt(checkCheckoutTime));
-    const timeDiff =  (checkCheckoutTime > lunchTimingEnds && logOffTime.getDay() !== 0) ? differenceMin - 30 : differenceMin;
+    const timeDiff =  (checkCheckoutTime > lunchTimingEnds && new Date(dateValue).getDay() !== 0) ? differenceMin - 30 : differenceMin;
     return {differenceHrs, differenceMin: timeDiff};
 }
 
