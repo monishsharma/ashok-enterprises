@@ -64,9 +64,13 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
   };
 
   const isAbsent = (rowData) => {
-    return rowData.attendance.map((item) => {
+    return rowData.attendance.find((item) => {
       if (item.date === dateValue) {
-        return !!(item.status)
+         if (item.status) {
+          return false;
+         } else {
+          return true;
+         }
       }
     })
   }
@@ -87,10 +91,11 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
     {
       title: "Absent",
       render: (rowData) => {
+        console.log(isAbsent(rowData))
         return (<Form.Check // prettier-ignore
                 type="checkbox"
                 id="custom-switch"
-                checked={!isAbsent(rowData)}
+                checked={isAbsent(rowData)}
                 onChange={(e) => markAbsent({e, rowData})}
               />);
       },
