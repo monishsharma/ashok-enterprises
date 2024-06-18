@@ -48,7 +48,8 @@ const Attendance = ({
       setIsLoading(true);
       const payload = {
         date: dateValue,
-        status: !e.target.checked,
+        isAbsent: e.target.checked,
+        status: false,
         isSunday: new Date(`${dateValue}`).getDay() == 0,
         checkinTime: ``,
         month: getMonth()

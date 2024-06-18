@@ -62,13 +62,13 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
 
   const isAbsent = (rowData) => {
     const filterData =  rowData.attendance.find((item) => item.date === dateValue);
-    if (filterData) return !filterData.status;
-    return true;
+    if (filterData) return filterData.isAbsent && !filterData.checkinTim;
+    return false;
   }
 
   const disabledState = (rowData) => {
     const filterData =  rowData.attendance.find((item) => item.date === dateValue);
-    if (filterData) return filterData.checkinTim;
+    if (filterData) return filterData.checkinTime;
     return true;
   }
 
