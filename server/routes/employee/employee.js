@@ -32,6 +32,7 @@ const router = express.Router();
                       as: "filteredItem",
                       in: {
                         date: "$$filteredItem.date",
+                        isAbsent: "$$filteredItem.isAbsent",
                         checkinTime: "$$filteredItem.checkinTime",
                         checkoutTime: "$$filteredItem.checkoutTime",
                         status: "$$filteredItem.status",
