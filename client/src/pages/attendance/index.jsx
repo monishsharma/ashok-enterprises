@@ -72,6 +72,7 @@ const Attendance = ({
     const payload = {
       date: dateValue,
       status: true,
+      isAbsent: false,
       isSunday: punchInTime.getDay() == 0,
       checkinTime: `${punchInTime.getTime()}`,
       month: getMonth()
