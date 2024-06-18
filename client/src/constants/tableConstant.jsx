@@ -67,9 +67,9 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
   }
 
   const disabledStateCheckbox = (rowData) => {
-    const filterData =  rowData.attendance.find((item) => item.date === dateValue);
+    const filterData =  rowData && rowData.attendance.find((item) => item.date === dateValue);
     if (filterData) return filterData.checkinTime;
-    return true;
+    return false;
   }
 
   return [
