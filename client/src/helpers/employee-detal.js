@@ -20,8 +20,7 @@ export const totalWorkingHours = (rowData, key, getTimeOnly = false) => {
   if (getTimeOnly) return time;
 
   const duration = moment.duration(time, "minutes")
-
-  return `${duration.hours()}h ${duration.minutes()}min`
+  return `${duration.asHours()}h ${duration.minutes()}min`
 }
 
 export const getDailySalary = (rowData) => {
@@ -48,7 +47,8 @@ export const getSundayCost = (rowData) => {
   if(rowData) {
     const costPerSunday = 20;
     const totalSunday = rowData && rowData.attendance.filter(item => item.isSunday);
-    return costPerSunday * totalSunday * totalSunday.length;
+    console.log(totalSunday)
+    return costPerSunday * totalSunday.length;
   }
 
 }

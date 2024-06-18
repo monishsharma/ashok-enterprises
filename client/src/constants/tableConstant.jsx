@@ -17,29 +17,26 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
 
 
   const renderAction = ({ rowData, btnText, key, variant }) => {
+
+    const callBack = ({punchedTime}) => {
+
+      onClick({rowData, punchedTime})
+    }
+
     const onClick = key === "checkinTime" ? handleAttendance : handleCheckoutAttendance;
     let component = (
+      <TimePicker dateValue={dateValue} callBack={({punchedTime}) => callBack({punchedTime})}>
       <Button
         size="sm"
         variant={variant}
-        disabled={key==="checkoutTime"}
-        // onClick={onClick({rowData, key})}
+        // onClick={onClick({rowData, list, key})}
       >
         {btnText}
       </Button>
+    </TimePicker>
     );
 
-    const callBack = ({punchedTime, list, index}) => {
-      const selectedTime = new Date(punchedTime).getHours();
-      if (list.checkinTime) {
-        const storedPunchedInTime = new Date(parseInt(list.checkinTime)).getHours();
-        if (parseInt(storedPunchedInTime) > parseInt(selectedTime)){
-          alert("checkout time cannout be less than checkin time");
-          return;
-        }
-      }
-      onClick({rowData, punchedTime,index, list})
-    }
+
 
     if (rowData.attendance && rowData.attendance.length) {
       rowData.attendance.map((list, index) => {

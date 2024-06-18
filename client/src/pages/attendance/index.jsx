@@ -71,10 +71,18 @@ const Attendance = ({
     // setIsLoading(true);
     const {_id: id } = rowData;
     const eDetail = await employeeDetailConnect(id);
+    const selectedTime = new Date(punchedTime).getHours();
+    if (eDetail.checkinTime) {
+      const storedPunchedInTime = new Date(parseInt(eAttendance.checkinTime)).getHours();
+      if (parseInt(storedPunchedInTime) > parseInt(selectedTime)){
+        alert("checkout time cannout be less than checkin time");
+        return;
+      }
+    }
     const isOverTime = punchOutTime.getHours() >= 18 ? true : false;
     const eAttendance = filterEmployee({data: eDetail, date: dateValue})
-    const {differenceHrs, differenceMin} = totalHoursWork(eAttendance.checkinTime, punchOutTime.getTime())
-    const {overTimeHours, overTimeMin} = totalOverTime(punchedTime);
+    const {differenceHrs, differenceMin} = totalHoursWork(eAttendance.checkinTime, punchOutTime.getTime(), dateValue)
+    const {overTimeHours, overTimeMin} = totalOverTime(punchedTime, dateValue);
     const payload = {
       date: dateValue,
       isOverTime,

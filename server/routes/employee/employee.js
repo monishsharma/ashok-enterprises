@@ -14,17 +14,30 @@ const router = express.Router();
         let options = {};
         const {date} = req.query;
         if (date) {
-            query = { "attendance.date": date };
+            query = {};
             options = {
                 projection: {
                   _id: 1,
                   name: 1,
                   salaryPerDay: 1,
                   attendance: {
-                    $filter: {
-                      input: "$attendance",
-                      as: "item",
-                      cond: { $eq: ["$$item.date", date] }
+                    $map: {
+                      input: {
+                        $filter: {
+                          input: "$attendance",
+                          as: "item",
+                          cond: { $eq: ["$$item.date", date] }
+                        }
+                      },
+                      as: "filteredItem",
+                      in: {
+                        date: "$$filteredItem.date",
+                        checkinTime: "$$filteredItem.checkinTime",
+                        checkoutTime: "$$filteredItem.checkoutTime",
+                        status: "$$filteredItem.status",
+                        isSunday: "$$filteredItem.isSunday",
+                        isOverTime: "$$filteredItem.isOverTime"
+                      }
                     }
                   }
                 }
@@ -87,7 +100,8 @@ const router = express.Router();
             _id: new ObjectId(employeeId),
         });
         if (todayData && todayData.attendance && todayData.attendance.length ) {
-            const todayAttendance = todayData.attendance.find(data => data.date === new Date().toISOString().split('T')[0]);
+            const todayAttendance = todayData.attendance.find(data => data.date === updatedFields.date);
+
             if (todayAttendance) {
                 await db.collection("employeeDetails").findOneAndUpdate(
                     {

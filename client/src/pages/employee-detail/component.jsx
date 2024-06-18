@@ -25,6 +25,8 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [key, setKey] = useState("info");
 
+  const sortedList = attendance.sort((a,b) => new Date(a.date) - new Date(b.date))
+
   useEffect(() => {
     if (id) {
       setIsLoading(true);
@@ -84,7 +86,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect }) => {
               <Table
                 isClickable={false}
                 cols={tableConstants()}
-                data={attendance}
+                data={sortedList}
               />
             </Tab>
             <Tab eventKey="salary" title="Salary">
@@ -92,7 +94,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect }) => {
                 <Row>
                   <Col md={4}>
                     <Form.Label htmlFor="inputPassword5">
-                      Total Salary Per Day
+                      Salary Per Day
                     </Form.Label>
                     <Form.Control
                       disabled
@@ -103,7 +105,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect }) => {
                   </Col>
                   <Col md={4}>
                     <Form.Label htmlFor="inputPassword5">
-                      Total Overtime Salary
+                      Overtime Salary
                     </Form.Label>
                     <Form.Control
                       disabled
@@ -114,7 +116,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect }) => {
                   </Col>
                   <Col md={4}>
                     <Form.Label htmlFor="inputPassword5">
-                      Total Sundays
+                      Sundays
                     </Form.Label>
                     <Form.Control
                       disabled
@@ -125,7 +127,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect }) => {
                   </Col>
                   <Col md={4} className="mt-2">
                     <Form.Label htmlFor="inputPassword5">
-                      NSIC
+                      ESI
                     </Form.Label>
                     <Form.Control
                       disabled
@@ -136,7 +138,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect }) => {
                   </Col>
                   <Col md={4} className="mt-2">
                     <Form.Label htmlFor="inputPassword5">
-                      Total
+                      Total Salary
                     </Form.Label>
                     <Form.Control
                       disabled
