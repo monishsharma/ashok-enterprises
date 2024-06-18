@@ -47,7 +47,6 @@ export const getSundayCost = (rowData) => {
   if(rowData) {
     const costPerSunday = 20;
     const totalSunday = rowData && rowData.attendance.filter(item => item.isSunday);
-    console.log(totalSunday)
     return costPerSunday * totalSunday.length;
   }
 

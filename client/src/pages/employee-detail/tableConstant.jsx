@@ -7,7 +7,6 @@ export const tableConstants = () => {
 
 
     const renderDate = (rowData) => {
-        console.log()
         return moment(rowData.date).format("DD MMM")
     }
 

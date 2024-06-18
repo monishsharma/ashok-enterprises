@@ -12,9 +12,11 @@ const checkTime = (time) => {
 
 export const totalHoursWork = (checkinTime, punchOutTime, dateValue) => {
     const logOffTime = new Date(dateValue).setHours(17, 30, 0);
+    const lunchTimingEnds = new Date(dateValue).setHours(13, 30, 0);
     const checkCheckoutTime = checkTime(punchOutTime) ? logOffTime : punchOutTime ;
-    const {differenceHrs, differenceMin} = calculateTime(parseInt(checkinTime), parseInt(checkCheckoutTime))
-    return {differenceHrs, differenceMin: differenceMin - 30};
+    const {differenceHrs, differenceMin} = calculateTime(parseInt(checkinTime), parseInt(checkCheckoutTime));
+    const timeDiff =  checkCheckoutTime > lunchTimingEnds ? differenceMin - 30 : differenceMin;
+    return {differenceHrs, differenceMin: timeDiff};
 }
 
 export const totalOverTime = (checkOutTime, dateValue) => {
