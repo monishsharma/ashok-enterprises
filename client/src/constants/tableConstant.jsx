@@ -40,7 +40,7 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
 
     if (rowData.attendance && rowData.attendance.length) {
       rowData.attendance.map((list, index) => {
-        btnDisabled = variant === "warning" && !list.checkinTime
+        btnDisabled = variant === "warning" && !list.checkinTime && !list.isAbsent;
         if (list.date === dateValue) {
           component = list[key] ? (
             <span>{formatTime(list[key])}</span>
