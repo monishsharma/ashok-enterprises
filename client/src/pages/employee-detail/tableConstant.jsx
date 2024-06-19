@@ -7,7 +7,7 @@ export const tableConstants = () => {
 
 
     const renderDate = (rowData) => {
-        return moment(rowData.date).format("dddd, DD MMM")
+        return moment(rowData.date).format("ddd, DD MMM")
     }
 
     const safeCheck = (rowData, key) => {
