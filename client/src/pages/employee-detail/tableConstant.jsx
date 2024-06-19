@@ -7,7 +7,7 @@ export const tableConstants = () => {
 
 
     const renderDate = (rowData) => {
-        return moment(rowData.date).format("DD MMM")
+        return moment(rowData.date).format("dddd, DD MMM")
     }
 
     const safeCheck = (rowData, key) => {
@@ -40,18 +40,6 @@ export const tableConstants = () => {
                     <Badge bg={rowData.status ? "success" : "danger"}>
                         {
                             rowData.status ? "Present" : "Absent"
-                        }
-                    </Badge>
-                )
-            }
-        },
-        {
-            title: "Sunday",
-            render: (rowData)=> {
-                return (
-                    <Badge bg={rowData.isSunday ? "success" : "warning"}>
-                        {
-                            rowData.isSunday ? "Yes" : "No"
                         }
                     </Badge>
                 )
