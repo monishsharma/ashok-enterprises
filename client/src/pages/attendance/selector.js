@@ -6,7 +6,7 @@ export const filterEmployee = ({data, date}) => {
 };
 
 const checkTime = (time) => {
-    const logOffTime = new Date().setHours(17, 30, 0);
+    const logOffTime = new Date(time).setHours(17, 30, 0);
     return new Date(time).getTime() >= new Date(logOffTime).getTime();
 }
 
