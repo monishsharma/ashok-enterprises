@@ -157,6 +157,7 @@ const Attendance = ({
           <Row className="pt-4 ">
             <Col sm={3}>
             <DatePicker
+            dateFormat="dd/MM/yyyy"
               selected={dateValue}
               minDate={`${year}-${month}-01`}
               maxDate={`${year}-${month}-${day}`}
