@@ -1,6 +1,6 @@
 import { Badge } from "react-bootstrap";
 import priceFormatter from "../../helpers/price-formatter";
-import { getTotalAbsent, getTotalPresent } from "../../helpers/employee-detal";
+import { getTotalAbsent, getTotalPresentCount } from "../../helpers/employee-detal";
 
 // This is the table constant/settings which needed to render table elements
 export const tableConstants = () => {
@@ -28,7 +28,7 @@ export const tableConstants = () => {
       title: "Total Present",
       render: (rowData) => (
         <Badge bg={"success"}>
-          {getTotalPresent(rowData)}
+          {getTotalPresentCount(rowData)}
         </Badge>
       )
     },

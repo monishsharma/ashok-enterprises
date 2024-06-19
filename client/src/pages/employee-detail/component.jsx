@@ -63,7 +63,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect }) => {
             icon={"time-outline"}
           />
           <Card
-            number={`${getTotalPresent(detail)} days`}
+            number={`${getTotalPresent(detail)}`}
             cardName={"Present"}
             color={"#198754"}
             icon={"calendar-outline"}
