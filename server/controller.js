@@ -1,7 +1,7 @@
 import db from "./db/connection.js"
 
 export const cron = async() => {
-    
+
       //code for the automated task
     try {
 
@@ -18,7 +18,8 @@ export const cron = async() => {
             isSunday: today.getDay() === 0, // Check if tomorrow is Sunday
             checkinTime: "",
             checkoutTime: "",
-            isOverTime: false
+            isOverTime: false,
+            isAbsent: false
         };
 
         // Update attendance for all employees
