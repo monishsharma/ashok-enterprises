@@ -46,7 +46,7 @@ export const getOverTimeSalary = (rowData) => {
 export const getSundayCost = (rowData) => {
   if(rowData) {
     const costPerSunday = 20;
-    const totalSunday = rowData && rowData.attendance.filter(item => item.isSunday);
+    const totalSunday = rowData && rowData.attendance.filter(item => item.isSunday && item.status);
     return parseInt(costPerSunday * totalSunday.length);
   }
 
