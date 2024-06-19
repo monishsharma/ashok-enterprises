@@ -26,7 +26,7 @@ export const totalWorkingHours = (rowData, key, getTimeOnly = false) => {
 export const getDailySalary = (rowData) => {
   if(rowData) {
     const costPerHour = parseInt(rowData.salaryPerDay) / 8;
-    const TotalWorkInMin = totalWorkingHours(rowData, "totalWorkingHours", true);
+    const TotalWorkInMin = parseInt(totalWorkingHours(rowData, "totalWorkingHours", true));
     const TotalWorkInHour = parseInt(TotalWorkInMin) / 60;
     return parseInt(costPerHour * TotalWorkInHour);
   }
