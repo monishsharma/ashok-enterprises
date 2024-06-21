@@ -33,7 +33,7 @@ const Table = ({ cols, data, bordered, hoverable, striped, isDark, isClickable, 
                         {canSearch && <tr>
                             <td></td>
                             <td width={"1%"}>
-                                <input value={search} onChange={(e)=> onSearch(e.target.value)} />
+                                <input className="searchInput" value={search} onChange={(e)=> onSearch(e.target.value)} />
                             </td>
                         </tr>}
                         {
