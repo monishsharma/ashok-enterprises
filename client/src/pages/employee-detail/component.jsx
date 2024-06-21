@@ -130,7 +130,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
           <div>
             <h5 className="fw-bold fs-2 text-capitalize ">{name}, &#8377;{salaryPerDay}/ Day</h5>
           </div>
-          {!!(attendance && attendance.length) && <div>
+          { <div>
             <Button style={{marginRight: '5px'}} onClick={() => showAdavanceDetailToggle()}>Advance</Button>
             <Button variant="success" onClick={() => paymentDetailHandle()}>Pay</Button>
           </div>}
