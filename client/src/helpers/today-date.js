@@ -13,7 +13,7 @@ export const getTodayDate = (providedDate = "") => {
   return { sanitizedDate: todaysCompleteDate, date: todayDate };
 };
 
-export const getMonth = () => {
+export const getMonth = (customDate) => {
   const month = [
     "January",
     "February",
@@ -29,7 +29,7 @@ export const getMonth = () => {
     "December",
   ];
 
-  const d = new Date();
+  const d = customDate ? new Date(customDate) : new Date();
   let monthName = month[d.getMonth()];
   return monthName;
 };

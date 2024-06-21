@@ -1,3 +1,4 @@
+import { getMonth } from "../client/src/helpers/today-date.js";
 import db from "./db/connection.js"
 
 export const cron = async() => {
@@ -19,7 +20,8 @@ export const cron = async() => {
             checkinTime: "",
             checkoutTime: "",
             isOverTime: false,
-            isAbsent: false
+            isAbsent: false,
+            month: getMonth()
         };
 
         // Update attendance for all employees

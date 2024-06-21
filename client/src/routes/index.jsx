@@ -18,7 +18,7 @@ const routes = [
         element: <EmployeeView />
       },
       {
-        path: 'salary/detail/:id',
+        path: 'salary/detail/:id/:month/:year',
         element: <EmployeeDetail />
       },
       {

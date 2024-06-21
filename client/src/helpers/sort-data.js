@@ -1,1 +1,1 @@
-export const sortData = (data) => [...data].sort((a,b) => a.name.localeCompare(b.name))
+export const sortData = (data, key) => [...data].sort((a,b) => a[key].localeCompare(b[key]))

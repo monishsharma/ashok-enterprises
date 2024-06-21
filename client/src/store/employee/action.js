@@ -1,3 +1,4 @@
+import { sortData } from "../../helpers/sort-data";
 import { EmployeeService } from "../../services";
 import  Types from './actionTypes';
 
@@ -15,12 +16,16 @@ const setEmployeeDetail = (data) => ({
 
 
 
-export const employeeList = (query) => (dispatch) => {
+export const employeeList = ({date, sortByKey = "", qp = {}}) => (dispatch) => {
     return new Promise((resolve, reject) => {
-        EmployeeService.getEmployeeList(query)
+        EmployeeService.getEmployeeList({date, month: qp.month})
         .then((res) => {
-            dispatch(setData(res.data));
-            resolve(res.data);
+            let data = [...res.data];
+            if (sortByKey) {
+                data = sortData(data, sortByKey)
+            }
+            dispatch(setData(data));
+            resolve(data);
         })
         .catch((err) => {
             reject(err);
@@ -28,9 +33,9 @@ export const employeeList = (query) => (dispatch) => {
     })
 }
 
-export const employeeDetail = (id) => (dispatch) => {
+export const employeeDetail = ({id, month}) => (dispatch) => {
     return new Promise((resolve, reject) => {
-        EmployeeService.getEmployeeDetail(id)
+        EmployeeService.getEmployeeDetail({id, month})
         .then((res) => {
             dispatch(setEmployeeDetail(res.data));
             resolve(res.data);
@@ -81,6 +86,18 @@ export const deleteEmployee = (id) => () => {
 export const markAttendance = (id, payload) => () => {
     return new Promise((resolve, reject) => {
         EmployeeService.markAttendance(id, payload)
+        .then((res) => {
+            resolve(res.data);
+        })
+        .catch((err) => {
+            reject(err);
+        })
+    })
+}
+
+export const updateEmployeePayment = (queryParams, payload) => () => {
+    return new Promise((resolve, reject) => {
+        EmployeeService.updateEmployeePayment(queryParams, payload)
         .then((res) => {
             resolve(res.data);
         })

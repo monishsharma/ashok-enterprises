@@ -1,16 +1,23 @@
 
 export default (api) => {
 
-    const getEmployeeList = (query) => {
+    const getEmployeeList = ({date, month}) => {
         let queryParams = "";
-        if (query && query.date) {
-            queryParams = `?date=${query.date}`
+        if (date) {
+            queryParams = `?date=${date}`
+        }
+        if (month) {
+            queryParams = `?month=${month}`
         }
         return api.get(`/employee/list${queryParams}`);
     };
 
-    const getEmployeeDetail = (id) => {
-        return api.get(`/employee/detail/${id}`);
+    const getEmployeeDetail = ({id, month}) => {
+        let queryParams = "";
+        if (month) {
+            queryParams = `?month=${month}`
+        }
+        return api.get(`/employee/detail/${id}${queryParams}`);
     }
 
     const getEmployeeAttendanceList = () => {
@@ -33,6 +40,10 @@ export default (api) => {
         return api.patch(`/employee/${id}`, payload)
     };
 
+    const updateEmployeePayment = (queryParams, payload) => {
+        return api.patch(`/employee/update/${queryParams.type}/${queryParams.id}/${queryParams.year}/${queryParams.month}`, payload)
+    };
+
 
 
     return {
@@ -42,6 +53,7 @@ export default (api) => {
         deleteEmployee,
         markAttendance,
         getEmployeeDetail,
+        updateEmployeePayment,
         getEmployeeAttendanceList
     };
 };

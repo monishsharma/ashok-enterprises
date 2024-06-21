@@ -11,7 +11,6 @@ import PageLoader from "../../shared/component/page-loader";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import { filterEmployee, totalHoursWork, totalOverTime } from "./selector";
-import { sortData } from "../../helpers/sort-data";
 
 const Attendance = ({
   employeeData,
@@ -28,9 +27,9 @@ const Attendance = ({
   const [dateValue, setDateValue] = useState(`${year}-${month}-${day}`);
   const [isLoading, setIsLoading] = useState(false);
 
-  const employeeListHandler = () => {
+  const employeeListHandler = async() => {
     setIsLoading(true);
-    employeeListConnect({date: dateValue})
+    employeeListConnect({date: dateValue, sortByKey: "name"})
     .then(() => {
       setIsLoading(false)
     })
@@ -55,8 +54,8 @@ const Attendance = ({
         month: getMonth()
       };
       markAttendanceConnect(id, payload)
-      .then(() => {
-        employeeListHandler();
+      .then(async() => {
+        await employeeListHandler();
         setIsLoading(false);
       })
       .catch((err) => {
@@ -78,8 +77,8 @@ const Attendance = ({
       month: getMonth()
     }
     markAttendanceConnect(id, payload)
-    .then(() => {
-      employeeListHandler();
+    .then(async() => {
+      await employeeListHandler();
       setIsLoading(false);
     })
     .catch((err) => {
@@ -90,9 +89,9 @@ const Attendance = ({
 
   const handleCheckoutAttendance = async({rowData, punchedTime})  => {
     const punchOutTime = new Date(punchedTime);
-    // setIsLoading(true);
+    setIsLoading(true);
     const {_id: id } = rowData;
-    const eDetail = await employeeDetailConnect(id);
+    const eDetail = await employeeDetailConnect({id});
     const selectedTime = new Date(punchedTime).getHours();
     if (eDetail.checkinTime) {
       const storedPunchedInTime = new Date(parseInt(eAttendance.checkinTime)).getHours();
@@ -123,8 +122,8 @@ const Attendance = ({
       }
     };
     markAttendanceConnect(id, payload)
-    .then(() => {
-      employeeListHandler();
+    .then(async() => {
+      await employeeListHandler();
       setIsLoading(false);
     })
     .catch((err) => {
@@ -170,7 +169,7 @@ const Attendance = ({
           </Row>
         </div>
         <div className="pt-4">
-          <Table cols={tableConstants({handleAttendance, handleCheckoutAttendance, dateValue, markAbsent})} data={sortData(employeeData)} />
+          <Table cols={tableConstants({handleAttendance, handleCheckoutAttendance, dateValue, markAbsent})} data={employeeData} />
         </div>
     </React.Fragment>
   );

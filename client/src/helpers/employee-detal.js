@@ -77,11 +77,21 @@ export const getSundayCost = (rowData) => {
 
 }
 
-export const getTotalSalary = (rowData) => {
-  return (
-    parseInt(getDailySalary(rowData)) +
+export const getAdvancePAymentFromSalary = (rowData, month, year) => {
+  return rowData && rowData.advance && rowData.advance[year] && rowData.advance[year][month] && rowData.advance[year][month].advance || 0;
+}
+
+export const getExtraAdvancePayment = (rowData, month, year) => {
+  return rowData && rowData.advance && rowData.extraAdvance[year] && rowData.extraAdvance[year][month] && rowData.extraAdvance[year][month].deduct || 0;
+}
+
+export const getTotalSalary = (rowData, month, year) => {
+  return (rowData && (
+    (parseInt(getDailySalary(rowData)) +
     parseInt(getOverTimeSalary(rowData)) +
-    parseInt(getSundayCost(rowData))
-  ) - 200
+    parseInt(getSundayCost(rowData)))
+    - getAdvancePAymentFromSalary(rowData, month, year)
+    - getExtraAdvancePayment(rowData, month, year)
+  ) - 200) || 0
 };
 

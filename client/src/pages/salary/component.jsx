@@ -7,7 +7,6 @@ import PageLoader from '../../shared/component/page-loader';
 import { Button, Col, Row } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import { getMonth } from '../../helpers/today-date';
-import { sortData } from '../../helpers/sort-data';
 
 const Salary = ({
     employeeData,
@@ -21,7 +20,10 @@ const Salary = ({
 
     const employeeListHandler = () => {
         setIsLoading(true);
-        employeeListConnect()
+        const qp = {
+          month:  getMonth(dateValue)
+        }
+        employeeListConnect({sortByKey: "name", qp})
           .then(() => {
             setIsLoading(false);
           })
@@ -32,11 +34,11 @@ const Salary = ({
 
       useEffect(() => {
         employeeListHandler()
-       }, []);
+       }, [dateValue]);
 
     const onClickTable = (list) => {
         const {_id} = list;
-        navigate(`/salary/detail/${_id}`)
+        navigate(`/salary/detail/${_id}/${getMonth(dateValue)}/${dateValue.getFullYear()}`)
     }
 
     const handleDateChange = (selectedDate) => {
@@ -74,7 +76,7 @@ const Salary = ({
             </Col>
           </Row>
         <div className="pt-4">
-            <Table isClickable={true} onClick={onClickTable} hoverable={true} cols={tableConstants()} data={sortData(employeeData)} />
+            <Table isClickable={true} onClick={onClickTable} hoverable={true} cols={tableConstants()} data={employeeData} />
         </div>
     </React.Fragment>
     )

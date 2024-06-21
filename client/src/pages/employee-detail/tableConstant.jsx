@@ -3,7 +3,7 @@ import { formatTime } from "../../helpers/today-date";
 import { Badge } from "react-bootstrap";
 
 // This is the table constant/settings which needed to render table elements
-export const tableConstants = () => {
+export const tableConstants = ({onClick}) => {
 
 
     const renderDate = (rowData) => {
@@ -20,19 +20,34 @@ export const tableConstants = () => {
 
     return [
 
+
         {
-            title: "ID",
+            title: "S.No",
             render: (rowData) => {
             return <span>{rowData.id}</span>;
             },
         },
+        {
+            title: "Deduct",
+            render: (rowData)=> {
+                return (
+                    rowData.status &&
+                        <div className="pointer-cursor" onClick={() => onClick(rowData)}>
+                           {
+                            rowData.deductionTime? <p className="text-danger">{rowData.deductionTime}</p> :  <Badge bg="danger" size="sm">-</Badge>
+                           }
+                        </div>
 
+                )
+            }
+        },
         {
             title: "Date",
             render: (rowData)=> {
                 return renderDate(rowData)
             }
         },
+
         {
             title: "Status",
             render: (rowData)=> {

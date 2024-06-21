@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import PropTypes from "prop-types"
-import { Button, Container } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import Table from "../../shared/component/table";
 import { tableConstants } from "./tableConstant";
 import { deleteEmployee, employeeList } from "../../store/employee/action";
@@ -10,7 +10,6 @@ import PageLoader from "../../shared/component/page-loader";
 import AddEmployee from "../../components/add-employee"
 import styles from "./style.module.css";
 import { useNavigate } from 'react-router-dom';
-import { sortData } from "../../helpers/sort-data";
 
 
 const Employee = ({
@@ -27,7 +26,7 @@ const Employee = ({
 
   const employeeListHandler = () => {
     setIsLoading(true);
-    employeeListConnect()
+    employeeListConnect({sortByKey: "name"})
       .then(() => {
         setIsLoading(false);
       })
@@ -59,8 +58,8 @@ const Employee = ({
   const deleteEmployeeHandler = (rowData) => {
     setIsLoading(true);
     deleteEmployeeConnect(rowData._id)
-    .then(() => {
-      employeeListConnect()
+    .then(async() => {
+      employeeListHandler()
       setIsLoading(false);
     })
     .catch(() => {
@@ -83,6 +82,7 @@ const Employee = ({
         employeeId={selectedEmployee.id}
         selectedName={selectedEmployee.name}
         selectedSalary={selectedEmployee.salary}
+        employeeListHandler={employeeListHandler}
         addEmployeeHandlerToggle={addEmployeeHandlerToggle}
       />
         <div className={`mt-4`}>
@@ -94,7 +94,7 @@ const Employee = ({
           </Button>
         </div>
         <div className="pt-4">
-          <Table isClickable={false} onClick={onClickTable} hoverable={true} cols={tableConstants({editEmployee, deleteEmployeeHandler})} data={sortData(employeeData)} />
+          <Table isClickable={false} onClick={onClickTable} hoverable={true} cols={tableConstants({editEmployee, deleteEmployeeHandler})} data={employeeData} />
         </div>
     </React.Fragment>
   );

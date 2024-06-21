@@ -6,7 +6,8 @@
         isDisabled = false,
         callBack,
         children,
-        dateValue
+        dateValue,
+        hoursin24 = true
     }) => {
 
         const tmRef = useRef(null);
@@ -14,8 +15,16 @@
 
 
     const handleTimeChange = useCallback(({ detail: { hour, minutes } }) => {
-        const date = new Date(`${dateValue}`).setHours(parseInt(hour), parseInt(minutes), 0);(
-        callBack({punchedTime: date}));
+        let date = "";
+        if (dateValue){
+            date =  new Date(`${dateValue}`).setHours(parseInt(hour), parseInt(minutes), 0);
+        } else {
+            date = {
+                hour, minutes
+            }
+        }
+
+        callBack({punchedTime: date});
         setInputValue(`${hour}:${minutes}}`);
     }, []);
 
@@ -41,7 +50,7 @@
         if (isDisabled) return true;
         const tm = tmRef && tmRef.current;
         const newPicker = new TimepickerUI(tm, {
-            clockType: '24h',
+            clockType: hoursin24 ? '24h' : '12h',
             editable: true,
             switchToMinutesAfterSelectHour: true
         });
@@ -64,6 +73,7 @@
         callBack: PropTypes.func,
         isDisabled: PropTypes.bool,
         children: PropTypes.any,
+        hoursin24: PropTypes.bool,
         dateValue: PropTypes.string
     }
 

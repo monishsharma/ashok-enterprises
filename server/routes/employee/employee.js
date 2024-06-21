@@ -12,8 +12,8 @@ const router = express.Router();
 
         let query = {};
         let options = {};
-        const {date} = req.query;
-        if (date) {
+        const key = Object.keys(req.query);
+        if (key && key.length) {
             query = {};
             options = {
                 projection: {
@@ -26,18 +26,12 @@ const router = express.Router();
                         $filter: {
                           input: "$attendance",
                           as: "item",
-                          cond: { $eq: ["$$item.date", date] }
+                          cond: { $eq: [`$$item.${key}`,  req.query[key]] }
                         }
                       },
                       as: "filteredItem",
                       in: {
-                        date: "$$filteredItem.date",
-                        isAbsent: "$$filteredItem.isAbsent",
-                        checkinTime: "$$filteredItem.checkinTime",
-                        checkoutTime: "$$filteredItem.checkoutTime",
-                        status: "$$filteredItem.status",
-                        isSunday: "$$filteredItem.isSunday",
-                        isOverTime: "$$filteredItem.isOverTime"
+                        $mergeObjects: ["$$filteredItem"]
                       }
                     }
                   }
@@ -57,9 +51,39 @@ const router = express.Router();
     });
 
     router.get("/detail/:id", async(req, res) => {
+        const query = {_id: new ObjectId(req.params.id)};
+        let options = {};
+        const key = Object.keys(req.query);
+        if (key && key.length) {
+            options = {
+                projection: {
+                  _id: 1,
+                  name: 1,
+                  salaryPerDay: 1,
+                  payment: 1,
+                  advance: 1,
+                  extraAdvance:1,
+                  attendance: {
+                    $map: {
+                      input: {
+                        $filter: {
+                          input: "$attendance",
+                          as: "item",
+                          cond: { $eq: [`$$item.${key}`,  req.query[key]] }
+                        }
+                      },
+                      as: "filteredItem",
+                      in: {
+                        $mergeObjects: ["$$filteredItem"]
+                      }
+                    }
+                  }
+                }
+              };
+        }
         try {
             let collection = db.collection("employeeDetails");
-            let results = await collection.find({_id: new ObjectId(req.params.id)}).toArray();
+            let results = await collection.find(query, options).toArray();
             res.send(results).status(200);
         } catch (err) {
             console.error(err);
@@ -145,8 +169,6 @@ const router = express.Router();
 
             }
         }
-        console.log(todayData)
-
     });
 
     router.patch('/edit/:employeeId', async (req, res) => {
@@ -156,6 +178,29 @@ const router = express.Router();
             _id: new ObjectId(employeeId),
         }, {$set: {name: payload.name, salaryPerDay: payload.salaryPerDay}})
         .then((response) => {
+            res.status(200).send("payment updated succesfully")
+        })
+        .catch((err) => {
+            console.log(err)
+            res.status(500).json({
+                error: err
+            })
+        })
+    });
+
+    router.patch("/update/:type/:employeeId/:year/:month", async (req, res) => {
+        const { type,employeeId, year, month } = req.params;
+
+        let updateObject = {};
+        Object.keys(req.body).map(key => {
+            updateObject[`${type}.${year}.${month}.${key}`] = req.body[key];
+        })
+        await db.collection("employeeDetails").findOneAndUpdate({
+            _id: new ObjectId(employeeId),
+        },
+        { $set: updateObject },
+        { upsert: true, new: true }
+    ).then((response) => {
             res.status(200).json(response)
         })
         .catch((err) => {
@@ -164,7 +209,8 @@ const router = express.Router();
                 error: err
             })
         })
-    })
+    });
+
 
     router.delete('/delete/:employeeId', async (req, res) => {
         const {employeeId} = req.params;

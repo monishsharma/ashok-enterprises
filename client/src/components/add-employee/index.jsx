@@ -15,7 +15,7 @@ const AddEmployee = ({
     showModal,
     editEmployeeConnect,
     addEmployeeConnect,
-    employeeListConnect,
+    employeeListHandler,
     addEmployeeHandlerToggle
 }) => {
 
@@ -47,7 +47,7 @@ const AddEmployee = ({
             }
             setName("");
             setSalary("");
-            employeeListConnect()
+            employeeListHandler()
             setIsLoading(false);
             addEmployeeHandlerToggle();
         } catch(err) {
@@ -92,7 +92,7 @@ AddEmployee.propTypes = {
     addEmployeeHandlerToggle: PropTypes.func,
     addEmployeeConnect: PropTypes.func,
     editEmployeeConnect: PropTypes.func,
-    employeeListConnect: PropTypes.func
+    employeeListHandler: PropTypes.func
 
 }
 

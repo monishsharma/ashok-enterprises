@@ -8,7 +8,8 @@ const ModalWrapper = ({
     onSave,
     children,
     isDisabled = false,
-    handleClose
+    handleClose,
+    saveButtonText = 'Save'
 }) => {
   return (
       <Modal  show={show} onHide={handleClose}>
@@ -22,7 +23,7 @@ const ModalWrapper = ({
 
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>Close</Button>
-          <Button className='customBtn' disabled={isDisabled} onClick={onSave}>Save</Button>
+          <Button className='customBtn' disabled={isDisabled} onClick={onSave}>{saveButtonText}</Button>
         </Modal.Footer>
       </Modal>
   )
@@ -34,7 +35,8 @@ ModalWrapper.propTypes = {
     onSave: PropTypes.func,
     children: PropTypes.any,
     isDisabled: PropTypes.bool,
-    handleClose: PropTypes.func
+    handleClose: PropTypes.func,
+    saveButtonText:PropTypes.string
 }
 
 export default ModalWrapper;
