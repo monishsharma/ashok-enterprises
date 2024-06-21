@@ -32,6 +32,9 @@ ol, ul {
 
 .scrollableDiv {
   padding: 0 30px;
+  height: 85vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .form-label {
@@ -126,6 +129,9 @@ h1,h2,h3,h4,h5 {
   }
   .actionBtn >div:nth-child(2){
     margin-top: 10px;
+  }
+  .scrollableDiv {
+    padding: 0 15px;
   }
 }
 
