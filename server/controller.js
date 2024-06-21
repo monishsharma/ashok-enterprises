@@ -22,7 +22,8 @@ export const cron = async() => {
             checkoutTime: "",
             isOverTime: false,
             isAbsent: false,
-            month: monthName
+            month: monthName,
+            year: today.getFullYear()
         };
 
         // Update attendance for all employees

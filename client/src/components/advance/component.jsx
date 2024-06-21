@@ -28,6 +28,8 @@ const Advance = ({
     const getDisabledState = () => {
         if (key=== "advanceSalary") {
             return !advanceSalary
+        } else {
+            return (!extraAdvanceAmount && !extraAdvanceDeuctionThisMonth)
         }
     }
 

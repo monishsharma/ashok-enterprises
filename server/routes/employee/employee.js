@@ -228,5 +228,27 @@ const router = express.Router();
         })
     })
 
+    // router.put('/update-attendance/:employeeId', async (req, res) => {
+
+    //     const {employeeId} = req.params;
+    //     const {year} = req.body;
+    //     await db.collection("employeeDetails").updateOne({
+    //         _id: new ObjectId(employeeId), "attendance": { $exists: true, $ne: [] } ,
+    //     },
+    //     { $set: { "attendance.$[].year": year } }
+    // )
+    //     .then((response) => {
+    //         res.status(200).json(response)
+    //     })
+    //     .catch((err) => {
+    //         console.log(err)
+    //         res.status(500).json({
+    //             error: err
+    //         })
+    //     })
+
+    //   });
+
+
 
 export default router;
