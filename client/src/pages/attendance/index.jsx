@@ -170,7 +170,7 @@ const Attendance = ({
           </Row>
         </div>
         <div className="pt-4">
-          <Table cols={tableConstants({handleAttendance, handleCheckoutAttendance, dateValue, markAbsent})} data={employeeData} />
+          <Table canSearch={true} cols={tableConstants({handleAttendance, handleCheckoutAttendance, dateValue, markAbsent})} data={employeeData} />
         </div>
     </React.Fragment>
   );

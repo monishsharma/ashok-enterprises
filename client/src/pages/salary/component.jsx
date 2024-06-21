@@ -76,7 +76,7 @@ const Salary = ({
             </Col>
           </Row>
         <div className="pt-4">
-            <Table isClickable={true} onClick={onClickTable} hoverable={true} cols={tableConstants()} data={employeeData} />
+            <Table canSearch={true} isClickable={true} onClick={onClickTable} hoverable={true} cols={tableConstants()} data={employeeData} />
         </div>
     </React.Fragment>
     )

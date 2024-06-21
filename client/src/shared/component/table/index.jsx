@@ -1,11 +1,24 @@
+
 import "./table.css"
+import {useState} from 'react'
 import PropTypes from 'prop-types'
 
-const Table = ({ cols, data, bordered, hoverable, striped, isDark, isClickable, onClick=() => {} }) => {
+const Table = ({ cols, data, bordered, hoverable, striped, isDark, isClickable, onClick=() => {}, canSearch = false }) => {
+
+    const [search, setSearch] = useState("");
+    const [searchData, setSearchData] = useState(data || []);
 
     const onClickHandler = (item) => {
         if (isClickable) onClick(item);
     }
+
+    const onSearch = (value) => {
+        const copySearchData = [...data];
+        setSearch(value)
+        const filteredData = copySearchData.filter(item => item.name.toLowerCase().includes(value));
+        setSearchData(filteredData)
+    }
+
     return (
         <div className="table-responsive">
             <table className={`table ${bordered ? 'table-bordered' : 'table-borderless'} ${hoverable && 'table-hover'} ${striped && 'table-striped'} ${isDark && 'table-dark'} ${isClickable && 'pointer-cursor'}`}>
@@ -17,8 +30,14 @@ const Table = ({ cols, data, bordered, hoverable, striped, isDark, isClickable, 
                     </tr>
                 </thead>
                 <tbody>
+                        {canSearch && <tr>
+                            <td></td>
+                            <td width={"1%"}>
+                                <input value={search} onChange={(e)=> onSearch(e.target.value)} />
+                            </td>
+                        </tr>}
                         {
-                            data.map((item, index) => (
+                            searchData.map((item, index) => (
                                 <tr onClick={() => onClickHandler(item)} key={index}>
                                     {cols.map((col, key) => (
                                         <td key={key}>{col.render({...item, id: index+1})}</td>
@@ -44,7 +63,8 @@ Table.propTypes = {
     striped: PropTypes.bool,
     isDark: PropTypes.bool,
     isClickable: PropTypes.bool,
-    onClick: PropTypes.func
+    onClick: PropTypes.func,
+    canSearch: PropTypes.bool
 }
 
 Table.defaultProps = {
