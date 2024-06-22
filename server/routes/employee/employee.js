@@ -2,6 +2,7 @@ import express from "express";
 import db from "../../db/connection.js";
 import Employees from "./employeeSchema.js";
 import { ObjectId } from "mongodb";
+import { getTodayDate } from "../../helper/today-date.js";
 
 
 
@@ -226,6 +227,38 @@ const router = express.Router();
                 error: err
             })
         })
+    })
+
+    router.put('/run/cron', async (req,res) => {
+        const {monthName} = getTodayDate();
+        try {
+
+            // Access the collection
+            const collection = db.collection('employeeDetails');
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+
+            // Construct the attendance object for the next day
+            const attendanceObj = {
+                date: today.toISOString().split('T')[0],
+                status: false,
+                isSunday: today.getDay() === 0, // Check if tomorrow is Sunday
+                checkinTime: "",
+                checkoutTime: "",
+                isOverTime: false,
+                isAbsent: false,
+                month: monthName,
+                year: today.getFullYear()
+            };
+
+            // Update attendance for all employees
+            await collection.updateMany({}, { $push: { attendance: attendanceObj } });
+            res.status(200).send("Attendance updated successfully for all employees")
+            console.log('Attendance updated successfully for all employees.');
+        } catch (err) {
+            console.error('Error updating attendance:', err);
+        }
     })
 
     // router.put('/update-attendance/:employeeId', async (req, res) => {
