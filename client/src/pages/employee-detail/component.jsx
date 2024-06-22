@@ -61,7 +61,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
     };
     markAttendanceConnect(id, payload)
     .then(async() => {
-      await employeeDetailConnect(id);
+      await employeeDetailConnect({id, month});
       addEmployeeHandlerToggle();
       setDayDetail(null);
       setHoursToDeduct(0);

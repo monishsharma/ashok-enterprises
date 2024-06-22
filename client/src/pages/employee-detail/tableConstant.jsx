@@ -34,7 +34,7 @@ export const tableConstants = ({onClick}) => {
                     rowData.status &&
                         <div className="pointer-cursor" onClick={() => onClick(rowData)}>
                            {
-                            rowData.deductionTime? <p className="text-danger">{rowData.deductionTime}</p> :  <Badge bg="danger" size="sm">-</Badge>
+                            rowData.deductionTime? <span className="text-danger">{rowData.deductionTime}</span> :  <Badge bg="danger" size="sm">-</Badge>
                            }
                         </div>
 
