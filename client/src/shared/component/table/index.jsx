@@ -1,12 +1,17 @@
 
 import "./table.css"
-import {useState} from 'react'
+import {useState, useEffect} from 'react'
 import PropTypes from 'prop-types'
 
 const Table = ({ cols, data, bordered, hoverable, striped, isDark, isClickable, onClick=() => {}, canSearch = false }) => {
 
     const [search, setSearch] = useState("");
     const [searchData, setSearchData] = useState(data || []);
+
+    useEffect(() => {
+        setSearchData(data)
+    }, [data])
+
 
     const onClickHandler = (item) => {
         if (isClickable) onClick(item);
@@ -16,6 +21,7 @@ const Table = ({ cols, data, bordered, hoverable, striped, isDark, isClickable, 
         const copySearchData = [...data];
         setSearch(value)
         const filteredData = copySearchData.filter(item => item.name.toLowerCase().includes(value));
+        console.log(filteredData)
         setSearchData(filteredData)
     }
 
