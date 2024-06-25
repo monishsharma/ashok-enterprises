@@ -223,7 +223,7 @@ const Attendance = ({
               </Button>
             </TimePicker>
 
-              <Button variant="danger" style={{width: `100%`}}  onClick={allAbsent}>
+              <Button variant="danger"   onClick={allAbsent}>
                 All Absent
               </Button>
             </div>
