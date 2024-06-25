@@ -43,7 +43,9 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
         btnDisabled = variant === "warning" && !list.checkinTime;
         if (list.date === dateValue) {
           component = list[key] ? (
+            <TimePicker dateValue={dateValue} callBack={({punchedTime}) => callBack({punchedTime, list, index})} isDisabled={btnDisabled}>
             <span>{formatTime(list[key])}</span>
+            </TimePicker>
           ) : (
             <TimePicker dateValue={dateValue} callBack={({punchedTime}) => callBack({punchedTime, list, index})} isDisabled={btnDisabled}>
               <Button
