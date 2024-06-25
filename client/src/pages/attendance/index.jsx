@@ -11,6 +11,7 @@ import PageLoader from "../../shared/component/page-loader";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import { filterEmployee, totalHoursWork, totalOverTime } from "./selector";
+import TimePicker from "../../shared/component/time=picker";
 
 const Attendance = ({
   employeeData,
@@ -51,6 +52,7 @@ const Attendance = ({
         status: false,
         isSunday: new Date(`${dateValue}`).getDay() == 0,
         checkinTime: ``,
+        year: new Date(dateValue).getFullYear(),
         month: getMonth()
       };
       markAttendanceConnect(id, payload)
@@ -62,6 +64,51 @@ const Attendance = ({
         setIsLoading(false);
         console.log(err)
       })
+  }
+
+  const allAbsent = async() => {
+    setIsLoading(true);
+    const payload = {
+      date: dateValue,
+      isAbsent: true,
+      status: false,
+      isSunday: new Date(`${dateValue}`).getDay() == 0,
+      checkinTime: ``,
+      checkoutTime: "",
+      year: new Date(`${dateValue}`).getFullYear(),
+    };
+    console.log(payload)
+    setIsLoading(false);
+
+}
+
+  const allPresentHandler = ({punchedTime: time}) => {
+    setIsLoading(true);
+    const punchInTime = new Date(time);
+    const checkoutTime = new Date().setHours(punchInTime.getHours() + 8, 30, 0);
+    const {differenceHrs, differenceMin} = totalHoursWork(punchInTime.getTime(), new Date(checkoutTime).getTime(), dateValue)
+
+    const payload = {
+      date: dateValue,
+      status: true,
+      isAbsent: false,
+      allPresent: true,
+      isSunday: punchInTime.getDay() == 0,
+      checkinTime: `${punchInTime.getTime()}`,
+      month: getMonth(),
+      year: punchInTime.getFullYear(),
+      checkoutTime,
+      totalWorkingHours: {
+        hours: parseInt(differenceHrs),
+        min: parseInt(differenceMin)
+      },
+      overTimeHours: {
+        hours: 0,
+        min: 0
+      }
+    };
+    console.log(JSON.stringify(payload))
+    setIsLoading(false)
   }
 
   const handleAttendance = async({rowData, punchedTime}) => {
@@ -168,12 +215,15 @@ const Attendance = ({
               />
 
             </Col>
-            <Col md={4}>
+            <Col md={9}>
             <div className="gap-2 btnContainer">
-              <Button variant="success">
+            <TimePicker dateValue={dateValue} callBack={({punchedTime}) => allPresentHandler({punchedTime})} >
+              <Button variant="success" style={{width: `100%`}}>
                 All Present
               </Button>
-              <Button variant="danger">
+            </TimePicker>
+
+              <Button variant="danger" style={{width: `100%`}}  onClick={allAbsent}>
                 All Absent
               </Button>
             </div>

@@ -212,6 +212,18 @@ const router = express.Router();
     });
 
 
+    router.patch('/mark/all/present', async(req,res) => {
+        const collection = db.collection('employeeDetails');
+        const attendanceObj =req.body;
+       try {
+            await collection.updateMany({}, { $push: { attendance: attendanceObj } });
+            console.log('All Present');
+        } catch (err) {
+            console.error('Error updating attendance:', err);
+        }
+    })
+
+
     router.delete('/delete/:employeeId', async (req, res) => {
         const {employeeId} = req.params;
         await db.collection("employeeDetails").findOneAndDelete({
