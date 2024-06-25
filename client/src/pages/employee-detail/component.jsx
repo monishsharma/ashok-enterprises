@@ -48,6 +48,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
     }
   }, [id]);
 
+
   const deductTime = () => {
     setIsLoading(true);
     const {date, totalWorkingHours} = dayDetail;
@@ -57,7 +58,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
       date,
       totalWorkingHours:{
         hours: parseInt(totalWorkingHours.hours) - parseInt(hoursToDeduct),
-        min: parseInt(totalWorkingHours.min) - parseInt(minToDeduct)
+        min: minToDeduct?  parseInt(totalWorkingHours.min) - parseInt(minToDeduct) : parseInt(totalWorkingHours.min) - parseInt(hoursToDeduct * 60)
       }
     };
     markAttendanceConnect(id, payload)
