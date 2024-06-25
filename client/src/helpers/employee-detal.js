@@ -89,12 +89,20 @@ export const getExtraAdvancePayment = (rowData, needObj = false) => {
   return detail || 0;
 }
 
+export const addSalaryOfSunday = (rowData, month, year) => {
+  const sundayCount = rowData && rowData.attendance && rowData.attendance.filter(item =>
+  (item.month === month && parseInt(item.year) === parseInt(year) && item.isSunday ));
+
+  return sundayCount && sundayCount.length || 0;
+}
+
 export const getTotalSalary = (rowData, month, year) => {
   return (rowData && (
     (parseInt(getDailySalary(rowData)) +
     parseInt(getOverTimeSalary(rowData)) +
     parseInt(getSundayCost(rowData)))
     - getAdvancePAymentFromSalary(rowData, month, year)
+    + (addSalaryOfSunday(rowData, month, year) * rowData.salaryPerDay)
   ) - 200) || 0
 };
 
