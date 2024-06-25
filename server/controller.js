@@ -1,4 +1,4 @@
-import { getMonth } from "../client/src/helpers/today-date.js";
+import {getTodayDate} from "../server/helper/server-today-date.js";
 import db from "./db/connection.js"
 
 export const cron = async() => {
@@ -9,6 +9,7 @@ export const cron = async() => {
         // Access the collection
         const collection = db.collection('employeeDetails');
         const today = new Date();
+        const{monthName} = getTodayDate();
         const tomorrow = new Date(today);
         tomorrow.setDate(today.getDate() + 1);
 
@@ -21,7 +22,7 @@ export const cron = async() => {
             checkoutTime: "",
             isOverTime: false,
             isAbsent: false,
-            month: getMonth()
+            month: monthName
         };
 
         // Update attendance for all employees

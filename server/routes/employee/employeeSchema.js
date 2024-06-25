@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import {getTodayDate} from "../../helper/today-date.js";
+import {getTodayDate} from "../../helper/server-today-date.js";
 
 const {sanitizedDate} = getTodayDate();
 // Define a sub-schema for attendance
