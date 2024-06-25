@@ -1,0 +1,179 @@
+/* =========== Google Fonts ============ */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+/* =============== Globals ============== */
+* {
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --blue: #0C0C0C;
+  --white: #fff;
+  --gray: #f5f5f5;
+  --black1: #222;
+  --black2: #999;
+}
+
+body {
+  height: 100vh;
+  overflow-x: hidden;
+  background-color: var(--blue) !important;
+}
+
+
+ol, ul {
+  list-style: none;
+  outline: none;
+  padding-left: 0 !important;
+}
+
+.scrollableDiv {
+  padding: 0 30px;
+  height: 85vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+.form-label {
+  font-weight: bold !important;
+}
+
+thead, tbody {
+  text-align: center !important;
+  /* vertical-align: baseline !important; */
+}
+tr {
+  align-items: center !important;
+}
+td {
+  padding: 15px !important;
+  vertical-align: middle !important;
+}
+.table-bordered>:not(caption)>*>*  {
+  border-width: 0 !important;
+}
+.customBtn {
+  outline: none !important;
+  background-color: var(--blue) !important;
+  border: 1px solid var(--blue) !important;
+}
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield !important;
+}
+
+.attendanceWrapper {
+  margin-top: 20px;
+}
+.checkBtn button {
+  width: 50%;
+}
+.name {
+  font-size: 20px;
+  text-transform: capitalize;
+  margin-bottom: 0 !important;
+}
+h1,h2,h3,h4,h5 {
+  margin: 0 !important;
+}
+.timepicker-ui-wrapper, .timepicker-ui-wrapper.mobile {
+  height: auto !important;
+}
+
+.timepicker-ui-invalid-text {
+  display: none !important;
+}
+
+.actionBtn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btnContainer {
+  display: flex !important;
+}
+
+@media only screen and (max-width: 1200px) {
+  table {
+    font-size: 14px !important;
+    text-wrap: nowrap !important;
+  }
+  h5 {
+    font-size: 15px !important;
+  }
+}
+
+
+@media (max-width: 1200px) {
+  .cardBox {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+@media (max-width: 991px) {
+  .cardBox {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+}
+
+@media (max-width: 660px) {
+  .actionBtn {
+    flex-direction: column;
+  }
+  .searchInput{
+    width: 5rem !important;
+  }
+  .actionBtn >div:nth-child(2){
+    margin-top: 10px;
+  }
+  .scrollableDiv {
+    padding: 0 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .btnContainer {
+    display: grid !important;
+    margin-top: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cardBox {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .cardHeader h2 {
+    font-size: 20px;
+  }
+  .numbers {
+    font-size: 1rem !important;
+  }
+  .cardName {
+    font-size: 0.8rem !important;
+  }
+  .cardBox {
+    grid-gap: 15px !important;
+  }
+}
+
+input[type=checkbox] {
+  outline: 2px solid #c00 !important;
+  accent-color: red;
+}
+
+.form-check-input:checked  {
+  background-color: #c00 !important;
+    border-color: #c00 !important;
+}
