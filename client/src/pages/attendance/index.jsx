@@ -12,6 +12,7 @@ import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import { filterEmployee, totalHoursWork, totalOverTime } from "./selector";
 import TimePicker from "../../shared/component/time=picker";
+import { useOutletContext } from "react-router-dom";
 
 const Attendance = ({
   employeeData,
@@ -21,6 +22,8 @@ const Attendance = ({
 }) => {
 
   const {date} = getTodayDate();
+  const {ref} = useOutletContext();
+  const scroll = localStorage.getItem("scroll");
   const day = String(date.getDate()).padStart(2, '0');
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -41,6 +44,13 @@ const Attendance = ({
   useEffect(() => {
    employeeListHandler()
   }, [dateValue]);
+
+  useEffect(() => {
+    if(!isLoading&& employeeData.length) {
+      ref.current.scrollTop = scroll;
+    }
+  }, [isLoading, employeeData])
+
 
   const markAbsent = async({rowData, e}) => {
       const {_id: id } = rowData;
