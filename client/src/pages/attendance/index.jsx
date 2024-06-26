@@ -1,4 +1,4 @@
-import React, { useEffect, useState, forwardRef, useRef } from "react";
+import React, { useEffect, useState, forwardRef } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { Button, Col, Row } from "react-bootstrap";
@@ -36,8 +36,10 @@ const Attendance = ({
     employeeListConnect({date: dateValue, sortByKey: "name"})
     .then(() => {
       setIsLoading(false);
+      setTimeout(() => {
       ref.current.scrollTop = parseInt(scroll);
 
+      }, 100);
     })
     .catch(() => {
       setIsLoading(false);
