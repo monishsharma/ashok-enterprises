@@ -26,7 +26,7 @@ function App() {
   };
 
   const handleScroll = () => {
-    if (scrollableDivRef.current) {
+    if (scrollableDivRef.current && scrollableDivRef.current.scrollTop > 1) {
       localStorage.setItem("scroll", scrollableDivRef.current.scrollTop)
     }
   };
