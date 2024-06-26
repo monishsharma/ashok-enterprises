@@ -39,7 +39,7 @@ const Attendance = ({
       setTimeout(() => {
       ref.current.scrollTop = parseInt(scroll);
 
-      }, 100);
+      }, 0);
     })
     .catch(() => {
       setIsLoading(false);
