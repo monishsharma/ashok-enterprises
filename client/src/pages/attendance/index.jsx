@@ -27,15 +27,11 @@ const Attendance = ({
 
   const [dateValue, setDateValue] = useState(`${year}-${month}-${day}`);
   const [isLoading, setIsLoading] = useState(false);
-
   const employeeListHandler = async() => {
     setIsLoading(true);
     employeeListConnect({date: dateValue, sortByKey: "name"})
     .then(() => {
       setIsLoading(false);
-      setTimeout(() => {
-
-      }, 10);
     })
     .catch(() => {
       setIsLoading(false);
@@ -113,7 +109,6 @@ const Attendance = ({
     console.log(JSON.stringify(payload))
     setIsLoading(false)
   }
-
   const handleAttendance = async({rowData, punchedTime}) => {
     const punchInTime = new Date(punchedTime);
     setIsLoading(true);
@@ -197,11 +192,11 @@ const Attendance = ({
    </div>
   ));
 
-
+if (isLoading) return <PageLoader/>
 
   return (
     <React.Fragment>
-      {isLoading && <PageLoader />}
+      {/* {isLoading && <PageLoader />} */}
         <div className={` ${styles.attendanceWrapper}`}>
           <h2 className="fw-bold">Attendance List</h2>
           <Row className="pt-4 ">
