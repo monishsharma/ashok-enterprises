@@ -1,5 +1,8 @@
 {
     "version": 2,
+    "build": {
+        "sourcemap": true
+    },
     "builds": [
         {
             "src": "./index.js",
