@@ -1,4 +1,4 @@
-import React, { useEffect, useState, forwardRef } from "react";
+import React, { useEffect, useState, forwardRef, useRef } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { Button, Col, Row } from "react-bootstrap";
@@ -12,6 +12,7 @@ import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import { filterEmployee, totalHoursWork, totalOverTime } from "./selector";
 import TimePicker from "../../shared/component/time=picker";
+import { useOutletContext } from "react-router-dom";
 
 const Attendance = ({
   employeeData,
@@ -21,6 +22,8 @@ const Attendance = ({
 }) => {
 
   const {date} = getTodayDate();
+  const {ref} = useOutletContext();
+  const scroll = localStorage.getItem("scroll");
   const day = String(date.getDate()).padStart(2, '0');
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -32,7 +35,9 @@ const Attendance = ({
     setIsLoading(true);
     employeeListConnect({date: dateValue, sortByKey: "name"})
     .then(() => {
-      setIsLoading(false)
+      setIsLoading(false);
+      ref.current.scrollTop = parseInt(scroll);
+
     })
     .catch(() => {
       setIsLoading(false);
@@ -230,8 +235,8 @@ const Attendance = ({
             </Col>
           </Row>
         </div>
-        <div className="pt-4">
-          <Table canSearch={true} cols={tableConstants({handleAttendance, handleCheckoutAttendance, dateValue, markAbsent})} data={employeeData} />
+        <div className="pt-4" style={{minHeight: "1607px"}} >
+          <Table canSearch={false} cols={tableConstants({handleAttendance, handleCheckoutAttendance, dateValue, markAbsent})} data={employeeData} />
         </div>
     </React.Fragment>
   );

@@ -33,8 +33,7 @@ ol, ul {
 .scrollableDiv {
   padding: 0 30px;
   height: 85vh;
-  overflow-y: scroll;
-  overflow-x: hidden;
+  overflow: auto;
 }
 
 .form-label {
