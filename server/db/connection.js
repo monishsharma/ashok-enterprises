@@ -15,6 +15,7 @@ try {
   await client.connect();
   // Send a ping to confirm a successful connection
   await client.db("admin").command({ ping: 1 });
+  console.log(process.env.NODE_ENV)
   console.log(
    "Pinged your deployment. You successfully connected to MongoDB!"
   );
