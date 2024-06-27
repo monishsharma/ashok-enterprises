@@ -14,7 +14,7 @@ const corsOptions = {
   origin: 'https://ashok-enterprises.vercel.app',
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
-
+console.log(process.env.NODE_ENV)
 app.use(cors(corsOptions));
 app.use(express.json());
 

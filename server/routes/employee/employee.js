@@ -2,11 +2,13 @@ import express from "express";
 import db from "../../db/connection.js";
 import Employees from "./employeeSchema.js";
 import { ObjectId } from "mongodb";
+import { getTodayDate } from "../../helper/server-today-date.js";
 
 
 
 const router = express.Router();
 
+const collectionName = process.env.NODE_ENV === "dev" ? "attendance" : "employeeDetails"
 
     router.get("/list", async(req, res) => {
 
@@ -41,7 +43,7 @@ const router = express.Router();
 
 
         try {
-            let collection = db.collection("employeeDetails");
+            let collection = db.collection(collectionName);
             const results = await collection.find(query, options).toArray();
             res.send(results).status(200);
         } catch (err) {
@@ -82,7 +84,7 @@ const router = express.Router();
               };
         }
         try {
-            let collection = db.collection("employeeDetails");
+            let collection = db.collection(collectionName);
             let results = await collection.find(query, options).toArray();
             res.send(results).status(200);
         } catch (err) {
@@ -95,7 +97,7 @@ const router = express.Router();
   router.post("/new", async (req, res) => {
         try {
             const dbMessage = req.body;
-            let employeeCollection = db.collection("employeeDetails");
+            let employeeCollection = db.collection(collectionName);
             const employeePayload = new Employees(dbMessage);
             let result = await employeeCollection.insertOne(employeePayload);
             res.status(201).send(result);
@@ -121,14 +123,14 @@ const router = express.Router();
             }
         }
 
-        const todayData = await db.collection("employeeDetails").findOne({
+        const todayData = await db.collection(collectionName).findOne({
             _id: new ObjectId(employeeId),
         });
         if (todayData && todayData.attendance && todayData.attendance.length ) {
             const todayAttendance = todayData.attendance.find(data => data.date === updatedFields.date);
 
             if (todayAttendance) {
-                await db.collection("employeeDetails").findOneAndUpdate(
+                await db.collection(collectionName).findOneAndUpdate(
                     {
                         _id: new ObjectId(employeeId),
                         'attendance.date': updatedFields.date
@@ -149,7 +151,7 @@ const router = express.Router();
                 })
 
             } else {
-                await db.collection("employeeDetails").updateOne(
+                await db.collection(collectionName).updateOne(
                     {
                         _id: new ObjectId(employeeId)
                     },
@@ -174,7 +176,7 @@ const router = express.Router();
     router.patch('/edit/:employeeId', async (req, res) => {
         const {employeeId} = req.params;
         const payload = req.body;
-        await db.collection("employeeDetails").findOneAndUpdate({
+        await db.collection(collectionName).findOneAndUpdate({
             _id: new ObjectId(employeeId),
         }, {$set: {name: payload.name, salaryPerDay: payload.salaryPerDay}})
         .then((response) => {
@@ -195,7 +197,7 @@ const router = express.Router();
         Object.keys(req.body).map(key => {
             updateObject[`${type}.${year}.${month}.${key}`] = req.body[key];
         })
-        await db.collection("employeeDetails").findOneAndUpdate({
+        await db.collection(collectionName).findOneAndUpdate({
             _id: new ObjectId(employeeId),
         },
         { $set: updateObject },
@@ -213,20 +215,94 @@ const router = express.Router();
 
 
     router.patch('/mark/all/present', async(req,res) => {
-        const collection = db.collection('employeeDetails');
+        const collection = db.collection('attendance');
         const attendanceObj =req.body;
        try {
-            await collection.updateMany({}, { $push: { attendance: attendanceObj } });
-            console.log('All Present');
+            const respone = await collection.updateMany({
+                'attendance.date': attendanceObj.date
+            }, { $set: { attendance: attendanceObj } },
+            );
+            res.status(200).json(respone);
         } catch (err) {
             console.error('Error updating attendance:', err);
         }
     })
 
+    router.patch('/checkout/all', async(req, res) => {
+        const collection = db.collection('attendance');
+        const updatedFields =req.body;
+        let updateQuery = {};
+
+        if (!updatedFields.date || !updatedFields.checkoutTime || !updatedFields.totalWorkingHours) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        for (let key in updatedFields) {
+            if (updatedFields.hasOwnProperty(key)) {
+                updateQuery[`attendance.$[elem].${key}`] = updatedFields[key];
+            }
+        }
+        console.log(updateQuery)
+        try {
+            const response = await collection.updateMany(
+                { 'attendance.date': updatedFields.date, 'attendance.status': true },
+                { $set: updateQuery },
+                { arrayFilters: [{ 'elem.date': updatedFields.date }], upsert: true }
+            );
+            res.status(200).json(response);
+        } catch (err) {
+            console.error('Error updating attendance:', err);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+
+    })
+
+
+    router.patch('/run/cron', async(req,res) => {
+        try {
+
+            // Access the collection
+            const collection = db.collection('attendance');
+            const today = new Date();
+            const{monthName} = getTodayDate();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+
+            // Construct the attendance object for the next day
+            const attendanceObj = {
+                date: today.toISOString().split('T')[0],
+                status: false,
+                isSunday: today.getDay() === 0, // Check if tomorrow is Sunday
+                checkinTime: "",
+                checkoutTime: "",
+                isOverTime: false,
+                isAbsent: false,
+                month: monthName
+            };
+
+            // Update attendance for all employees
+            await collection.updateMany({}, { $push: { attendance: attendanceObj } });
+            res.status(200).send("done")
+            console.log('Attendance updated successfully for all employees.');
+        } catch (err) {
+            console.error('Error updating attendance:', err);
+        }
+    })
+
+    router.post("/duplicate/collection", async(req, res) => {
+        const collection = db.collection(collectionName);
+        const newCollection = collectionName;
+        db.collection("employeeDetails").aggregate([
+            { $match: {} },
+            { $out: newCollection }
+         ]).toArray();
+
+         res.status(200).send(`Collection duplicated to ${newCollection}`);
+    })
 
     router.delete('/delete/:employeeId', async (req, res) => {
         const {employeeId} = req.params;
-        await db.collection("employeeDetails").findOneAndDelete({
+        await db.collection(collectionName).findOneAndDelete({
             _id: new ObjectId(employeeId),
         })
         .then((response) => {
