@@ -48,10 +48,14 @@ export default (api) => {
         return api.patch(`/employee/extra/advance/${id}`, payload)
     };
 
+    const checkoutAllEmployee = (payload) => {
+        return api.patch(`/employee/checkout/all`, payload)
+    };
 
 
     return {
         getEmployeeList,
+        checkoutAllEmployee,
         updateEmployeeAdvance,
         postEmployee,
         editEmployee,

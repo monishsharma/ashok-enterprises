@@ -118,3 +118,15 @@ export const updateEmployeeAdvance = (id, payload) => () => {
         })
     })
 }
+
+export const checkoutAllEmployee = (id, payload) => () => {
+    return new Promise((resolve, reject) => {
+        EmployeeService.checkoutAllEmployee(id, payload)
+        .then((res) => {
+            resolve(res.data);
+        })
+        .catch((err) => {
+            reject(err);
+        })
+    })
+}

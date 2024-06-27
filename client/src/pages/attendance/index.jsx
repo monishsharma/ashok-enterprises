@@ -6,13 +6,14 @@ import Table from "../../shared/component/table";
 import { getMonth, getTodayDate } from "../../helpers/today-date";
 import styles from "./attendance.module.css";
 import {tableConstants} from "../../constants/tableConstant"
-import { employeeList, markAttendance, employeeDetail } from "../../store/employee/action";
+import { employeeList, markAttendance, employeeDetail, checkoutAllEmployee } from "../../store/employee/action";
 import PageLoader from "../../shared/component/page-loader";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import { filterEmployee, totalHoursWork, totalOverTime } from "./selector";
 import TimePicker from "../../shared/component/time=picker";
 import { useOutletContext } from "react-router-dom";
+
 
 const Attendance = ({
   employeeData,
@@ -27,8 +28,13 @@ const Attendance = ({
   const day = String(date.getDate()).padStart(2, '0');
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
-
   const [dateValue, setDateValue] = useState(`${year}-${month}-${day}`);
+
+  const hasEmptyCheckinTime = employeeData.filter(employee =>
+      employee.attendance.some(attendance =>
+        attendance.date === dateValue && attendance.checkinTime
+      )
+    );
   const [isLoading, setIsLoading] = useState(false);
   const employeeListHandler = async() => {
     setIsLoading(true);
@@ -75,21 +81,49 @@ const Attendance = ({
       })
   }
 
-  const allAbsent = async() => {
-    setIsLoading(true);
-    const payload = {
-      date: dateValue,
-      isAbsent: true,
-      status: false,
-      isSunday: new Date(`${dateValue}`).getDay() == 0,
-      checkinTime: ``,
-      checkoutTime: "",
-      year: new Date(`${dateValue}`).getFullYear(),
-    };
-    console.log(payload)
-    setIsLoading(false);
+  const checkoutAll = async ({ punchedTime }) => {
+    const promises = employeeData.map(async (data) => {
+      setIsLoading(true);
+      const emp = data.attendance.find(e => e.date === dateValue);
+      if (emp.status && emp.checkinTime && !emp.isAbsent) {
+        const punchOutTime = new Date(punchedTime);
+        const { _id: id } = data;
+        const { checkinTime } = emp;
+        const isOverTime = punchOutTime.getHours() >= 18;
+        const { differenceHrs, differenceMin } = totalHoursWork(checkinTime, punchOutTime.getTime(), dateValue);
+        const { overTimeHours, overTimeMin } = totalOverTime(punchedTime, dateValue);
 
-}
+        const payload = {
+          date: dateValue,
+          isOverTime,
+          checkoutTime: `${punchOutTime.getTime()}`,
+          totalWorkingHours: {
+            hours: parseInt(differenceHrs),
+            min: parseInt(differenceMin)
+          },
+          overTimeHours: isOverTime ? {
+            hours: parseInt(overTimeHours),
+            min: parseInt(overTimeMin)
+          } : {
+            hours: 0,
+            min: 0
+          }
+        };
+
+        try {
+          await markAttendanceConnect(id, payload);
+        } catch (err) {
+          console.log(err);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    });
+
+    await Promise.all(promises);
+    await employeeListHandler();
+  };
+
 
   const allPresentHandler = ({punchedTime: time}) => {
     setIsLoading(true);
@@ -230,10 +264,11 @@ if (isLoading) return <PageLoader/>
                 All Present
               </Button>
             </TimePicker>
-
-              <Button variant="danger"   onClick={allAbsent}>
-                All Absent
+            <TimePicker dateValue={dateValue} callBack={({punchedTime}) => checkoutAll({punchedTime})} isDisabled={hasEmptyCheckinTime.length < 5}>
+              <Button variant="warning"  style={{width: `100%`}} disabled={hasEmptyCheckinTime.length < 5}>
+                Checkout All
               </Button>
+            </TimePicker>
             </div>
             </Col>
           </Row>
@@ -263,7 +298,8 @@ const mapStateToProps = ({
 const mapDispatchToProps = (dispatch) => bindActionCreators({
     employeeListConnect: employeeList,
     markAttendanceConnect: markAttendance,
-    employeeDetailConnect: employeeDetail
+    employeeDetailConnect: employeeDetail,
+    checkoutAllEmployeeConnect: checkoutAllEmployee
 }, dispatch);
 
 
