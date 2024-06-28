@@ -13,6 +13,7 @@ import DatePicker from "react-datepicker";
 import { filterEmployee, totalHoursWork, totalOverTime } from "./selector";
 import TimePicker from "../../shared/component/time=picker";
 import { useOutletContext } from "react-router-dom";
+import BulkUploader from "../../components/bulk-uploader";
 
 
 const Attendance = ({
@@ -29,6 +30,8 @@ const Attendance = ({
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const [dateValue, setDateValue] = useState(`${year}-${month}-${day}`);
+
+  const [showBulkAttendanceUploader, setShowBulkAttendanceUploader] = useState(false);
 
   const hasEmptyCheckinTime = employeeData.filter(employee =>
       employee.attendance.some(attendance =>
@@ -234,12 +237,22 @@ const Attendance = ({
     </Button>
    </div>
   ));
+  const bulUploaderToggle = () => {
+    setShowBulkAttendanceUploader(!showBulkAttendanceUploader);
+  }
 
 if (isLoading) return <PageLoader/>
 
   return (
     <React.Fragment>
       {/* {isLoading && <PageLoader />} */}
+       {showBulkAttendanceUploader && <BulkUploader
+          data={employeeData}
+          showModal={showBulkAttendanceUploader}
+          onClose={bulUploaderToggle}
+          dateValue={dateValue}
+          employeeListHandler={employeeListHandler}
+        />}
         <div className={` ${styles.attendanceWrapper}`}>
           <h2 className="fw-bold">Attendance List</h2>
           <Row className="pt-4 ">
@@ -268,6 +281,9 @@ if (isLoading) return <PageLoader/>
                 Checkout All
               </Button>
             </TimePicker>
+            <Button variant="warning" onClick={bulUploaderToggle}>
+                Bulk Uploader
+              </Button>
             </div>
             </Col>
           </Row>

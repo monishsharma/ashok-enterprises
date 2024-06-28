@@ -96,6 +96,7 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
         return (<Form.Check // prettier-ignore
                 type="checkbox"
                 id="custom-switch"
+                className="absentCheckbox"
                 checked={isAbsent(rowData)}
                 disabled={disabledStateCheckbox(rowData)}
                 onChange={(e) => markAbsent({e, rowData})}

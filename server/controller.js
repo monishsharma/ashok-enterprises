@@ -3,11 +3,12 @@ import db from "./db/connection.js"
 
 export const cron = async() => {
 
+    const collectionName = process.env.NODE_ENV === "dev" ? "attendance" : "employeeDetails"
       //code for the automated task
     try {
 
         // Access the collection
-        const collection = db.collection('employeeDetails');
+        const collection = db.collection(collectionName);
         const today = new Date();
         const{monthName} = getTodayDate();
         const tomorrow = new Date(today);
