@@ -22,6 +22,8 @@ const BulkUploader = ({
     const [timeSelected, setTimeSelected] = useState("");
     const [selectedList, setSelectedList] = useState([]);
 
+    const disabledState = () => !(selectedList.length);
+
     const handleTime = ({punchedTime}) => {
         const punchOutTime = new Date(punchedTime);
         setTimeSelected(punchOutTime);
@@ -78,7 +80,7 @@ const BulkUploader = ({
                 show={showModal}
                 title={"Bulk Present Uploader"}
                 onSave={onSave}
-                // isDisabled={getDisabledState()}
+                isDisabled={disabledState()}
                 handleClose={onClose}
             >
                 <div>
