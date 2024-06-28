@@ -96,11 +96,11 @@ const BulkUploader = ({
                     <div className='mt-3'>
                         <h6 className='mb-3'>Select Employee</h6>
                         <Container>
-                        <Row>
+                        <Row className='row-cols-2'>
                             {
                             list.map((emp, index) => {
                                 return (
-                                    <Col key={`default-${index}`} sm={4}>
+                                    <Col key={`default-${index}`} md={4}>
                                     <div  className="mb-3">
                                         <Form.Check
                                             type={"checkbox"}
