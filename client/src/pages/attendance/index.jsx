@@ -88,7 +88,7 @@ const Attendance = ({
     const promises = employeeData.map(async (data) => {
       setIsLoading(true);
       const emp = data.attendance.find(e => e.date === dateValue);
-      if (emp.status && emp.checkinTime && !emp.isAbsent && !emp.checkoutTime) {
+      if (emp && emp.status && emp.checkinTime && !emp.isAbsent && !emp.checkoutTime) {
         const punchOutTime = new Date(punchedTime);
         const { _id: id } = data;
         const { checkinTime } = emp;
