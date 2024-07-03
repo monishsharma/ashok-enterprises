@@ -213,6 +213,30 @@ const collectionName = process.env.NODE_ENV === "dev" ? "attendance" : "employee
         })
     });
 
+    router.patch('/extra/advance/:employeeId', async (req, res) => {
+        const {employeeId} = req.params;
+        const payload = req.body;
+        await db.collection(collectionName).findOneAndUpdate({
+            _id: new ObjectId(employeeId),
+        },
+        {
+            $set: {'extraAdvance.total': payload.total},
+            $push: {
+                'extraAdvance.detail': payload.detail
+            }
+        }
+    )
+        .then((response) => {
+            res.status(200).send("payment updated succesfully")
+        })
+        .catch((err) => {
+            console.log(err)
+            res.status(500).json({
+                error: err
+            })
+        })
+    });
+
 
     router.patch('/mark/all/present', async(req,res) => {
         const collection = db.collection('attendance');
@@ -242,7 +266,6 @@ const collectionName = process.env.NODE_ENV === "dev" ? "attendance" : "employee
                 updateQuery[`attendance.$[elem].${key}`] = updatedFields[key];
             }
         }
-        console.log(updateQuery)
         try {
             const response = await collection.updateMany(
                 { 'attendance.date': updatedFields.date, 'attendance.status': true },
