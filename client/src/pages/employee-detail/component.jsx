@@ -154,7 +154,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
               <span>&#8377;</span>
             </Card>
             <Card
-              number={totalWorkingHours(detail, "totalWorkingHours")}
+              number={totalWorkingHours(detail, "totalWorkingHours", false, month, year)}
               cardName={"Working Hours"}
               color={"#20c997"}
               icon={"time-outline"}
@@ -166,7 +166,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
               icon={"time-outline"}
             />
             <Card
-              number={`${getTotalPresent(detail)}`}
+              number={`${getTotalPresent(detail, month, year)}`}
               cardName={"Present"}
               color={"#198754"}
               icon={"calendar-outline"}

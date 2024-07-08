@@ -1,5 +1,12 @@
 import moment from "moment";
 
+export const addSalaryOfSunday = (rowData, month, year) => {
+  const sundayCount = rowData && rowData.attendance && rowData.attendance.filter(item =>
+  (item.month === month && parseInt(item.year) === parseInt(year) && item.isSunday && item.status ));
+
+  return sundayCount && sundayCount.length || 0;
+}
+
 export const totalWorkingHours = (rowData, key, getTimeOnly = false) => {
   let time = 0;
   rowData && rowData.attendance.forEach(item => {
@@ -19,7 +26,8 @@ export const getTotalPresentCount = (rowData) => {
 };
 
 export const getTotalPresent = (rowData) => {
-    const presentMin =  totalWorkingHours(rowData, "totalWorkingHours", true);
+    let presentMin =  totalWorkingHours(rowData, "totalWorkingHours", true);
+
     const duration = moment.duration(presentMin, "minutes")
     const durationHours = duration.asHours();
     const hoursPerDay = 8;
@@ -89,20 +97,12 @@ export const getExtraAdvancePayment = (rowData, needObj = false) => {
   return detail || 0;
 }
 
-export const addSalaryOfSunday = (rowData, month, year) => {
-  const sundayCount = rowData && rowData.attendance && rowData.attendance.filter(item =>
-  (item.month === month && parseInt(item.year) === parseInt(year) && item.isSunday ));
-
-  return sundayCount && sundayCount.length || 0;
-}
 
 export const getTotalSalary = (rowData, month, year) => {
   return (rowData && (
     (parseInt(getDailySalary(rowData)) +
     parseInt(getOverTimeSalary(rowData)) +
     parseInt(getSundayCost(rowData)))
-    - getAdvancePAymentFromSalary(rowData, month, year)
-    + (addSalaryOfSunday(rowData, month, year) * rowData.salaryPerDay)
-  ) - 200) || 0
+  ) - 200) - getAdvancePAymentFromSalary(rowData, month, year) || 0
 };
 
