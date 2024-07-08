@@ -71,7 +71,7 @@ const Attendance = ({
         isSunday: new Date(`${dateValue}`).getDay() == 0,
         checkinTime: ``,
         year: new Date(dateValue).getFullYear(),
-        month: getMonth()
+        month: getMonth(dateValue)
       };
       markAttendanceConnect(id, payload)
       .then(async() => {
@@ -165,7 +165,7 @@ const Attendance = ({
       isAbsent: false,
       isSunday: punchInTime.getDay() == 0,
       checkinTime: `${punchInTime.getTime()}`,
-      month: getMonth(),
+      month: getMonth(dateValue),
       year: punchInTime.getFullYear()
     }
     markAttendanceConnect(id, payload)
