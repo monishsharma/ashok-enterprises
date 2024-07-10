@@ -18,7 +18,7 @@
     const handleTimeChange = useCallback(({ detail: { hour, minutes } }) => {
         let date = "";
         if (keyType === "checkinTime") {
-            let updatedMin = parseInt(minutes) > 15  ? minutes : "00";
+            let updatedMin = parseInt(minutes) > 5  ? minutes : "00";
             if (dateValue){
                 date =  new Date(`${dateValue}`).setHours(parseInt(hour), parseInt(updatedMin), 0);
             } else {
