@@ -1,9 +1,11 @@
 import moment from "moment";
 import { formatTime } from "../../helpers/today-date";
 import { Badge } from "react-bootstrap";
+import { salaryPerDay } from "../../helpers/employee-detal";
+import priceFormatter from "../../helpers/price-formatter";
 
 // This is the table constant/settings which needed to render table elements
-export const tableConstants = ({onClick}) => {
+export const tableConstants = ({onClick, salaryPerDay: perDay}) => {
 
 
     const renderDate = (rowData) => {
@@ -39,6 +41,12 @@ export const tableConstants = ({onClick}) => {
                         </div>
 
                 )
+            }
+        },
+        {
+            title: "per day",
+            render: (rowData) => {
+                return <span>{`₹${priceFormatter(salaryPerDay(rowData, perDay))}`}</span>
             }
         },
         {

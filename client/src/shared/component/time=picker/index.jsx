@@ -7,6 +7,7 @@
         callBack,
         children,
         dateValue,
+        keyType,
         hoursin24 = true
     }) => {
 
@@ -16,11 +17,22 @@
 
     const handleTimeChange = useCallback(({ detail: { hour, minutes } }) => {
         let date = "";
-        if (dateValue){
-            date =  new Date(`${dateValue}`).setHours(parseInt(hour), parseInt(minutes), 0);
+        if (keyType === "checkinTime") {
+            let updatedMin = parseInt(minutes) > 15  ? minutes : "00";
+            if (dateValue){
+                date =  new Date(`${dateValue}`).setHours(parseInt(hour), parseInt(updatedMin), 0);
+            } else {
+                date = {
+                    hour, minutes
+                }
+            }
         } else {
-            date = {
-                hour, minutes
+            if (dateValue){
+                date =  new Date(`${dateValue}`).setHours(parseInt(hour), parseInt(minutes), 0);
+            } else {
+                date = {
+                    hour, minutes
+                }
             }
         }
 
@@ -70,6 +82,7 @@
     }
 
     TimePicker.propTypes = {
+        keyType: PropTypes.string,
         callBack: PropTypes.func,
         isDisabled: PropTypes.bool,
         children: PropTypes.any,

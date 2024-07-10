@@ -188,7 +188,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
               <Tab eventKey="info" title="Info">
                 <Table
                   isClickable={false}
-                  cols={tableConstants({onClick})}
+                  cols={tableConstants({onClick, salaryPerDay})}
                   data={sortData(attendance, "date")}
                 />
               </Tab>

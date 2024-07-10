@@ -7,6 +7,16 @@ export const addSalaryOfSunday = (rowData, month, year) => {
   return sundayCount && sundayCount.length || 0;
 }
 
+export const salaryPerDay = (rowData, perDay) => {
+
+  const costPerHour = parseInt(perDay) / 8;
+  if (rowData.totalWorkingHours) {
+    const TotalWorkInHour = parseInt(rowData.totalWorkingHours.min) / 60;
+    return parseInt(TotalWorkInHour) * costPerHour
+  }
+  return 0;
+}
+
 export const totalWorkingHours = (rowData, key, getTimeOnly = false) => {
   let time = 0;
   rowData && rowData.attendance.forEach(item => {

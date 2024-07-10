@@ -1,6 +1,6 @@
 import { Badge } from "react-bootstrap";
 import priceFormatter from "../../helpers/price-formatter";
-import { getExtraAdvancePayment, getTotalAbsent } from "../../helpers/employee-detal";
+import { getExtraAdvancePayment, getTotalAbsent, getTotalSalary } from "../../helpers/employee-detal";
 import { getMonth } from "../../helpers/today-date";
 
 // This is the table constant/settings which needed to render table elements
@@ -23,9 +23,9 @@ export const tableConstants = ({dateValue}) => {
       },
     },
     {
-      title: "Salary Per Day",
+      title: "Total Salary",
       render: (rowData) => {
-        return <h5 className={"name"}>₹{priceFormatter(rowData.salaryPerDay)}</h5>;
+        return <h5 className={"name"}>₹{priceFormatter(getTotalSalary(rowData, month, year))}</h5>;
       },
     },
     {
