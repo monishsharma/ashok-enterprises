@@ -8,11 +8,10 @@ export const addSalaryOfSunday = (rowData, month, year) => {
 }
 
 export const salaryPerDay = (rowData, perDay) => {
-
   const costPerHour = parseInt(perDay) / 8;
   if (rowData.totalWorkingHours) {
     const TotalWorkInHour = parseInt(rowData.totalWorkingHours.min) / 60;
-    return parseInt(TotalWorkInHour) * costPerHour
+    return Math.round(TotalWorkInHour * costPerHour)
   }
   return 0;
 }

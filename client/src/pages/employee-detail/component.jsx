@@ -12,7 +12,6 @@ import {
   getOverTimeSalary,
   getSundayCost,
   getTotalAbsent,
-  getTotalPresent,
   getTotalSalary,
   totalWorkingHours,
 } from "../../helpers/employee-detal";
@@ -164,12 +163,6 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
               cardName={"OverTime"}
               color={"#ffc107"}
               icon={"time-outline"}
-            />
-            <Card
-              number={`${getTotalPresent(detail, month, year)}`}
-              cardName={"Present"}
-              color={"#198754"}
-              icon={"calendar-outline"}
             />
             <Card
               number={`${getTotalAbsent(detail)} days`}
