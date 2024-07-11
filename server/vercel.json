@@ -1,7 +1,5 @@
 {
     "version": 2,
-    "build": {
-    },
     "builds": [
         {
             "src": "./index.js",
@@ -13,6 +11,9 @@
             "src": "/(.*)",
             "dest": "/"
         }
+    ],
+    "rewrites": [
+        { "source": "/(.*)", "destination": "/someroute" }
     ],
     "crons": [
         {
