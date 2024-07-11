@@ -281,7 +281,7 @@ if (isLoading) return <PageLoader/>
                 Checkout All
               </Button>
             </TimePicker>
-            <Button variant="warning" onClick={bulUploaderToggle}>
+            <Button variant="success" onClick={bulUploaderToggle}>
                 Bulk Uploader
               </Button>
             </div>
