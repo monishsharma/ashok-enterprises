@@ -54,14 +54,14 @@ const Side = ({
                         </Link>
                     </li>
 
-                    <li>
+                    {/* <li>
                         <a href="#">
                             <span className="icon">
                                 <ion-icon name="log-out-outline"></ion-icon>
                             </span>
                             <span className="title">Sign Out</span>
                         </a>
-                    </li>
+                    </li> */}
                 </ul>
             </div>
         </React.Fragment>
