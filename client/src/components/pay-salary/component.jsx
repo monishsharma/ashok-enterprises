@@ -5,7 +5,6 @@ import ModalWrapper from '../../shared/component/modal'
 import { Container, Form } from 'react-bootstrap'
 import { getTotalSalary } from '../../helpers/employee-detal';
 import PageLoader from "../../shared/component/page-loader";
-import { getExtraAdvacnePaymentForThisMonth } from '../../helpers/payment-detail';
 
 const PaySalary = ({
     detail,
@@ -23,7 +22,7 @@ const PaySalary = ({
     const [isLoading, setIsLoading] = useState(false);
     const advanceAmount = advance && advance[year] && advance[year][month] && advance[year][month].advance || 0;
 
-    const [deductExtraAdvanceAmount, setDeductExtraAdvanceAmount] = useState(getExtraAdvacnePaymentForThisMonth(detail) || "");
+    const [deductExtraAdvanceAmount, setDeductExtraAdvanceAmount] = useState(monthlyPayment.advanceDeposit || "");
     const [remainingAdvance, setremainingAdvance] = useState(extraAdvance.total || "")
     const [cashAmount, setCashAmount] = useState(monthlyPayment.cash || "");
     const remaingSalary = getTotalSalary(detail,month, year) -  (parseInt(cashAmount || 0) + parseInt(bankDeposited || 0) + parseInt(deductExtraAdvanceAmount || 0)) || 0
