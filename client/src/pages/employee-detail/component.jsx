@@ -186,6 +186,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
             <Tabs
               id="controlled-tab-example"
               activeKey={key}
+              variant="pills"
               onSelect={(k) => setKey(k)}
               className="mb-3"
             >

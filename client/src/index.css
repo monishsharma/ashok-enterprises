@@ -204,3 +204,10 @@ h1,h2,h3,h4,h5 {
   background-color: silver !important;
 
 }
+
+.nav-link {
+  color: black !important;
+}
+.nav-link.active{
+  color: white !important;
+}

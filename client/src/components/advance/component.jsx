@@ -83,6 +83,7 @@ const Advance = ({
                 className="mb-3"
                 onSelect={(k) => setKey(k)}
                 justify
+                variant="pills"
             >
             <Tab eventKey="advanceSalary" title="Advance Salary">
                 <Form.Group className="mb-3">
