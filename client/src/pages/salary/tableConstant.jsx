@@ -29,7 +29,7 @@ export const tableConstants = ({dateValue}) => {
       },
     },
     {
-      title: "Extra Advance",
+      title: "Salary Advance",
       render: (rowData) => (
         <h5>
           {`₹ ${priceFormatter(getExtraAdvancePayment(rowData, true) || 0)}`}

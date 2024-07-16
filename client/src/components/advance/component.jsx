@@ -54,7 +54,8 @@ const Advance = ({
             total: parseInt(extraAdvance.total || 0) + parseInt(takeAdvance),
             detail: {
                 amount: parseInt(takeAdvance),
-                time: new Date().getTime()
+                time: new Date().getTime(),
+                balance: parseInt(extraAdvance.total || 0) + + parseInt(takeAdvance)
             }
         };
         await updateEmployeeAdvanceConnect(id, payload);

@@ -74,7 +74,7 @@ const Salary = ({
               // filterDate={isSelectableDate}
             />
             </Col>
-          </Row>
+        </Row>
         <div className="pt-4">
             <Table canSearch={false} isClickable={true} onClick={onClickTable} hoverable={true} cols={tableConstants({dateValue})} data={employeeData} />
         </div>

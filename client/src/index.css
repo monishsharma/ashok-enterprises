@@ -189,3 +189,18 @@ h1,h2,h3,h4,h5 {
 .elistCheckbox label {
   text-transform: capitalize;
 }
+
+.circle {
+  border-radius: 50%;
+  height: var(--bsb-tl-circle-size);
+  width: var(--bsb-tl-circle-size);
+  position: absolute;
+  top: 0;
+  left: calc(var(--bsb-tl-circle-offset) * -1);
+  z-index: 1;
+}
+
+.bsb-timeline-1 .timeline:after {
+  background-color: silver !important;
+
+}

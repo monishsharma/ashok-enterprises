@@ -26,8 +26,7 @@ const PaySalary = ({
     const [deductExtraAdvanceAmount, setDeductExtraAdvanceAmount] = useState(getExtraAdvacnePaymentForThisMonth(detail) || "");
     const [remainingAdvance, setremainingAdvance] = useState(extraAdvance.total || "")
     const [cashAmount, setCashAmount] = useState(monthlyPayment.cash || "");
-    const remaingSalary = getTotalSalary(detail,month, year) -  (parseInt(cashAmount) + parseInt(bankDeposited) + parseInt(deductExtraAdvanceAmount || 0)) || 0
-
+    const remaingSalary = getTotalSalary(detail,month, year) -  (parseInt(cashAmount || 0) + parseInt(bankDeposited || 0) + parseInt(deductExtraAdvanceAmount || 0)) || 0
 
     const calculateBankDeposit = ({target: {value}}) => {
         if (parseInt(value || 0) <= getTotalSalary(detail,month, year)) {
@@ -56,9 +55,11 @@ const PaySalary = ({
     const handleAdvancePayment = async() => {
         const payload = {
             total: remainingAdvance,
-            deduct: {
+            detail: {
                 amount: parseInt(deductExtraAdvanceAmount),
-                time: new Date().getTime()
+                time: new Date().getTime(),
+                type: "deposit",
+                balance: parseInt(extraAdvance.total || 0) - parseInt(deductExtraAdvanceAmount)
             }
         };
         await updateEmployeeAdvanceConnect(id, payload);
@@ -77,7 +78,8 @@ const PaySalary = ({
             cash: cashAmount,
             isPaid: true,
             bankDeposit: bankDeposited,
-            remaingSalary
+            remaingSalary,
+            advanceDeposit: deductExtraAdvanceAmount
         };
         await updateEmployeePaymentConnect(queryParams, payload);
         if (deductExtraAdvanceAmount) {
@@ -103,7 +105,7 @@ const PaySalary = ({
             <Container>
                 <Form.Group className="mb-3" controlId="formGroupEmail">
                         <Form.Label className="font-weight-bold">Bank Deposit</Form.Label>
-                        <Form.Control disabled={monthlyPayment.isPaid} type="number" placeholder="Enter Amount" value={bankDeposited} onChange={(e) => {calculateBankDeposit(e)}} />
+                        <Form.Control disabled={true} type="number" placeholder="Enter Amount" value={bankDeposited} onChange={(e) => {calculateBankDeposit(e)}} />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formGroupEmail">
                         <Form.Label className="font-weight-bold">Cash</Form.Label>

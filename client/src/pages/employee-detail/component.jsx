@@ -24,10 +24,16 @@ import { sortData } from "../../helpers/sort-data";
 import PaySalary from "../../components/pay-salary/index";
 import Advance from "../../components/advance";
 import { getExtraAdvacnePaymentForThisMonth } from "../../helpers/payment-detail";
+import Timeline from "../../shared/component/timeline";
+import moment from "moment";
 
 const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConnect }) => {
   const { id, month, year } = useParams();
-  const { name, salaryPerDay, attendance = [] } = detail || {};
+  const { name, salaryPerDay, attendance = [], extraAdvance = {} } = detail || {};
+  const {detail:extraAdvanceDetail = [], total} = extraAdvance || {}
+  const revExtraAdvanceDetail = [...extraAdvanceDetail].sort(function(x, y){
+    return y.time - x.time;
+});
   const [isLoading, setIsLoading] = useState(false);
   const [key, setKey] = useState("info");
   const [hoursToDeduct, setHoursToDeduct] = useState(0);
@@ -89,6 +95,11 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
 
   const paymentDetailHandle = () => setShowPaymentDetail(!showPaymentDetail);
 
+
+  const getAdvanceDate = (date) => {
+   return  moment(date).format("DD MMM, yy, h:mm a")
+  }
+
   if (isLoading) return <PageLoader />;
 
   return (
@@ -147,7 +158,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
             </Card>
             <Card
               number={`₹ ${priceFormatter(getExtraAdvancePayment(detail))}`}
-              cardName={"Advance Payment"}
+              cardName={"Extra Advance Payment"}
               color={"#6610f2"}
             >
               <span>&#8377;</span>
@@ -268,6 +279,35 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
                   </Row>
                 </div>
               </Tab>
+              {!!(revExtraAdvanceDetail.length) && <Tab eventKey="Advance History" title="Advance History">
+                <section className="bsb-timeline-1 py-2 py-xl-4">
+                  <div className="container">
+                    <div className="row">
+                      <div className="col-12">
+
+                        <ul className="timeline">
+                          {
+                            revExtraAdvanceDetail.map((item, index) => {
+                              return (
+                                <Timeline
+                                  key={index}
+                                  name={name}
+                                  total={total}
+                                  amount={item.amount}
+                                  isDeposited={item.type}
+                                  balance={item.balance}
+                                  date={getAdvanceDate(item.time)}
+                                />
+
+                              )
+                            })
+                          }
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </Tab>}
             </Tabs>
           </div>
         </div>
