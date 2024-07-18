@@ -82,11 +82,11 @@ const Salary = ({
 
 
           <div className="mt-4 ">
-            <Row>
-              <Col sm={3}>
+            <Row className='gap-3'>
+              <Col  sm={3}>
                 <h5>Total Salary - <Badge bg='success' >{`₹ ${priceFormatter(totalSalary({detail: employeeData, month:  getMonth(dateValue), year:  new Date(dateValue).getFullYear()}))}`}</Badge></h5>
               </Col>
-              <Col sm={3}>
+              <Col  sm={3}>
                 <h5>Total Advance - <Badge bg='warning'>{`₹ ${priceFormatter(totalAdvance({detail: employeeData, month:  getMonth(dateValue), year:  new Date(dateValue).getFullYear()}))}`}</Badge></h5>
               </Col>
             </Row>
