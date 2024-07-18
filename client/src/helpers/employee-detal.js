@@ -94,8 +94,25 @@ export const getSundayCost = (rowData) => {
 
 }
 
+export const totalSalary = ({detail, month, year}) => {
+  let total = 0;
+  detail.map(emp => {
+      total += getTotalSalary(emp, month, year);
+  });
+  return total;
+}
+
+export const totalAdvance = ({detail, month, year}) => {
+  let total = 0;
+  detail.map(emp => {
+      total += getTotalAdvance(emp, month, year);
+  });
+  return total;
+}
+
+
 export const getAdvancePAymentFromSalary = (rowData, month, year) => {
-  return rowData && rowData.advance && rowData.advance[year] && rowData.advance[year][month] && rowData.advance[year][month].advance || 0;
+  return rowData && rowData.advance && rowData.advance[year] && rowData.advance[year][month] && parseInt(rowData.advance[year][month].advance) || 0;
 }
 
 export const getExtraAdvancePayment = (rowData, needObj = false) => {
@@ -106,6 +123,9 @@ export const getExtraAdvancePayment = (rowData, needObj = false) => {
   return detail || 0;
 }
 
+export const getTotalAdvance = (rowData, month, year) => {
+  return (rowData && getAdvancePAymentFromSalary(rowData, month, year) || 0)
+};
 
 export const getTotalSalary = (rowData, month, year) => {
   return (rowData && (

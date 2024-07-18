@@ -158,7 +158,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
             </Card>
             <Card
               number={`₹ ${priceFormatter(getExtraAdvancePayment(detail))}`}
-              cardName={"Extra Advance Payment"}
+              cardName={"Extra Payment"}
               color={"#6610f2"}
             >
               <span>&#8377;</span>

@@ -1,6 +1,6 @@
 import { Badge } from "react-bootstrap";
 import priceFormatter from "../../helpers/price-formatter";
-import { getExtraAdvancePayment, getTotalAbsent, getTotalSalary } from "../../helpers/employee-detal";
+import { getAdvancePAymentFromSalary, getExtraAdvancePayment, getTotalAbsent, getTotalSalary } from "../../helpers/employee-detal";
 import { getMonth } from "../../helpers/today-date";
 
 // This is the table constant/settings which needed to render table elements
@@ -32,7 +32,7 @@ export const tableConstants = ({dateValue}) => {
       title: "Salary Advance",
       render: (rowData) => (
         <h5>
-          {`₹ ${priceFormatter(getExtraAdvancePayment(rowData, true) || 0)}`}
+          {`₹ ${priceFormatter(getAdvancePAymentFromSalary(rowData, month, year) || 0)}`}
         </h5>
       )
     },

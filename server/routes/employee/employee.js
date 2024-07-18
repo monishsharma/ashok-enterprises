@@ -22,6 +22,9 @@ const collectionName = process.env.NODE_ENV === "dev" ? "attendance" : "employee
                   _id: 1,
                   name: 1,
                   salaryPerDay: 1,
+                  payment: 1,
+                  advance: 1,
+                  extraAdvance:1,
                   attendance: {
                     $map: {
                       input: {
