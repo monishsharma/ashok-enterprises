@@ -72,6 +72,17 @@ const BulkUploader = ({
         setIsLoading(false);
     }
 
+    const onChangeSelectAll = (e) => {
+        if (e.target.checked) {
+            let allList = []
+            list.map(emp => {
+                allList.push(emp._id);
+            })
+            setSelectedList(allList);
+        } else{
+            setSelectedList([]);
+        }
+    }
     if (isLoading) return <PageLoader />
 
     return (
@@ -95,6 +106,15 @@ const BulkUploader = ({
                     {timeSelected &&
                     <div className='mt-3'>
                         <h6 className='mb-3'>Select Employee</h6>
+                        <div  className="mb-3" style={{marginLeft: "12px"}}>
+                            <Form.Check
+                                type={"checkbox"}
+                                className='elistCheckbox'
+                                id={`default`}
+                                label={'select all'}
+                                onChange={(e) => onChangeSelectAll(e)}
+                            />
+                        </div>
                         <Container>
                         <Row className='row-cols-2'>
                             {
@@ -107,6 +127,7 @@ const BulkUploader = ({
                                             className='elistCheckbox'
                                             id={`default-${index}`}
                                             label={emp.name}
+                                            checked={selectedList.includes(emp._id)}
                                             onChange={(e) => onChange(e, emp)}
                                         />
                                     </div>
