@@ -31,9 +31,9 @@ ol, ul {
 }
 
 .scrollableDiv {
-  padding: 10px 30px;
-  height: auto;
+  padding: 0px 30px;
   overflow: auto;
+  height: 85vh;
 }
 
 .form-label {
