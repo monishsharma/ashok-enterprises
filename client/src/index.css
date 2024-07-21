@@ -237,3 +237,7 @@ h1,h2,h3,h4,h5 {
 ::-webkit-scrollbar-thumb:window-inactive {
   background: rgba(255, 255, 255, 0.3);
 }
+ .modal-body {
+  max-height: 75vh !important;
+  overflow-y: scroll !important;
+}
