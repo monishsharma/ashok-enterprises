@@ -234,10 +234,13 @@ h1,h2,h3,h4,h5 {
   -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
 }
 
+
+ .modal-body {
+  max-height: 70vh !important;
+  overflow-y: scroll !important;
+
+}
+
 ::-webkit-scrollbar-thumb:window-inactive {
   background: rgba(255, 255, 255, 0.3);
-}
- .modal-body {
-  max-height: 75vh !important;
-  overflow-y: scroll !important;
 }
