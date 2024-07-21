@@ -86,9 +86,9 @@ const Advance = ({
                     {
                         employeeData.map((emp,index) => {
                             return (
-                            <Row key={index}>
+                            <Row key={index} className='gy-2'>
                                 <Col sm={6}>
-                                    <h5 className="name">{emp.name}</h5>
+                                    <h5 className="name fw-bold">{emp.name}</h5>
                                 </Col>
                                 <Col sm={6}>
                                 <Form.Group key={index} className="mb-3" controlId="formGroupEmail">
