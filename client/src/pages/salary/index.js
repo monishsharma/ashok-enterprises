@@ -1,8 +1,7 @@
-import React from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import Salary from "./component.jsx";
-import { employeeList } from "../../store/employee/action.js";
+import { employeeList, updateEmployeePayment } from "../../store/employee/action.js";
 
 const mapStateToProps = ({
     employee: {
@@ -11,7 +10,8 @@ const mapStateToProps = ({
 }) => ({employeeData});
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({
-    employeeListConnect: employeeList
+    employeeListConnect: employeeList,
+    updateEmployeePaymentConnect: updateEmployeePayment
 }, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(Salary);

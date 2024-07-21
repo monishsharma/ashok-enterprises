@@ -9,14 +9,17 @@ import DatePicker from 'react-datepicker';
 import { getMonth } from '../../helpers/today-date';
 import priceFormatter from '../../helpers/price-formatter';
 import { totalAdvance, totalSalary } from '../../helpers/employee-detal';
+import Advance from './advance';
 
 const Salary = ({
     employeeData,
-    employeeListConnect
+    employeeListConnect,
+    updateEmployeePaymentConnect
 }) => {
 
 
     const [dateValue, setDateValue] = useState(new Date());
+    const [showAdvance, setShowAdvance] = useState(false);
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -56,17 +59,43 @@ const Salary = ({
         </div>
        ));
 
+    const toggleAdvance = () => setShowAdvance(!showAdvance);
+
   if (isLoading) return <PageLoader />;
 
 
     return (
         <React.Fragment>
+          {
+            showAdvance &&
+              <Advance
+                dateValue={dateValue}
+                toggleAdvance={toggleAdvance}
+                employeeData={employeeData}
+                setIsLoading={setIsLoading}
+                isLoading={isLoading}
+                employeeListHandler={employeeListHandler}
+                updateEmployeePaymentConnect={updateEmployeePaymentConnect}
+              />
+
+          }
           <div className='mt-4'>
-                <div className='d-flex justify-content-between align-items-center'>
+                <div>
+                <Row className='gy-2'>
+                  <Col sm={3}>
                     <h2 className="fw-bold">Salary</h2>
-                    <Row >
-                        <Col lg={12}>
-                            <DatePicker
+                  </Col>
+                  <Col sm={{ span:6, offset: 3}}>
+                      <Row className='gy-2'>
+                        <Col sm={6}>
+                          <div className="d-grid">
+                            <Button onClick={toggleAdvance}>
+                              Advance
+                            </Button>
+                          </div>
+                        </Col>
+                        <Col sm={6}>
+                          <DatePicker
                             selected={dateValue}
                             showMonthYearPicker={true}
                             dateFormat="MMM, yyyy"
@@ -74,9 +103,11 @@ const Salary = ({
                             withPortal
                             customInput={<ExampleCustomInput />}
                             // filterDate={isSelectableDate}
-                            />
+                          />
                         </Col>
-                    </Row>
+                      </Row>
+                  </Col>
+                </Row>
             </div>
           </div>
 
@@ -103,7 +134,8 @@ const Salary = ({
 
 Salary.propTypes = {
     employeeData: PropTypes.array,
-    employeeListConnect: PropTypes.func
+    employeeListConnect: PropTypes.func,
+    updateEmployeePaymentConnect: PropTypes.func
 }
 
 export default Salary;
