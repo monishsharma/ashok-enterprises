@@ -36,8 +36,8 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
 });
   const [isLoading, setIsLoading] = useState(false);
   const [key, setKey] = useState("info");
-  const [hoursToDeduct, setHoursToDeduct] = useState(0);
-  const [minToDeduct, setMinToDeduct] = useState(0);
+  const [hoursToDeduct, setHoursToDeduct] = useState("");
+  const [minToDeduct, setMinToDeduct] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [dayDetail, setDayDetail] = useState(null);
   const [showPaymentDetail, setShowPaymentDetail] = useState(false);
@@ -58,12 +58,13 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
     setIsLoading(true);
     const {date, totalWorkingHours} = dayDetail;
     const deductionTime = `${hoursToDeduct ? `${hoursToDeduct}h` : ""} ${minToDeduct ? `${minToDeduct}min` : ""}`
+    const hourInMin = parseInt(hoursToDeduct || 0) * 60;
     const payload={
       deductionTime,
       date,
       totalWorkingHours:{
-        hours: parseInt(totalWorkingHours.hours) - parseInt(hoursToDeduct),
-        min: minToDeduct?  parseInt(totalWorkingHours.min) - parseInt(minToDeduct) : parseInt(totalWorkingHours.min) - parseInt(hoursToDeduct * 60)
+        hours: parseInt(totalWorkingHours.hours) - parseInt(hoursToDeduct || 0),
+        min: parseInt(totalWorkingHours.min) - parseInt(minToDeduct || 0) - parseInt(hourInMin)
       }
     };
     markAttendanceConnect(id, payload)
@@ -71,8 +72,8 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
       await employeeDetailConnect({id, month});
       addEmployeeHandlerToggle();
       setDayDetail(null);
-      setHoursToDeduct(0);
-      setMinToDeduct(0);
+      setHoursToDeduct("");
+      setMinToDeduct("");
       setIsLoading(false);
     })
     .catch((err) => {
