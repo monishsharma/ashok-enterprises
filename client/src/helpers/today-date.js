@@ -13,6 +13,21 @@ export const getTodayDate = (providedDate = "") => {
   return { sanitizedDate: todaysCompleteDate, date: todayDate };
 };
 
+export   const month = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 export const getMonth = (customDate) => {
   const month = [
     "January",

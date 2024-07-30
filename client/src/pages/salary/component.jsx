@@ -6,7 +6,7 @@ import { tableConstants } from './tableConstant';
 import PageLoader from '../../shared/component/page-loader';
 import { Badge, Button, Col, Row } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
-import { getMonth } from '../../helpers/today-date';
+import { getMonth, month } from '../../helpers/today-date';
 import priceFormatter from '../../helpers/price-formatter';
 import { totalAdvance, totalSalary } from '../../helpers/employee-detal';
 import Advance from './advance';
@@ -17,8 +17,26 @@ const Salary = ({
     updateEmployeePaymentConnect
 }) => {
 
+  const getDateValue = () => {
+    const nextMonth = new Date().setMonth(new Date().getMonth() + 1)
+    const nextDateValue = new Date(nextMonth).setDate(10);
+    if (new Date(nextDateValue).getTime() < new Date().getTime()) {
+      if (new Date().getMonth() === new Date(nextDateValue).getMonth()) {
+        return new Date().setMonth(new Date().getMonth()-1);
+      } else {
+        return new Date();
+      }
+    }  else {
+      if (new Date().getMonth() === new Date(nextDateValue).getMonth()) {
+        return new Date().setMonth(new Date().getMonth()-1);
+      } else {
+        return new Date();
+      }
+    }
 
-    const [dateValue, setDateValue] = useState(new Date());
+  }
+
+  const [dateValue, setDateValue] = useState(getDateValue());
     const [showAdvance, setShowAdvance] = useState(false);
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
