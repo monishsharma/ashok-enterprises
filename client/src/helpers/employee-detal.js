@@ -16,6 +16,17 @@ export const salaryPerDay = (rowData, perDay) => {
   return 0;
 }
 
+export const overTimePerDay = (rowData, perDay) => {
+  if(rowData) {
+    const costPerHour = (parseInt(perDay) / 8) + 4;
+    if (rowData.overTimeHours) {
+      const TotalWorkInHour = parseInt(rowData.overTimeHours.min) / 60;
+      return Math.round(TotalWorkInHour * costPerHour)
+    }
+  }
+
+}
+
 export const totalWorkingHours = (rowData, key, getTimeOnly = false) => {
   let time = 0;
   rowData && rowData.attendance.forEach(item => {
