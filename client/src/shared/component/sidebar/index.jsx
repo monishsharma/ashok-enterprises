@@ -22,10 +22,20 @@ const Side = ({
     return (
         <React.Fragment>
             <div className={isActive ? "navigation active" : "navigation"}>
-                <div>
+                <Link to="/" style={{textDecoration: "none"}}>
                     <span className="companyTitle">{isActive ? "AS" : "Ashok Enterprises"}</span>
-                </div>
+                </Link>
                 <ul>
+
+                    <li className={pathname === "/" ? "activeLi" : ""} onClick={onClick}>
+                        <Link to="/">
+                            <span className="icon">
+                                <ion-icon name="grid-outline"></ion-icon>
+                            </span>
+                            <span className="title">Dashboard</span>
+                        </Link>
+                    </li>
+
 
                     <li className={pathname === "/attendance" ? "activeLi" : ""} onClick={onClick}>
                         <Link to="/attendance">

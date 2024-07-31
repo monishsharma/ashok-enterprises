@@ -1,0 +1,47 @@
+.customCalendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+.customCalendar p {
+    font-size: 13px;
+    text-align: center;
+}
+
+.current p {
+    color: #000000;
+}
+.disabled {
+    color: silver;
+}
+.week {
+    font-weight: bold;
+}
+
+.present {
+    background-color: #198754;
+    border-radius: 50%;
+    width: 30px;
+    color: white !important;
+    margin: 0 auto;
+    margin-bottom: 1rem;
+    padding: 5px;
+}
+
+.absent {
+    background-color: red;
+    border-radius: 50%;
+    width: 30px;
+    color: white !important;
+    margin: 0 auto;
+    margin-bottom: 1rem;
+    padding: 5px;
+}
+.checkoutNotMarked {
+    background-color: #ffc107;
+    border-radius: 50%;
+    width: 30px;
+    color: white !important;
+    margin: 0 auto;
+    margin-bottom: 1rem;
+    padding: 5px;
+}

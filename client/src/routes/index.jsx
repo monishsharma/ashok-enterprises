@@ -4,11 +4,16 @@ import AttendanceView from "../pages/attendance";
 import EmployeeView from "../pages/employee";
 import EmployeeDetail from "../pages/employee-detail";
 import Salary from "../pages/salary";
+import Dashboard from "../pages/dashboard";
 const routes = [
   {
     path: "/",
     element: <App />,
     children: [
+      {
+        path: "/",
+        element: <Dashboard />
+      },
       {
         path: "attendance",
         element: <AttendanceView />
