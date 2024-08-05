@@ -139,7 +139,7 @@ export const getTotalAdvance = (rowData, month, year) => {
 };
 
 export const deductESI = (rowData) => {
-  return rowData.esi ? 200 : 0;
+  return rowData && rowData.esi ? 200 : 0;
 }
 
 export const getTotalSalary = (rowData, month, year) => {
