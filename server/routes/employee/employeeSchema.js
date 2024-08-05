@@ -50,6 +50,9 @@ const employeeeSchema = mongoose.Schema({
     attendance: {
         type: [attendanceSchema], // Array of attendance objects
         default: [{}] // Default value set to an empty attendance object
+    },
+    esi: {
+        type: Boolean
     }
 });
 

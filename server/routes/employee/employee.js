@@ -25,6 +25,7 @@ const collectionName = process.env.NODE_ENV === "dev" ? "attendance" : "employee
                   payment: 1,
                   advance: 1,
                   extraAdvance:1,
+                  esi: 1,
                   attendance: {
                     $map: {
                       input: {
@@ -67,6 +68,7 @@ const collectionName = process.env.NODE_ENV === "dev" ? "attendance" : "employee
                   salaryPerDay: 1,
                   payment: 1,
                   advance: 1,
+                  esi: 1,
                   extraAdvance:1,
                   attendance: {
                     $map: {
@@ -181,7 +183,7 @@ const collectionName = process.env.NODE_ENV === "dev" ? "attendance" : "employee
         const payload = req.body;
         await db.collection(collectionName).findOneAndUpdate({
             _id: new ObjectId(employeeId),
-        }, {$set: {name: payload.name, salaryPerDay: payload.salaryPerDay}})
+        }, {$set: {name: payload.name, salaryPerDay: payload.salaryPerDay,esi: payload.esi}})
         .then((response) => {
             res.status(200).send("payment updated succesfully")
         })

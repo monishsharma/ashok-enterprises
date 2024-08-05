@@ -50,7 +50,8 @@ const Employee = ({
     setSelectedEmployee({
       id: rowData._id,
       name: rowData.name,
-      salary: rowData.salaryPerDay
+      salary: rowData.salaryPerDay,
+      esi: rowData.esi || false
     });
     setShowModal(true);
   }
@@ -79,6 +80,7 @@ const Employee = ({
       <AddEmployee
         showModal={showModal}
         isEditing={isEditing}
+        selectedEsi={selectedEmployee.esi}
         employeeId={selectedEmployee.id}
         selectedName={selectedEmployee.name}
         selectedSalary={selectedEmployee.salary}

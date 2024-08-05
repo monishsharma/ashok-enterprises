@@ -1,3 +1,4 @@
+import { Badge } from "react-bootstrap";
 import priceFormatter from "../../helpers/price-formatter";
 import styles from "./style.module.css";
 
@@ -11,17 +12,31 @@ export const tableConstants = ({editEmployee, deleteEmployeeHandler}) => {
         return <span>{rowData.id}</span>;
       },
     },
+
     {
       title: "Name",
       render: (rowData) => {
         return <h5 className={"name"}>{rowData.name}</h5>;
       },
     },
+
     {
       title: "Salary Per Day",
       render: (rowData) => {
         return <h5 className={"name"}>₹{priceFormatter(rowData.salaryPerDay)}</h5>;
       },
+    },
+    {
+      title: "ESI",
+      render: (rowData) => {
+        return (
+          <Badge bg={rowData.esi ? "success" : "danger"}>
+            {
+              rowData.esi ? "Yes" : "No"
+            }
+          </Badge>
+        )
+      }
     },
     {
       title: "Edit",

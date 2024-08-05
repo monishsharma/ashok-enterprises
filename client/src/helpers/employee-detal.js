@@ -138,11 +138,15 @@ export const getTotalAdvance = (rowData, month, year) => {
   return (rowData && getAdvancePAymentFromSalary(rowData, month, year) || 0)
 };
 
+export const deductESI = (rowData) => {
+  return rowData.esi ? 200 : 0;
+}
+
 export const getTotalSalary = (rowData, month, year) => {
   return (rowData && (
     (parseInt(getDailySalary(rowData)) +
     parseInt(getOverTimeSalary(rowData)) +
     parseInt(getSundayCost(rowData)))
-  ) - 200) - getAdvancePAymentFromSalary(rowData, month, year) || 0
+  ) - deductESI(rowData)) - getAdvancePAymentFromSalary(rowData, month, year) || 0
 };
 
