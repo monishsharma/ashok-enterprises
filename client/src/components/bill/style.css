@@ -1,0 +1,30 @@
+.invoiceTable table{
+    max-width: 100%;
+    width:100%;
+    border-collapse: collapse;
+
+  }
+  .invoiceTable thead, .invoiceTable tbody, .invoiceTable tr {
+    border: 1px solid black !important;
+    border-width: thin !important;
+  }
+
+  .tablecontainer table{
+    margin: 0 auto;
+  }
+  .invoiceTable th, .invoiceTable td{
+    /* width: auto; */
+    border: 1px solid black;
+    text-align: center;
+    /* overflow: hidden; */
+    word-wrap: break-word;
+    margin: 0 !important;
+    padding: 5px !important;
+    height: 34px;
+  }
+  .invoiceTable td {
+    border-width: inherit !important;
+   }
+   .invoiceTable p{
+    text-align: left;
+   }

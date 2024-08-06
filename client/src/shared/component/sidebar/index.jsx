@@ -53,6 +53,14 @@ const Side = ({
                             <span className="title">Salary</span>
                         </Link>
                     </li>
+                    <li className={pathname .includes("/invoice") ? "activeLi" : ""} onClick={onClick}>
+                        <Link to="/invoice">
+                            <span className="icon">
+                                <ion-icon name="wallet-outline"></ion-icon>
+                            </span>
+                            <span className="title">Invoice</span>
+                        </Link>
+                    </li>
 
                     {/* <li>
                         <a href="#">

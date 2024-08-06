@@ -4,6 +4,8 @@ import AttendanceView from "../pages/attendance";
 import EmployeeView from "../pages/employee";
 import EmployeeDetail from "../pages/employee-detail";
 import Salary from "../pages/salary";
+import Invoice from "../pages/invoice";
+import NewInvoice from "../pages/new-invoice";
 const routes = [
   {
     path: "/",
@@ -24,7 +26,16 @@ const routes = [
       {
         path: 'salary',
         element: <Salary />
-      }
+      },
+      {
+        path: 'invoice',
+        element: <Invoice />
+      },
+      {
+        path: 'new/invoice',
+        element: <NewInvoice />
+      },
+
     ],
     errorElement: <ErrorPage />,
 
