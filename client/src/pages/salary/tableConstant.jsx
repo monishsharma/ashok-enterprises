@@ -25,14 +25,22 @@ export const tableConstants = ({dateValue}) => {
     {
       title: "Total Salary",
       render: (rowData) => {
-        return <h5 className={"name"}>₹{priceFormatter(getTotalSalary(rowData, month, year))}</h5>;
+        return <h5 className={"name"}>₹{priceFormatter(getTotalSalary(rowData, month, year) + getAdvancePAymentFromSalary(rowData, month, year))}</h5>;
       },
     },
     {
-      title: "Salary Advance",
+      title: "Advance",
       render: (rowData) => (
         <h5>
           {`₹ ${priceFormatter(getAdvancePAymentFromSalary(rowData, month, year) || 0)}`}
+        </h5>
+      )
+    },
+    {
+      title: "Payable  Amount",
+      render: (rowData) => (
+        <h5>
+          {`₹ ${priceFormatter(getTotalSalary(rowData, month, year) || 0)}`}
         </h5>
       )
     },

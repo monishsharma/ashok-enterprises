@@ -38,6 +38,8 @@ const PaySalary = ({
     const calculateCashAmount = (value) => {
         if (parseInt(value || 0) <= getTotalSalary(detail,month, year)) {
             setCashAmount(value)
+            const bankamount = getTotalSalary(detail,month, year) - parseInt(value || 0) - parseInt(deductExtraAdvanceAmount || 0)
+            setBankDeposited(parseInt(bankamount))
         }
     };
 
