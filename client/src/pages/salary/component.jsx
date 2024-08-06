@@ -1,4 +1,4 @@
-import React, {useState, useEffect, forwardRef, useRef} from 'react'
+import React, {useState, useEffect, forwardRef} from 'react'
 import PropTypes from 'prop-types'
 import Table from '../../shared/component/table'
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +10,7 @@ import { getMonth } from '../../helpers/today-date';
 import priceFormatter from '../../helpers/price-formatter';
 import { totalAdvance, totalSalary } from '../../helpers/employee-detal';
 import Advance from './advance';
-import { useReactToPrint } from 'react-to-print';
+// import { useReactToPrint } from 'react-to-print';
 
 const Salary = ({
     employeeData,
@@ -18,10 +18,10 @@ const Salary = ({
     updateEmployeePaymentConnect
 }) => {
 
-  const componentRef = useRef();
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-  });
+  // const componentRef = useRef();
+  // const handlePrint = useReactToPrint({
+  //   content: () => componentRef.current,
+  // });
 
   const getDateValue = () => {
     const nextMonth = new Date().setMonth(new Date().getMonth() + 1)
@@ -109,13 +109,13 @@ const Salary = ({
                             </Button>
                           </div>
                         </Col>
-                        <Col sm={3}>
+                        {/* <Col sm={3}>
                           <div className="d-grid">
                             <Button  onClick={handlePrint} variant='warning'>
                               Print
                             </Button>
                           </div>
-                        </Col>
+                        </Col> */}
                         <Col sm={6}>
                           <DatePicker
                             selected={dateValue}
@@ -148,7 +148,7 @@ const Salary = ({
 
 
           <div className="pt-4">
-            <Table ref={componentRef} canSearch={false} isClickable={true} onClick={onClickTable} hoverable={true} cols={tableConstants({dateValue})} data={employeeData} />
+            <Table  canSearch={false} isClickable={true} onClick={onClickTable} hoverable={true} cols={tableConstants({dateValue})} data={employeeData} />
         </div>
     </React.Fragment>
     )
