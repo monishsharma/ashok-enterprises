@@ -262,11 +262,3 @@ h1,h2,h3,h4,h5 {
   text-align: left;
 }
 
-.detailedSalary {
-  margin: 20px;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  width: fit-content;
-}
-
