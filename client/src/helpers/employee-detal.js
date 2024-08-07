@@ -59,7 +59,7 @@ export const getTotalPresent = (rowData) => {
     // Construct the output string
     let output = `${days} days`;
     if (remainingHours > 0) {
-        output += `, ${remainingHours} hours`;
+        output += `, ${remainingHours.toFixed(1)} hours`;
     }
 
 
@@ -93,10 +93,16 @@ export const getOverTimeSalary = (rowData) => {
 
 }
 
-export const getSundayCost = (rowData) => {
+export const getSundayCost = (rowData, count = false) => {
   if(rowData) {
     const costPerSunday = 20;
     const totalSunday = rowData && rowData.attendance.filter(item => item.isSunday && item.status);
+    if (count) {
+      return {
+        count: totalSunday.length,
+        amount: costPerSunday * totalSunday.length
+      }
+    }
     return parseInt(costPerSunday * totalSunday.length);
   }
 

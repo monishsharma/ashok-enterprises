@@ -244,3 +244,29 @@ h1,h2,h3,h4,h5 {
 ::-webkit-scrollbar-thumb:window-inactive {
   background: rgba(255, 255, 255, 0.3);
 }
+
+.thead {
+  flex: 0 0 auto;
+  background-color: #f2f2f2;
+}
+.tbody {
+  flex: 1 1 auto;
+  background-color: #ffffff;
+  border-collapse: collapse;
+}
+.thead th, .tbody td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+.thead th {
+  text-align: left;
+}
+
+.detailedSalary {
+  margin: 20px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  width: fit-content;
+}
+

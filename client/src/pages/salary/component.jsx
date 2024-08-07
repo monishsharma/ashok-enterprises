@@ -10,18 +10,12 @@ import { getMonth } from '../../helpers/today-date';
 import priceFormatter from '../../helpers/price-formatter';
 import { totalAdvance, totalSalary } from '../../helpers/employee-detal';
 import Advance from './advance';
-// import { useReactToPrint } from 'react-to-print';
 
 const Salary = ({
     employeeData,
     employeeListConnect,
     updateEmployeePaymentConnect
 }) => {
-
-  // const componentRef = useRef();
-  // const handlePrint = useReactToPrint({
-  //   content: () => componentRef.current,
-  // });
 
   const getDateValue = () => {
     const nextMonth = new Date().setMonth(new Date().getMonth() + 1)
@@ -109,13 +103,13 @@ const Salary = ({
                             </Button>
                           </div>
                         </Col>
-                        {/* <Col sm={3}>
+                        <Col sm={3}>
                           <div className="d-grid">
-                            <Button  onClick={handlePrint} variant='warning'>
-                              Print
+                            <Button  onClick={() => navigate(`/salary/distribution/${getMonth(dateValue)}/${dateValue.getFullYear()}`)} variant='warning'>
+                              Detail
                             </Button>
                           </div>
-                        </Col> */}
+                        </Col>
                         <Col sm={6}>
                           <DatePicker
                             selected={dateValue}
