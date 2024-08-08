@@ -36,10 +36,13 @@ const PaySalary = ({
     extraAdvance.total || ""
   );
   const [cashAmount, setCashAmount] = useState(monthlyPayment.cash || "");
+  const [remainingSalary, setRemainingSalary] = useState("");
+
   const remaingSalary =
     getTotalSalary(detail, month, year) -
       (parseInt(cashAmount || 0) +
         parseInt(bankDeposited || 0) +
+        parseInt(remainingSalary || 0) +
         parseInt(deductExtraAdvanceAmount || 0)) || 0;
 
   const calculateBankDeposit = ({ target: { value } }) => {
@@ -117,7 +120,7 @@ const PaySalary = ({
   };
 
   if (isLoading) return <PageLoader />;
-
+  console.log(remaingSalary)
   return (
     <ModalWrapper
       show={showPaymentDetail}
@@ -163,7 +166,7 @@ const PaySalary = ({
           <Col sm={4}>
             <Form.Group className="mb-3" controlId="formGroupEmail">
               <Form.Label className="font-weight-bold">
-                Minus Advance This Month
+                Extra Advance Minus
               </Form.Label>
               <Form.Control
                 disabled={monthlyPayment.isPaid}
@@ -172,6 +175,28 @@ const PaySalary = ({
                 value={deductExtraAdvanceAmount}
                 onChange={(e) => {
                   calculateAdvanceAmount(e.target.value);
+                }}
+              />
+            </Form.Group>
+          </Col>
+          <Col sm={4}>
+            <Form.Group className="mb-3" controlId="formGroupEmail">
+              <Form.Label className="font-weight-bold">
+                Remaining Salary
+              </Form.Label>
+              <Form.Control
+                disabled={monthlyPayment.isPaid}
+                type="number"
+                placeholder="Enter Amount"
+                value={remainingSalary}
+                onChange={(e) => {
+                  setRemainingSalary(e.target.value);
+                  const bankamount =
+                    getTotalSalary(detail, month, year) -
+                    parseInt(e.target.value || 0) -
+                    parseInt(cashAmount || 0) -
+                    parseInt(deductExtraAdvanceAmount || 0);
+                setBankDeposited(parseInt(bankamount));
                 }}
               />
             </Form.Group>
@@ -214,6 +239,9 @@ const PaySalary = ({
             </Form.Group>
           </Col>
         </Row>
+        {
+                    remaingSalary !== 0 && <p className='text-danger'>{remaingSalary} left to adjust </p>
+                }
       </Container>
     </ModalWrapper>
   );
