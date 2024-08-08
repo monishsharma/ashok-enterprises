@@ -129,7 +129,7 @@ const PaySalary = ({
       size="lg"
       saveButtonText={monthlyPayment.isPaid ? "Already Paid" : "Mark Paid"}
       onSave={save}
-      isDisabled={monthlyPayment.isPaid || remaingSalary !== 0}
+      isDisabled={remaingSalary !== 0}
       handleClose={paymentDetailHandle}
     >
       <Container>
