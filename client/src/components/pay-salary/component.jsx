@@ -36,7 +36,7 @@ const PaySalary = ({
     extraAdvance.total || ""
   );
   const [cashAmount, setCashAmount] = useState(monthlyPayment.cash || "");
-  const [remainingSalary, setRemainingSalary] = useState("");
+  const [remainingSalary, setRemainingSalary] = useState(monthlyPayment.remainingSalary || "");
 
   const remaingSalary =
     getTotalSalary(detail, month, year) -
@@ -108,7 +108,7 @@ const PaySalary = ({
       cash: cashAmount,
       isPaid: true,
       bankDeposit: bankDeposited,
-      remaingSalary,
+      remainingSalary,
       advanceDeposit: deductExtraAdvanceAmount,
     };
     await updateEmployeePaymentConnect(queryParams, payload);
