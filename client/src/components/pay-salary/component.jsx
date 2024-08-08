@@ -60,6 +60,7 @@ const PaySalary = ({
       const bankamount =
         getTotalSalary(detail, month, year) -
         parseInt(value || 0) -
+        parseInt(remaingSalary || 0) -
         parseInt(deductExtraAdvanceAmount || 0);
       setBankDeposited(parseInt(bankamount));
     }
