@@ -85,7 +85,7 @@ const SalaryCard = ({
         <React.Fragment>
             <h2 className="fw-bold">Detailed Salary</h2>
             <Button onClick={handlePrint}>Print</Button>
-            <div className='detailTable' ref={componentRef}>
+            {!isLoading && <div className='detailTable' ref={componentRef}>
 
             <table style={{width: "100%", borderCollapse: "collapse"}}>
             <thead>
@@ -127,7 +127,7 @@ const SalaryCard = ({
         </table>
 
 
-            </div>
+            </div>}
         </React.Fragment>
     )
 }
