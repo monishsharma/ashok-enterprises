@@ -152,7 +152,6 @@ const PaySalary = ({
             <Form.Group className="mb-3" controlId="formGroupEmail">
               <Form.Label className="font-weight-bold">Cash</Form.Label>
               <Form.Control
-                disabled={monthlyPayment.isPaid}
                 type="number"
                 placeholder="Enter Amount"
                 value={cashAmount}
@@ -170,7 +169,6 @@ const PaySalary = ({
                 Extra Advance Minus
               </Form.Label>
               <Form.Control
-                disabled={monthlyPayment.isPaid}
                 type="number"
                 placeholder="Enter Amount"
                 value={deductExtraAdvanceAmount}
@@ -186,7 +184,6 @@ const PaySalary = ({
                 Remaining Salary
               </Form.Label>
               <Form.Control
-                disabled={monthlyPayment.isPaid}
                 type="number"
                 placeholder="Enter Amount"
                 value={remainingSalary}
