@@ -4,6 +4,7 @@ import { Button, Card, Col, Row, Table } from 'react-bootstrap'
 import { useParams } from 'react-router-dom'
 import { getDailySalary, getOverTimeSalary, getSundayCost, getTotalPresent, getTotalSalary, totalWorkingHours } from '../../helpers/employee-detal'
 import priceFormatter from '../../helpers/price-formatter'
+import { useReactToPrint } from 'react-to-print';
 
 const SalayDetail = ({
     name,
@@ -42,6 +43,15 @@ const SalayDetail = ({
                                 <tr>
                                     <th>Total</th>
                                 </tr>
+                                <tr>
+                                    <th>Bank</th>
+                                </tr>
+                                <tr>
+                                    <th>Cash</th>
+                                </tr>
+                                <tr>
+                                    <th>Deduct</th>
+                                </tr>
                             </thead>
                         </table>
                         <table className="tbody">
@@ -74,6 +84,15 @@ const SalayDetail = ({
                                     ₹{priceFormatter(totalSalary)}
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td style={{height: "54.8px"}}></td>
+                                </tr>
+                                <tr>
+                                    <td style={{height: "54.8px"}}></td>
+                                </tr>
+                                <tr>
+                                    <td style={{height: "54.8px"}}></td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -86,6 +105,11 @@ const SalaryCard = ({
     employeeData,
     employeeListConnect
 }) => {
+    const componentRef = useRef();
+    const handlePrint = useReactToPrint({
+      content: () => componentRef.current,
+    });
+
     const { month, year } = useParams();
 
 
@@ -112,7 +136,8 @@ const SalaryCard = ({
     return (
         <React.Fragment>
             <h2 className="fw-bold">Detailed Salary</h2>
-            <Row className=" mt-4 detailedSalary">
+            <Button onClick={handlePrint}>Print</Button>
+            <Row className=" mt-4 detailedSalary" ref={componentRef}>
             {
                     employeeData.map((emp, index) => (
                         <Col   key={index} sm={4} className='mt-2'>
