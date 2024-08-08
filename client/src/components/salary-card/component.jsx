@@ -18,87 +18,35 @@ const SalayDetail = ({
     totalSalary,
     advance
 }) => (
-    <Card>
-            <Card.Body>
-                <Card.Title style={{textAlign: 'center', marginBottom: "20px", fontWeight: "bold"}}>{name} @ ₹{salaryPerDay}</Card.Title>
-                <Card.Text>
-                    <div className="d-flex">
-                        <table className="thead">
-                            <thead>
-                                <tr>
-                                    <th>Per Day</th>
-                                </tr>
-                                <tr>
-                                    <th>Overtime</th>
-                                </tr>
-                                <tr>
-                                    <th>Advance</th>
-                                </tr>
-                                <tr>
-                                    <th>Sunday</th>
-                                </tr>
-                                <tr>
-                                    <th>ESI</th>
-                                </tr>
-                                <tr>
-                                    <th>Total</th>
-                                </tr>
-                                <tr>
-                                    <th>Bank</th>
-                                </tr>
-                                <tr>
-                                    <th>Cash</th>
-                                </tr>
-                                <tr>
-                                    <th>Deduct</th>
-                                </tr>
-                            </thead>
-                        </table>
-                        <table className="tbody">
-                            <tbody>
-                                <tr>
-                                    <td><span className='fw-bold'>₹{priceFormatter(perDayAmount)}</span>{`(${working})`}</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <span className='fw-bold'>₹{priceFormatter(overTimeAmount)}</span>{`(${overTime})`}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <span>{advance.advance}</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                    <span className='fw-bold'>₹{priceFormatter(sunday.amount)}</span>{`(${sunday.count} sunday)`}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                       <span  > {esi ? "-200" : 0}</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                    ₹{priceFormatter(totalSalary)}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style={{height: "54.8px"}}></td>
-                                </tr>
-                                <tr>
-                                    <td style={{height: "54.8px"}}></td>
-                                </tr>
-                                <tr>
-                                    <td style={{height: "54.8px"}}></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </Card.Text>
-            </Card.Body>
-        </Card>
+
+        <tr>
+                    <td className='fw-bold' style={{width: "50px"}}>{name}</td>
+                    <td style={{width: "200px"}}><span className='fw-bold'>₹{priceFormatter(perDayAmount)}</span> <br />{`(${working})`}</td>
+                    <td style={{width: "150px"}}>
+                        <span className='fw-bold'>₹{priceFormatter(overTimeAmount)}</span> <br />{`(${overTime})`}
+                    </td>
+
+                    <td style={{width: "100px"}}>
+                    <span className='fw-bold'>₹{priceFormatter(sunday.amount)}</span> <br />{`(${sunday.count} sun)`}
+                    </td>
+                    <td style={{width: "50px"}}>
+                        <span  > {esi ? "-200" : 0}</span>
+                    </td>
+                    <td style={{width: "50px"}} className='fw-bold'>
+                    ₹{(priceFormatter(parseInt(totalSalary) +  parseInt(advance.advance)))}
+                    </td>
+                    <td className='fw-bold' style={{width: "50px"}}>
+                        <span>₹{priceFormatter(advance.advance)}</span>
+                    </td>
+                    <td style={{width: "50px"}} className='fw-bold'>
+                    ₹{priceFormatter(totalSalary)}
+                    </td>
+                    <td style={{width: "100px"}}></td>
+                    <td style={{width: "100px"}}></td>
+                    <td style={{width: "100px"}}></td>
+                    </tr>
+
+
 )
 
 const SalaryCard = ({
@@ -137,11 +85,30 @@ const SalaryCard = ({
         <React.Fragment>
             <h2 className="fw-bold">Detailed Salary</h2>
             <Button onClick={handlePrint}>Print</Button>
-            <Row className=" mt-4 detailedSalary" ref={componentRef}>
+            <div className='detailTable' ref={componentRef}>
+
+            <table style={{width: "100%", borderCollapse: "collapse"}}>
+            <thead>
+                <tr>
+                    <th style={{fontSize: "25px"}} colSpan={10}>{`${month}, ${year}`}</th>
+                </tr>
+                <th>Name</th>
+                <th>Per Day</th>
+                <th>Overtime</th>
+                <th>Sunday</th>
+                <th>ESI</th>
+                <th>Total</th>
+                <th>Advance</th>
+                <th>Payable</th>
+                <th>Bank</th>
+                <th>Cash</th>
+                <th>Deduct</th>
+            </thead>
+            <tbody>
             {
                     employeeData.map((emp, index) => (
-                        <Col   key={index} sm={4} className='mt-2'>
                             <SalayDetail
+                                key={index}
                                 advance={emp.advance[year][month]|| 0}
                                 name={emp.name}
                                 salaryPerDay={emp.salaryPerDay}
@@ -153,12 +120,14 @@ const SalaryCard = ({
                                 overTime={totalWorkingHours(emp, "overTimeHours")}
                                 totalSalary={getTotalSalary(emp, month, year)}
                             />
-                        </Col>
                     ))
                 }
 
+            </tbody>
+        </table>
 
-            </Row>
+
+            </div>
         </React.Fragment>
     )
 }
