@@ -4,7 +4,7 @@ import { Button, Card, Col, Row, Table } from 'react-bootstrap'
 import { useParams } from 'react-router-dom'
 import { getDailySalary, getOverTimeSalary, getSundayCost, getTotalPresent, getTotalSalary, totalWorkingHours } from '../../helpers/employee-detal'
 import priceFormatter from '../../helpers/price-formatter'
-// import { useReactToPrint } from 'react-to-print';
+import ReactToPrint from 'react-to-print';
 
 const SalayDetail = ({
     name,
@@ -53,7 +53,7 @@ const SalaryCard = ({
     employeeData,
     employeeListConnect
 }) => {
-    // const componentRef = useRef();
+    const componentRef = useRef();
     // const handlePrint = useReactToPrint({
     //   content: () => componentRef.current,
     // });
@@ -83,10 +83,14 @@ const SalaryCard = ({
 
     return (
         <React.Fragment>
-            <h2 className="fw-bold">Detailed Salary</h2>
+            <h2 className="fw-bold mb-2">Detailed Salary</h2>
+            <ReactToPrint
+                trigger={() => <Button >Print this out!</Button>}
+                content={() => componentRef.current}
+            />
             {/* <Button onClick={handlePrint}>Print</Button> */}
-            {!isLoading && <div className='detailTable' >
-            {/* {!isLoading && <div className='detailTable' ref={componentRef}> */}
+            {/* {!isLoading && <div className='detailTable' > */}
+            {!isLoading && <div className='detailTable mt-2' ref={componentRef}>
 
             <table style={{width: "100%", borderCollapse: "collapse"}}>
             <thead>
