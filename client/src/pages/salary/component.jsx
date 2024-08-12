@@ -18,12 +18,15 @@ const Salary = ({
 }) => {
 
   const getDateValue = () => {
-    const nextMonth = new Date().setMonth(new Date().getMonth() + 1)
-    const nextDateValue = new Date(nextMonth).setDate(10);
-    if (new Date(nextDateValue).getTime() < new Date().getTime()) {
-      return new Date().getTime();
-    }  else {
-      return new Date().setMonth(new Date().getMonth()-1);
+    const today = new Date();
+    const year = today.getFullYear();
+    const currentMonth = today.getMonth(); // 0 for Jan, 1 for Feb, ..., 11 for Dec
+    const nextMonth = new Date(year, currentMonth + 1, 10); // 10th of next month
+
+    if (today <= nextMonth) {
+        return new Date(year, currentMonth, 1); // First day of the current month
+    } else {
+        return new Date(year, currentMonth + 1, 1); // First day of the next month
     }
   }
 
