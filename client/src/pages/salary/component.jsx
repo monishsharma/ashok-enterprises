@@ -1,4 +1,4 @@
-import React, {useState, useEffect, forwardRef, useRef} from 'react'
+import React, {useState, useEffect, forwardRef} from 'react'
 import PropTypes from 'prop-types'
 import Table from '../../shared/component/table'
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +10,6 @@ import { getMonth } from '../../helpers/today-date';
 import priceFormatter from '../../helpers/price-formatter';
 import { totalAdvance, totalSalary } from '../../helpers/employee-detal';
 import Advance from './advance';
-import { useReactToPrint } from 'react-to-print';
 
 const Salary = ({
     employeeData,
@@ -18,18 +17,16 @@ const Salary = ({
     updateEmployeePaymentConnect
 }) => {
 
-  const componentRef = useRef();
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-  });
-
   const getDateValue = () => {
-    const nextMonth = new Date().setMonth(new Date().getMonth() + 1)
-    const nextDateValue = new Date(nextMonth).setDate(10);
-    if (new Date(nextDateValue).getTime() < new Date().getTime()) {
-      return new Date().getTime();
-    }  else {
-      return new Date().setMonth(new Date().getMonth()-1);
+    const today = new Date();
+    const year = today.getFullYear();
+    const currentMonth = today.getMonth(); // 0 for Jan, 1 for Feb, ..., 11 for Dec
+    const nextMonth = new Date(year, currentMonth + 1, 10); // 10th of next month
+
+    if (today <= nextMonth) {
+        return new Date(year, currentMonth, 1); // First day of the current month
+    } else {
+        return new Date(year, currentMonth + 1, 1); // First day of the next month
     }
   }
 
@@ -111,8 +108,8 @@ const Salary = ({
                         </Col>
                         <Col sm={3}>
                           <div className="d-grid">
-                            <Button  onClick={handlePrint} variant='warning'>
-                              Print
+                            <Button  onClick={() => navigate(`/salary/distribution/${getMonth(dateValue)}/${dateValue.getFullYear()}`)} variant='warning'>
+                              Detail
                             </Button>
                           </div>
                         </Col>
@@ -148,7 +145,7 @@ const Salary = ({
 
 
           <div className="pt-4">
-            <Table ref={componentRef} canSearch={false} isClickable={true} onClick={onClickTable} hoverable={true} cols={tableConstants({dateValue})} data={employeeData} />
+            <Table  canSearch={false} isClickable={true} onClick={onClickTable} hoverable={true} cols={tableConstants({dateValue})} data={employeeData} />
         </div>
     </React.Fragment>
     )

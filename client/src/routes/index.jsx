@@ -6,6 +6,7 @@ import EmployeeDetail from "../pages/employee-detail";
 import Salary from "../pages/salary";
 import Invoice from "../pages/invoice";
 import NewInvoice from "../pages/new-invoice";
+import SalaryCard from "../components/salary-card";
 const routes = [
   {
     path: "/",
@@ -35,7 +36,10 @@ const routes = [
         path: 'new/invoice',
         element: <NewInvoice />
       },
-
+      {
+        path: "salary/distribution/:month/:year",
+        element: <SalaryCard/>
+      }
     ],
     errorElement: <ErrorPage />,
 

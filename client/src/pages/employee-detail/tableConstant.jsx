@@ -60,9 +60,9 @@ export const tableConstants = ({onClick, salaryPerDay: perDay}) => {
             title: "Status",
             render: (rowData)=> {
                 return (
-                    <Badge bg={rowData.status ? "success" : "danger"}>
+                    <Badge bg={rowData.checkoutTime ? "success" : "danger"}>
                         {
-                            rowData.status ? "Present" : "Absent"
+                            rowData.checkoutTime ? "Present" : "Absent"
                         }
                     </Badge>
                 )

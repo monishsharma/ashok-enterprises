@@ -13,6 +13,7 @@ import {
   getOverTimeSalary,
   getSundayCost,
   getTotalAbsent,
+  getTotalPresent,
   getTotalSalary,
   totalWorkingHours,
 } from "../../helpers/employee-detal";
@@ -166,7 +167,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
               <span>&#8377;</span>
             </Card>
             <Card
-              number={totalWorkingHours(detail, "totalWorkingHours", false, month, year)}
+              number={getTotalPresent(detail)}
               cardName={"Working Hours"}
               color={"#20c997"}
               icon={"time-outline"}
@@ -183,6 +184,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
               color={"#dc3545"}
               icon={"calendar-outline"}
             />
+
           </div>
           <div className="mt-4">
             <Tabs
