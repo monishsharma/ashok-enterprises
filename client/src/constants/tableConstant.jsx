@@ -70,11 +70,6 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
     return false;
   }
 
-  const disabledStateCheckbox = (rowData) => {
-    const filterData =  rowData && rowData.attendance.find((item) => item.date === dateValue);
-    if (filterData) return filterData.checkinTime;
-    return false;
-  }
 
   return [
     {
@@ -97,7 +92,6 @@ export const tableConstants = ({handleAttendance, handleCheckoutAttendance, date
                 id="custom-switch"
                 className="absentCheckbox"
                 checked={isAbsent(rowData)}
-                disabled={disabledStateCheckbox(rowData)}
                 onChange={(e) => markAbsent({e, rowData})}
               />);
       },
