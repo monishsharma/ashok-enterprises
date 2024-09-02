@@ -6,12 +6,14 @@ import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 import Card from "../../shared/component/card";
 import {
+  deductESI,
   getAdvancePAymentFromSalary,
   getDailySalary,
   getExtraAdvancePayment,
   getOverTimeSalary,
   getSundayCost,
   getTotalAbsent,
+  getTotalPresent,
   getTotalSalary,
   totalWorkingHours,
 } from "../../helpers/employee-detal";
@@ -165,7 +167,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
               <span>&#8377;</span>
             </Card>
             <Card
-              number={totalWorkingHours(detail, "totalWorkingHours", false, month, year)}
+              number={getTotalPresent(detail)}
               cardName={"Working Hours"}
               color={"#20c997"}
               icon={"time-outline"}
@@ -182,6 +184,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
               color={"#dc3545"}
               icon={"calendar-outline"}
             />
+
           </div>
           <div className="mt-4">
             <Tabs
@@ -242,7 +245,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
                         disabled
                         size="lg"
                         type="text"
-                        value={"-200"}
+                        value={`${deductESI(detail)}`}
                       />
                     </Col>
                     <Col md={4} className="mt-3 mb-2">

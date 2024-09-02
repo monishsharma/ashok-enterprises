@@ -48,23 +48,20 @@ export const getTotalPresentCount = (rowData) => {
 export const getTotalPresent = (rowData) => {
     let presentMin =  totalWorkingHours(rowData, "totalWorkingHours", true);
 
-    const duration = moment.duration(presentMin, "minutes")
-    const durationHours = duration.asHours();
-    const hoursPerDay = 8;
-    const decimalDays = durationHours / hoursPerDay;
-    const days = Math.floor(decimalDays); // Get the whole number part (days)
-    const hoursDecimal = (decimalDays - days) * 24; // Convert remaining decimal to hours
-    const hours = Math.floor(hoursDecimal); // Get whole number part of hours
-    const minutes = Math.round((hoursDecimal - hours) * 60); // Convert remaining decimal to minutes and round
+    const hours = presentMin / 60;
+
+    // Calculate the number of days (8 hours per day) and remaining hours
+    const days = Math.floor(hours / 8);
+    const remainingHours = hours % 8;
+
+
 
     // Construct the output string
     let output = `${days} days`;
-    if (hours > 0 || minutes > 0) {
-        output += `, ${hours} hours`;
+    if (remainingHours > 0) {
+        output += `, ${remainingHours.toFixed(1)} hours`;
     }
-    if (minutes > 0) {
-        output += `, ${minutes} minutes`;
-    }
+
 
     return output
   };
@@ -96,10 +93,16 @@ export const getOverTimeSalary = (rowData) => {
 
 }
 
-export const getSundayCost = (rowData) => {
+export const getSundayCost = (rowData, count = false) => {
   if(rowData) {
     const costPerSunday = 20;
     const totalSunday = rowData && rowData.attendance.filter(item => item.isSunday && item.status);
+    if (count) {
+      return {
+        count: totalSunday.length,
+        amount: costPerSunday * totalSunday.length
+      }
+    }
     return parseInt(costPerSunday * totalSunday.length);
   }
 
@@ -138,11 +141,15 @@ export const getTotalAdvance = (rowData, month, year) => {
   return (rowData && getAdvancePAymentFromSalary(rowData, month, year) || 0)
 };
 
+export const deductESI = (rowData) => {
+  return rowData && rowData.esi ? 200 : 0;
+}
+
 export const getTotalSalary = (rowData, month, year) => {
   return (rowData && (
     (parseInt(getDailySalary(rowData)) +
     parseInt(getOverTimeSalary(rowData)) +
     parseInt(getSundayCost(rowData)))
-  ) - 200) - getAdvancePAymentFromSalary(rowData, month, year) || 0
+  ) - deductESI(rowData)) - getAdvancePAymentFromSalary(rowData, month, year) || 0
 };
 

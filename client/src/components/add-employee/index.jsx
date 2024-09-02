@@ -8,6 +8,7 @@ import { connect } from 'react-redux';
 import {bindActionCreators} from "redux";
 
 const AddEmployee = ({
+    selectedEsi,
     isEditing,
     employeeId = null,
     selectedName,
@@ -22,13 +23,15 @@ const AddEmployee = ({
     const [isLoading, setIsLoading] = useState(false);
     const [name, setName] = useState("");
     const [salary, setSalary] = useState("");
+    const [esi, setEsi] = useState(false);
 
     useEffect(() => {
-      if (selectedName || selectedSalary) {
+      if (selectedName || selectedSalary || selectedEsi) {
         setName(selectedName);
         setSalary(selectedSalary);
+        setEsi(selectedEsi)
       }
-    }, [selectedName, selectedSalary])
+    }, [selectedName, selectedSalary, selectedEsi])
 
 
     const getDisabledState = () => !(name.length > 3 && parseInt(salary) > 0);
@@ -37,7 +40,8 @@ const AddEmployee = ({
         setIsLoading(true);
         const payload = {
             name,
-            salaryPerDay: salary
+            salaryPerDay: salary,
+            esi
         };
         try {
             if (isEditing) {
@@ -47,6 +51,7 @@ const AddEmployee = ({
             }
             setName("");
             setSalary("");
+            setEsi(false);
             employeeListHandler()
             setIsLoading(false);
             addEmployeeHandlerToggle();
@@ -78,12 +83,21 @@ const AddEmployee = ({
                         <Form.Control type="number" placeholder="Salary per/day" value={salary} onChange={(e) => {setSalary(e.target.value)}} />
                     </InputGroup>
             </Form.Group>
+
+            <Form.Check // prettier-ignore
+                type={'checkbox'}
+                id={`default-${'checkbox'}`}
+                label={'ESI'}
+                checked={esi}
+                onChange={(e) => setEsi(e.target.checked)}
+            />
         </ModalWrapper>
         </React.Fragment>
     )
 }
 
 AddEmployee.propTypes = {
+    selectedEsi: PropTypes.any,
     showModal: PropTypes.bool,
     isEditing: PropTypes.bool,
     employeeId: PropTypes.any,

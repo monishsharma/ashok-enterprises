@@ -9,10 +9,11 @@ const ModalWrapper = ({
     children,
     isDisabled = false,
     handleClose,
-    saveButtonText = 'Save'
+    saveButtonText = 'Save',
+    ...rest
 }) => {
   return (
-      <Modal  show={show} onHide={handleClose}>
+      <Modal  show={show} onHide={handleClose} {...rest}>
         <Modal.Header closeButton>
           <Modal.Title>{title}</Modal.Title>
         </Modal.Header>

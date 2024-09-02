@@ -70,6 +70,7 @@ const Attendance = ({
         status: false,
         isSunday: new Date(`${dateValue}`).getDay() == 0,
         checkinTime: ``,
+        checkoutTime: ``,
         year: new Date(dateValue).getFullYear(),
         month: getMonth(dateValue)
       };

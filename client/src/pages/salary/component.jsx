@@ -6,7 +6,7 @@ import { tableConstants } from './tableConstant';
 import PageLoader from '../../shared/component/page-loader';
 import { Badge, Button, Col, Row } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
-import { getMonth, month } from '../../helpers/today-date';
+import { getMonth } from '../../helpers/today-date';
 import priceFormatter from '../../helpers/price-formatter';
 import { totalAdvance, totalSalary } from '../../helpers/employee-detal';
 import Advance from './advance';
@@ -18,25 +18,19 @@ const Salary = ({
 }) => {
 
   const getDateValue = () => {
-    const nextMonth = new Date().setMonth(new Date().getMonth() + 1)
-    const nextDateValue = new Date(nextMonth).setDate(10);
-    if (new Date(nextDateValue).getTime() < new Date().getTime()) {
-      if (new Date().getMonth() === new Date(nextDateValue).getMonth()) {
-        return new Date().setMonth(new Date().getMonth()-1);
-      } else {
-        return new Date();
-      }
-    }  else {
-      if (new Date().getMonth() === new Date(nextDateValue).getMonth()) {
-        return new Date().setMonth(new Date().getMonth()-1);
-      } else {
-        return new Date();
-      }
-    }
+    const today = new Date();
+    const year = today.getFullYear();
+    const currentMonth = today.getMonth(); // 0 for Jan, 1 for Feb, ..., 11 for Dec
+    const nextMonth = new Date(year, currentMonth + 1, 10); // 10th of next month
 
+    if (today <= nextMonth) {
+        return new Date(year, currentMonth, 1); // First day of the current month
+    } else {
+        return new Date(year, currentMonth + 1, 1); // First day of the next month
+    }
   }
 
-  const [dateValue, setDateValue] = useState(getDateValue());
+  const [dateValue, setDateValue] = useState(new Date(getDateValue()));
     const [showAdvance, setShowAdvance] = useState(false);
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
@@ -105,10 +99,17 @@ const Salary = ({
                   </Col>
                   <Col sm={{ span:6, offset: 3}}>
                       <Row className='gy-2'>
-                        <Col sm={6}>
+                        <Col sm={3}>
                           <div className="d-grid">
                             <Button onClick={toggleAdvance}>
                               Advance
+                            </Button>
+                          </div>
+                        </Col>
+                        <Col sm={3}>
+                          <div className="d-grid">
+                            <Button  onClick={() => navigate(`/salary/distribution/${getMonth(dateValue)}/${dateValue.getFullYear()}`)} variant='warning'>
+                              Detail
                             </Button>
                           </div>
                         </Col>
@@ -144,7 +145,7 @@ const Salary = ({
 
 
           <div className="pt-4">
-            <Table canSearch={false} isClickable={true} onClick={onClickTable} hoverable={true} cols={tableConstants({dateValue})} data={employeeData} />
+            <Table  canSearch={false} isClickable={true} onClick={onClickTable} hoverable={true} cols={tableConstants({dateValue})} data={employeeData} />
         </div>
     </React.Fragment>
     )
