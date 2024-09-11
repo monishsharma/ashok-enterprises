@@ -3,12 +3,13 @@ import PropTypes from 'prop-types'
 import Bill from "../../components/bill"
 import {Row, Col, Form} from 'react-bootstrap';
 import { BILL_BY } from './selector';
+import styles from "./style.module.css";
 
 const NewInvoice = props => {
   return (
-    <div className='mt-4'>
-        <h2 className="fw-bold">New Employee</h2>
-        <Row className='mt-4'>
+    <div className={` ${styles.invoiceContainer}`}>
+        <h2 className="fw-bold">New Invoice</h2>
+        <Row className=''>
           <Col sm={3} >
             <Form.Label>Bill By</Form.Label>
             <Form.Select aria-label="Default select example">
@@ -22,9 +23,9 @@ const NewInvoice = props => {
             </Form.Select>
           </Col>
         </Row>
-        <div className="mt-4">
+        {/* <div className="mt-4">
         <Bill />
-        </div>
+        </div> */}
     </div>
   )
 }
