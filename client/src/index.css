@@ -51,6 +51,9 @@ td {
   padding: 15px !important;
   vertical-align: middle !important;
 }
+.pauwelstable td {
+  padding: 5px !important;
+}
 .table-bordered>:not(caption)>*>*  {
   border-width: 0 !important;
 }
@@ -273,7 +276,7 @@ h1,h2,h3,h4,h5 {
   position: absolute;
   bottom: 0;
   left: 30px;
-  width: 50px;
+  width: 30px;
   height: 2px;
   background-color: black;
 }
@@ -282,27 +285,30 @@ h1,h2,h3,h4,h5 {
   position: absolute;
   bottom: 0;
   left: 30px;
-  height: 50px;
+  height: 35px;
   width: 2px;
   background-color: black;
 }
 
 .x-label {
   position: absolute;
-  bottom: -23px;
-  left: 45px;
+  bottom: -15px;
+  left: 40px;
+  font-size: 10px;
 }
 
 .y-label {
   position: absolute;
   bottom: 20px;
   left: 0px;
+  font-size: 10px;
+
 }
 .z-axis {
   position: absolute;
   top: 50px;
   left: 78px;
-  width: 50px;
+  width: 30px;
   height: 2px;
   background-color: black;
 }

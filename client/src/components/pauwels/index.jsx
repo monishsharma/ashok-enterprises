@@ -182,7 +182,6 @@ const Pauwels = () => {
           <div style={{marginTop: "100px", marginBottom: "50px"}}>
             <table className="pauwelstable" style={{width: "100%", margin: "20px"}}>
               <thead>
-                <th>Work Order No</th>
                 <th>Size</th>
                 <th>QTY</th>
                 <th>Drawing</th>
@@ -211,27 +210,23 @@ const Pauwels = () => {
                                         <td colSpan={4}><h3>W/O - {item.workOrderNo}</h3></td>
                                     </tr>
                                     <tr>
-                                        <td  style={{width: "15%"}}>{item.workOrderNo}</td>
-                                        <td style={{width: "20%"}}>{findWidth(item.LvLabelE, item.labelD)}</td>
-                                        <td style={{width: "10%"}}>{item.check ? item.totalSets : parseInt(item.totalSets * 2)} Nos</td>
-                                        <td style={{width: "30%"}}><TopPauwels height={parseInt(item.LvLabelE) + 6} width={parseInt(item.labelD) + 6}/></td>
+                                        <td>{findWidth(item.LvLabelE, item.labelD)}</td>
+                                        <td >{item.check ? item.totalSets : parseInt(item.totalSets * 2)} Nos</td>
+                                        <td ><TopPauwels height={parseInt(item.LvLabelE) + 6} width={parseInt(item.labelD) + 6}/></td>
                                     </tr>
                                     <tr>
-                                        <td style={{width: "15%"}}></td>
-                                        <td style={{width: "20%"}}>{findWidth(item.HvLabelE, item.labelD)}</td>
-                                        <td style={{width: "10%"}}>{item.check ? item.totalSets : parseInt(item.totalSets * 2)} Nos</td>
-                                        <td style={{width: "30%"}}><TopPauwels height={parseInt(item.HvLabelE) + 6} width={parseInt(item.labelD) + 6} /></td>
+                                        <td>{findWidth(item.HvLabelE, item.labelD)}</td>
+                                        <td >{item.check ? item.totalSets : parseInt(item.totalSets * 2)} Nos</td>
+                                        <td style={{padding: "1px !important" }}><TopPauwels height={parseInt(item.HvLabelE) + 6} width={parseInt(item.labelD) + 6} /></td>
                                     </tr>
                                     {item.check &&
                                         <React.Fragment>
                                             <tr>
-                                                <td style={{width: "15%"}}></td>
                                                 <td style={{width: "20%"}}>{findWidth(item.LvLabelE, item.labelD, item.LabelF)}</td>
                                                 <td>{item.check ? item.totalSets : parseInt(item.totalSets * 2)} Nos</td>
                                                 <td><BottomPauwels x={parseInt(item.LvLabelE) + 6} y={parseInt(item.labelD) + 6} z={parseInt(item.LabelF) - parseInt(item.LvLabelE)} /></td>
                                             </tr>
                                             <tr>
-                                                <td style={{width: "15%"}}></td>
                                                 <td style={{width: "20%"}}>{findWidth(item.HvLabelE, item.labelD,item.LabelF)}</td>
                                                 <td>{item.check ? item.totalSets : parseInt(item.totalSets * 2)} Nos</td>
                                                 <td><BottomPauwels x={parseInt(item.HvLabelE) + 6} y={parseInt(item.labelD) + 6} z={parseInt(item.LabelF) - parseInt(item.HvLabelE)} /></td>
