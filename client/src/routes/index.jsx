@@ -5,6 +5,7 @@ import EmployeeView from "../pages/employee";
 import EmployeeDetail from "../pages/employee-detail";
 import Salary from "../pages/salary";
 import SalaryCard from "../components/salary-card";
+import Pauwels from "../components/pauwels";
 const routes = [
   {
     path: "/",
@@ -29,6 +30,10 @@ const routes = [
       {
         path: "salary/distribution/:month/:year",
         element: <SalaryCard/>
+      },
+      {
+        path: "pauwels",
+        element: <Pauwels/>
       }
     ],
     errorElement: <ErrorPage />,
