@@ -26,11 +26,11 @@ const Pauwels = () => {
     LvLabelE: "",
     HvLabelE: "",
     LabelF: "",
+    LabelT: "6"
   };
 
   // State to manage the list of details
   const [details, setDetails] = useState([initialData]);
-
 
   const [isValid, setIsValid] = useState(false);
 
@@ -77,12 +77,22 @@ const Pauwels = () => {
       )
     );
   };
-
   const handleCheckbox = (value, id) => {
     setDetails((prevDetails) =>
-      prevDetails.map((item) =>
-        item.id === id ? { ...item, check: value } : item
-      )
+      prevDetails.map((item) => {
+        if (item.id === id) {
+          if (!value) {
+            // If checked, remove LabelF
+            const { LabelF, ...rest } = item; // Destructure to omit LabelF
+            return { ...rest, check: value }; // Return item without LabelF
+          } else {
+            // If unchecked, restore LabelF to initial value (or an empty string)
+            return { ...item, LabelF: "", check: value }; // You can set LabelF to an initial value if necessary
+          }
+        } else {
+          return item;
+        }
+      })
     );
   };
 
@@ -118,7 +128,7 @@ const Pauwels = () => {
                   ></ion-icon>
                 </span>}
               </div>
-              {Object.keys(initialData)
+              {Object.keys(item)
                 .filter((key) => !["id", "check"].includes(key))
                 .map((key, index1) => (
                   <Col key={index1} sm={3}>
@@ -194,9 +204,9 @@ const Pauwels = () => {
 
                             const length = item.labelA;
 
-                            const findWidth = (e, d, f) => {
-                                const valueE = parseInt(e) + 6;
-                                const valueD = parseInt(d) + 6;
+                            const findWidth = ({e, d, f, t}) => {
+                                const valueE = parseInt(e) + parseInt(t);
+                                const valueD = parseInt(d) + parseInt(t);
                                 const topWidth = valueE + valueD - 12;
                                 const zValue = parseInt(f) - parseInt(e);
                                 const bottomWidth = (valueE + valueD + zValue) - 24;
@@ -210,24 +220,24 @@ const Pauwels = () => {
                                         <td colSpan={4}><h3>W/O - {item.workOrderNo}</h3></td>
                                     </tr>
                                     <tr>
-                                        <td>{findWidth(item.LvLabelE, item.labelD)}</td>
+                                        <td>{findWidth({t: item.LabelT, e: item.LvLabelE, d: item.labelD})}</td>
                                         <td >{item.check ? item.totalSets : parseInt(item.totalSets * 2)} Nos</td>
                                         <td ><TopPauwels height={parseInt(item.LvLabelE) + 6} width={parseInt(item.labelD) + 6}/></td>
                                     </tr>
                                     <tr>
-                                        <td>{findWidth(item.HvLabelE, item.labelD)}</td>
+                                        <td>{findWidth({t: item.LabelT, e: item.HvLabelE, d: item.labelD})}</td>
                                         <td >{item.check ? item.totalSets : parseInt(item.totalSets * 2)} Nos</td>
                                         <td style={{padding: "1px !important" }}><TopPauwels height={parseInt(item.HvLabelE) + 6} width={parseInt(item.labelD) + 6} /></td>
                                     </tr>
                                     {item.check &&
                                         <React.Fragment>
                                             <tr>
-                                                <td style={{width: "20%"}}>{findWidth(item.LvLabelE, item.labelD, item.LabelF)}</td>
+                                                <td style={{width: "20%"}}>{findWidth({t: item.LabelT, e: item.LvLabelE, d: item.labelD, f: item.LabelF})}</td>
                                                 <td>{item.check ? item.totalSets : parseInt(item.totalSets * 2)} Nos</td>
                                                 <td><BottomPauwels x={parseInt(item.LvLabelE) + 6} y={parseInt(item.labelD) + 6} z={parseInt(item.LabelF) - parseInt(item.LvLabelE)} /></td>
                                             </tr>
                                             <tr>
-                                                <td style={{width: "20%"}}>{findWidth(item.HvLabelE, item.labelD,item.LabelF)}</td>
+                                                <td style={{width: "20%"}}>{findWidth({t: item.LabelT, e: item.HvLabelE, d: item.labelD, f: item.LabelF})}</td>
                                                 <td>{item.check ? item.totalSets : parseInt(item.totalSets * 2)} Nos</td>
                                                 <td><BottomPauwels x={parseInt(item.HvLabelE) + 6} y={parseInt(item.labelD) + 6} z={parseInt(item.LabelF) - parseInt(item.HvLabelE)} /></td>
                                             </tr>
