@@ -51,6 +51,9 @@ td {
   padding: 15px !important;
   vertical-align: middle !important;
 }
+.pauwelstable td {
+  padding: 5px !important;
+}
 .table-bordered>:not(caption)>*>*  {
   border-width: 0 !important;
 }
@@ -249,4 +252,72 @@ h1,h2,h3,h4,h5 {
 .detailTable table, .detailTable th, .detailTable td {
   border: 1px solid black;
   border-collapse: collapse;
+}
+
+
+.delete {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+  cursor: pointer;
+  color: red; /* Optional: change color for better visibility */
+  font-size: 1.5em; /* Adjust size if needed */
+}
+
+
+.axis-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin: 40px 0px 50px 40px;
+}
+
+.x-axis {
+  position: absolute;
+  bottom: 0;
+  left: 30px;
+  width: 30px;
+  height: 2px;
+  background-color: black;
+}
+
+.y-axis {
+  position: absolute;
+  bottom: 0;
+  left: 30px;
+  height: 35px;
+  width: 2px;
+  background-color: black;
+}
+
+.x-label {
+  position: absolute;
+  bottom: -15px;
+  left: 40px;
+  font-size: 10px;
+}
+
+.y-label {
+  position: absolute;
+  bottom: 20px;
+  left: 0px;
+  font-size: 10px;
+
+}
+.z-axis {
+  position: absolute;
+  top: 50px;
+  left: 78px;
+  width: 30px;
+  height: 2px;
+  background-color: black;
+}
+.z-label {
+  position: absolute;
+  top: 55px;
+  left: 100px;
+}
+
+.pauwelstable thead,  .pauwelstable td, .pauwelstable tbody, .pauwelstable th {
+  border: 1px solid black !important;
 }
