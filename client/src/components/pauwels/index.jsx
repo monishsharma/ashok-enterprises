@@ -1,14 +1,10 @@
 import React, { useRef, useState } from "react";
-import { Button, Col, Row, Form, Table } from "react-bootstrap";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import { Button, Col, Row, Form } from "react-bootstrap";
 import TopPauwels from "../../shared/component/top-pauwels";
-import { tableConstants } from "./tableConstants";
 import BottomPauwels from "../../shared/component/bottom-pauwels";
 import ReactToPrint from 'react-to-print';
 
 const Pauwels = () => {
-  const canvasLRef = useRef(null);
   const formRef = useRef(null);
   const componentRef = useRef();
 
@@ -41,10 +37,17 @@ const Pauwels = () => {
             'labelA',
             'labelD',
             'LvLabelE',
-            'HvLabelE',
-            'LabelF',
+            'HvLabelE'
         ];
 
+        details.map((data) => {
+          if (data.check) {
+            requiredFields.push("LabelF")
+          } else {
+            const index = requiredFields.indexOf("LabelF");
+            requiredFields.splice(index, 1);
+          }
+        })
 
         const valid = details.every(item =>
             requiredFields.every(field =>
