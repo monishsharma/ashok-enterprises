@@ -56,7 +56,7 @@ const Pauwels = () => {
         );
         setIsValid(valid);
 
-  }, [details])
+  }, [details, isValid])
 
 
   // Function to handle the addition of a new row
@@ -179,7 +179,7 @@ const Pauwels = () => {
               <Col sm={6}>
                 <div className="d-grid">
                 <ReactToPrint
-                    trigger={() => <Button variant="success" disabled={false}>
+                    trigger={() => <Button variant="success" disabled={!isValid}>
                     Generate PDF
                   </Button>}
                     content={() => componentRef.current}
@@ -191,7 +191,7 @@ const Pauwels = () => {
         </Row>
       </div>
       <div className="pt-4">{pauwelsData()}</div>
-        {  <div   ref={componentRef}>
+        { isValid && <div   ref={componentRef}>
           <div style={{marginTop: "100px", marginBottom: "50px"}}>
             <table className="pauwelstable" style={{width: "100%", margin: "20px"}}>
               <thead>
