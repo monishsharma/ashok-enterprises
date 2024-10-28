@@ -3,11 +3,10 @@ import moment from "moment";
 export const getTodayDate = (providedDate = "") => {
   const todayDate = providedDate ? new Date(providedDate) :  new Date();
   const month =
-    todayDate.getMonth() > 9
+    todayDate.getMonth() + 1 > 9
       ? parseInt(todayDate.getMonth()) + 1
       : `0${parseInt(todayDate.getMonth()) + 1}`;
-  const date =
-    todayDate.getDate() > 9 ? todayDate.getDate() : `0${todayDate.getDate()}`;
+  const date = todayDate.getDate() > 9 ? todayDate.getDate() : `0${todayDate.getDate()}`;
   const todaysCompleteDate = `${todayDate.getFullYear()}-${month}-${date}`;
 
   return { sanitizedDate: todaysCompleteDate, date: todayDate };

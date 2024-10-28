@@ -292,16 +292,16 @@ h1,h2,h3,h4,h5 {
 
 .x-label {
   position: absolute;
-  bottom: -15px;
+  bottom: -18px;
   left: 40px;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .y-label {
   position: absolute;
   bottom: 20px;
   left: 0px;
-  font-size: 10px;
+  font-size: 12px;
 
 }
 .z-axis {
@@ -316,6 +316,8 @@ h1,h2,h3,h4,h5 {
   position: absolute;
   top: 55px;
   left: 100px;
+  font-size: 12px;
+
 }
 
 .pauwelstable thead,  .pauwelstable td, .pauwelstable tbody, .pauwelstable th {

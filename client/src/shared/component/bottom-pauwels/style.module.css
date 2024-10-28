@@ -36,7 +36,7 @@
     position: absolute;
     bottom:5px;
     left: 45px;
-    font-size: 10px;
+    font-size: 12px;
 
   }
 
@@ -44,12 +44,12 @@
     position: absolute;
     top: 5px;
     left: 70px;
-    font-size: 10px;
+    font-size: 12px;
   }
   .zlabel {
     position: absolute;
-    top: 40px;
+    top: 35px;
     left: 70px;
-    font-size: 10px;
+    font-size: 12px;
 
   }
