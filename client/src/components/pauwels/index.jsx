@@ -28,35 +28,6 @@ const Pauwels = () => {
   // State to manage the list of details
   const [details, setDetails] = useState([initialData]);
 
-  const [isValid, setIsValid] = useState(false);
-
-  React.useEffect(() => {
-        let requiredFields = [
-            'workOrderNo',
-            'totalSets',
-            'labelA',
-            'labelD',
-            'LvLabelE',
-            'HvLabelE'
-        ];
-
-        details.map((data) => {
-          if (data.check) {
-            requiredFields.push("LabelF")
-          } else {
-            const index = requiredFields.indexOf("LabelF");
-            requiredFields.splice(index, 1);
-          }
-        })
-
-        const valid = details.every(item =>
-            requiredFields.every(field =>
-                item[field] && item[field].trim() !== ''
-            )
-        );
-        setIsValid(valid);
-
-  }, [details, isValid])
 
 
   // Function to handle the addition of a new row
@@ -179,7 +150,7 @@ const Pauwels = () => {
               <Col sm={6}>
                 <div className="d-grid">
                 <ReactToPrint
-                    trigger={() => <Button variant="success" disabled={!isValid}>
+                    trigger={() => <Button variant="success">
                     Generate PDF
                   </Button>}
                     content={() => componentRef.current}
@@ -191,7 +162,7 @@ const Pauwels = () => {
         </Row>
       </div>
       <div className="pt-4">{pauwelsData()}</div>
-        { isValid && <div   ref={componentRef}>
+        { <div   ref={componentRef}>
           <div style={{marginTop: "100px", marginBottom: "50px"}}>
             <table className="pauwelstable" style={{width: "100%", margin: "20px"}}>
               <thead>
