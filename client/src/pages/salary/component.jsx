@@ -28,7 +28,7 @@ const Salary = ({
 
       if (day <= 10) {
           // Before or on the 10th, return the previous month
-          salaryMonth = month - 1;
+          salaryMonth = month === 0 ? 12 : month - 1;
           salaryYear = month === 0 ? year - 1 : year; // Handle January case
       } else {
           // After the 10th, return the current month
