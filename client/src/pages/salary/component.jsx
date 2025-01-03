@@ -17,17 +17,27 @@ const Salary = ({
     updateEmployeePaymentConnect
 }) => {
 
-  const getDateValue = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const currentMonth = today.getMonth(); // 0 for Jan, 1 for Feb, ..., 11 for Dec
-    const nextMonth = new Date(year, currentMonth + 1, 10); // 10th of next month
+    const getDateValue = () => {
 
-    if (today <= nextMonth) {
-        return new Date(year, currentMonth, 1); // First day of the current month
-    } else {
-        return new Date(year, currentMonth + 1, 1); // First day of the next month
-    }
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth(); // January is 0, December is 11
+      const day = today.getDate();
+
+      let salaryMonth, salaryYear;
+
+      if (day <= 10) {
+          // Before or on the 10th, return the previous month
+          salaryMonth = month - 1;
+          salaryYear = month === 0 ? year - 1 : year; // Handle January case
+      } else {
+          // After the 10th, return the current month
+          salaryMonth = month;
+          salaryYear = year;
+      }
+
+      // Return a Date object with the calculated month and year
+      return new Date(salaryYear, salaryMonth, 1);
   }
 
   const [dateValue, setDateValue] = useState(new Date(getDateValue()));
