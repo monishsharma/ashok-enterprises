@@ -261,7 +261,7 @@ if (isLoading) return <PageLoader/>
               <DatePicker
               dateFormat="dd/MM/yyyy"
                 selected={dateValue}
-                minDate={`${year}`}
+              
                 maxDate={`${year}-${month}-${day}`}
                 onChange={handleDateChange}
                 withPortal
