@@ -49,7 +49,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
   useEffect(() => {
     if (id) {
       setIsLoading(true);
-      employeeDetailConnect({id, month})
+      employeeDetailConnect({id, month, year})
         .then(() => setIsLoading(false))
         .catch(() => setIsLoading(false));
     }

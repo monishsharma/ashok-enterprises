@@ -20,24 +20,30 @@ const Salary = ({
     const getDateValue = () => {
 
       const today = new Date();
-      const year = today.getFullYear();
-      const month = today.getMonth(); // January is 0, December is 11
-      const day = today.getDate();
+    const year = today.getFullYear();
+    const month = today.getMonth(); // January is 0, December is 11
+    const day = today.getDate();
 
-      let salaryMonth, salaryYear;
+    let salaryMonth, salaryYear;
 
-      if (day <= 10) {
-          // Before or on the 10th, return the previous month
-          salaryMonth = month === 0 ? 12 : month - 1;
-          salaryYear = month === 0 ? year - 1 : year; // Handle January case
-      } else {
-          // After the 10th, return the current month
-          salaryMonth = month;
-          salaryYear = year;
-      }
+    if (day <= 10) {
+        // Before or on the 10th, return the previous month
+        if (month === 0) {
+            // If current month is January, go to December of the previous year
+            salaryMonth = 11; // December
+            salaryYear = year - 1;
+        } else {
+            salaryMonth = month - 1;
+            salaryYear = year;
+        }
+    } else {
+        // After the 10th, return the current month
+        salaryMonth = month;
+        salaryYear = year;
+    }
 
-      // Return a Date object with the calculated month and year
-      return new Date(salaryYear, salaryMonth, 1);
+    // Return a Date object with the calculated month and year
+    return new Date(salaryYear, salaryMonth);
   }
 
   const [dateValue, setDateValue] = useState(new Date(getDateValue()));
@@ -48,7 +54,8 @@ const Salary = ({
     const employeeListHandler = () => {
         setIsLoading(true);
         const qp = {
-          month:  getMonth(dateValue)
+          month:  getMonth(dateValue),
+          year: new Date(dateValue).getFullYear()
         }
         employeeListConnect({sortByKey: "name", qp})
           .then(() => {

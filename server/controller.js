@@ -10,7 +10,7 @@ export const cron = async() => {
         // Access the collection
         const collection = db.collection(collectionName);
         const today = new Date();
-        const{monthName} = getTodayDate();
+        const{monthName, year} = getTodayDate();
         const tomorrow = new Date(today);
         tomorrow.setDate(today.getDate() + 1);
 
@@ -23,7 +23,8 @@ export const cron = async() => {
             checkoutTime: "",
             isOverTime: false,
             isAbsent: false,
-            month: monthName
+            month: monthName,
+            year
         };
 
         // Update attendance for all employees
