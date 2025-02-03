@@ -74,7 +74,7 @@ const Side = ({
                     <li className={pathname .includes("/inspection-report") ? "activeLi" : ""} onClick={onClick}>
                         <Link to="/inspection-report">
                             <span className="icon">
-                                <ion-icon name="list-outline"></ion-icon>
+                                <ion-icon name="newspaper-outline"></ion-icon>
                             </span>
                             <span className="title">Inspection Report</span>
                         </Link>
