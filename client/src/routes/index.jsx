@@ -7,6 +7,7 @@ import Salary from "../pages/salary";
 import Dashboard from "../pages/dashboard";
 import SalaryCard from "../components/salary-card";
 import Pauwels from "../components/pauwels";
+import InspectionReport from "../pages/inspection-report";
 const routes = [
   {
     path: "/",
@@ -39,6 +40,10 @@ const routes = [
       {
         path: "pauwels",
         element: <Pauwels/>
+      },
+      {
+        path: "inspection-report",
+        element: <InspectionReport/>
       }
     ],
     errorElement: <ErrorPage />,

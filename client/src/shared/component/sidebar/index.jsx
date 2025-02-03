@@ -71,6 +71,14 @@ const Side = ({
                             <span className="title">Pauwels</span>
                         </Link>
                     </li>
+                    <li className={pathname .includes("/inspection-report") ? "activeLi" : ""} onClick={onClick}>
+                        <Link to="/inspection-report">
+                            <span className="icon">
+                                <ion-icon name="list-outline"></ion-icon>
+                            </span>
+                            <span className="title">Inspection Report</span>
+                        </Link>
+                    </li>
 
                     {/* <li>
                         <a href="#">

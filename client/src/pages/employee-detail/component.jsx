@@ -186,7 +186,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
             />
 
           </div>
-          <div className="mt-4">
+          <div className="mt-4 customTable">
             <Tabs
               id="controlled-tab-example"
               activeKey={key}

@@ -44,11 +44,15 @@ thead, tbody {
   text-align: center !important;
   /* vertical-align: baseline !important; */
 }
+.customTable td {
+  padding: 15px !important;
+
+}
 tr {
   align-items: center !important;
 }
 td {
-  padding: 15px !important;
+  /* padding: 15px !important; */
   vertical-align: middle !important;
 }
 .pauwelstable td {
@@ -322,4 +326,16 @@ h1,h2,h3,h4,h5 {
 
 .pauwelstable thead,  .pauwelstable td, .pauwelstable tbody, .pauwelstable th {
   border: 1px solid black !important;
+}
+
+@media screen {
+  .printable {
+    display: none;
+  }
+}
+
+@media print {
+  .printable {
+    display: block !important;
+  }
 }

@@ -161,7 +161,7 @@ const Salary = ({
 
 
 
-          <div className="pt-4">
+          <div className="pt-4 customTable">
             <Table  canSearch={false} isClickable={true} onClick={onClickTable} hoverable={true} cols={tableConstants({dateValue})} data={employeeData} />
         </div>
     </React.Fragment>

@@ -261,7 +261,7 @@ if (isLoading) return <PageLoader/>
               <DatePicker
               dateFormat="dd/MM/yyyy"
                 selected={dateValue}
-              
+
                 maxDate={`${year}-${month}-${day}`}
                 onChange={handleDateChange}
                 withPortal
@@ -289,7 +289,7 @@ if (isLoading) return <PageLoader/>
             </Col>
           </Row>
         </div>
-        <div className="pt-4" style={{minHeight: "1607px"}} >
+        <div className="pt-4 customTable" style={{minHeight: "1607px"}} >
           <Table canSearch={false} cols={tableConstants({handleAttendance, handleCheckoutAttendance, dateValue, markAbsent})} data={employeeData} />
         </div>
     </React.Fragment>

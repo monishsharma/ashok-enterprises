@@ -2,8 +2,8 @@ import axios from "axios";
 
 /* Create axios instance */
 const api = axios.create({
-    // baseURL: "http://localhost:5050",
-    baseURL: "https://ashok-enterprises-api.vercel.app",
+    baseURL: "http://localhost:5050",
+    // baseURL: "https://ashok-enterprises-api.vercel.app",
     headers: {
         "Content-Type": "application/json",
         'Access-Control-Allow-Origin': '*',
