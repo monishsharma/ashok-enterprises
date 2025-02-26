@@ -206,16 +206,16 @@ const InspectionDetail = ({
                 <td style={{ border: "2px solid black" }}>
                   Flitch plate boss distance
                 </td>
-                <td style={{ border: "2px solid black" }}></td>
-                <td style={{ border: "2px solid black" }}></td>
+                <td style={{ border: "2px solid black" }}>N/R</td>
+                <td style={{ border: "2px solid black" }}>N/R</td>
               </tr>
               <tr>
                 <td style={{ border: "2px solid black" }}>11</td>
                 <td style={{ border: "2px solid black" }}>
                   Flitch plate leg centers
                 </td>
-                <td style={{ border: "2px solid black" }}></td>
-                <td style={{ border: "2px solid black" }}></td>
+                <td style={{ border: "2px solid black" }}>N/R</td>
+                <td style={{ border: "2px solid black" }}>N/R</td>
               </tr>
             </tbody>
           </table>
