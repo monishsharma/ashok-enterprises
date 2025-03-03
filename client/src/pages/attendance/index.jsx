@@ -32,6 +32,7 @@ const Attendance = ({
   const [dateValue, setDateValue] = useState(`${year}-${month}-${day}`);
 
   const [showBulkAttendanceUploader, setShowBulkAttendanceUploader] = useState(false);
+  const [isCheckout, setIsCheckout] = useState(false);
 
   const hasEmptyCheckinTime = employeeData.filter(employee =>
       employee.attendance.some(attendance =>
@@ -84,48 +85,6 @@ const Attendance = ({
         console.log(err)
       })
   }
-
-  const checkoutAll = async ({ punchedTime }) => {
-    const promises = employeeData.map(async (data) => {
-      setIsLoading(true);
-      const emp = data.attendance.find(e => e.date === dateValue);
-      if (emp && emp.status && emp.checkinTime && !emp.isAbsent && !emp.checkoutTime) {
-        const punchOutTime = new Date(punchedTime);
-        const { _id: id } = data;
-        const { checkinTime } = emp;
-        const isOverTime = punchOutTime.getHours() >= 18;
-        const { differenceHrs, differenceMin } = totalHoursWork(checkinTime, punchOutTime.getTime(), dateValue);
-        const { overTimeHours, overTimeMin } = totalOverTime(punchedTime, dateValue);
-
-        const payload = {
-          date: dateValue,
-          isOverTime,
-          checkoutTime: `${punchOutTime.getTime()}`,
-          totalWorkingHours: {
-            hours: parseInt(differenceHrs),
-            min: parseInt(differenceMin)
-          },
-          overTimeHours: isOverTime ? {
-            hours: parseInt(overTimeHours),
-            min: parseInt(overTimeMin)
-          } : {
-            hours: 0,
-            min: 0
-          }
-        };
-
-        try {
-          await markAttendanceConnect(id, payload);
-        } catch (err) {
-          console.log(err);
-        }
-      }
-    });
-
-    await Promise.all(promises);
-    await employeeListHandler();
-    setIsLoading(false);
-  };
 
 
   const allPresentHandler = ({punchedTime: time}) => {
@@ -238,7 +197,8 @@ const Attendance = ({
     </Button>
    </div>
   ));
-  const bulUploaderToggle = () => {
+  const bulUploaderToggle = (isCheckoutBulk = false) => {
+    setIsCheckout(isCheckoutBulk);
     setShowBulkAttendanceUploader(!showBulkAttendanceUploader);
   }
 
@@ -249,9 +209,11 @@ if (isLoading) return <PageLoader/>
       {/* {isLoading && <PageLoader />} */}
        {showBulkAttendanceUploader && <BulkUploader
           data={employeeData}
+          variant={isCheckout ? "warning": "success"}
           showModal={showBulkAttendanceUploader}
           onClose={bulUploaderToggle}
           dateValue={dateValue}
+          isCheckout={isCheckout}
           employeeListHandler={employeeListHandler}
         />}
         <div className={` ${styles.attendanceWrapper}`}>
@@ -277,12 +239,12 @@ if (isLoading) return <PageLoader/>
                 All Present
               </Button>
             </TimePicker>
-            <TimePicker dateValue={dateValue} callBack={({punchedTime}) => checkoutAll({punchedTime})} isDisabled={hasEmptyCheckinTime.length < 5}>
-              <Button variant="warning"  style={{width: `100%`}} disabled={hasEmptyCheckinTime.length < 5}>
+            {/* <TimePicker dateValue={dateValue} callBack={({punchedTime}) => checkoutAll({punchedTime})} isDisabled={hasEmptyCheckinTime.length < 5}> */}
+              <Button onClick={()=> bulUploaderToggle(true)} variant="warning"  disabled={hasEmptyCheckinTime.length < 5}>
                 Checkout All
               </Button>
-            </TimePicker>
-            <Button variant="success" onClick={bulUploaderToggle}>
+            {/* </TimePicker> */}
+            <Button variant="success" onClick={() => bulUploaderToggle(false)}>
                 Bulk Uploader
               </Button>
             </div>
