@@ -19,5 +19,5 @@ export const getTodayDate = () => {
       ];
 
       let monthName = months[todayDate.getMonth()];
-    return {sanitizedDate: todaysCompleteDate, date: todayDate, monthName};
+    return {sanitizedDate: todaysCompleteDate, date: todayDate, monthName, year: todayDate.getFullYear()};
 }

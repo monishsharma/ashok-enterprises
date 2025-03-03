@@ -1,21 +1,26 @@
 
 export default (api) => {
 
-    const getEmployeeList = ({date, month}) => {
+    const getEmployeeList = ({ date, month, year }) => {
         let queryParams = "";
         if (date) {
-            queryParams = `?date=${date}`
-        }
-        if (month) {
-            queryParams = `?month=${month}`
+            queryParams = `?date=${date}`;
+        } else if (month) {
+            queryParams = `?month=${month}`;
+            if (year) {
+                queryParams += `&year=${year}`;
+            }
         }
         return api.get(`/employee/list${queryParams}`);
     };
 
-    const getEmployeeDetail = ({id, month}) => {
+    const getEmployeeDetail = ({id, month, year}) => {
         let queryParams = "";
         if (month) {
-            queryParams = `?month=${month}`
+            queryParams = `?month=${month}`;
+            if (year) {
+                queryParams += `&year=${year}`;
+            }
         }
         return api.get(`/employee/detail/${id}${queryParams}`);
     }

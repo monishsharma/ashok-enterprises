@@ -114,7 +114,7 @@ const SalaryCard = ({
                     employeeData.map((emp, index) => (
                             <SalayDetail
                                 key={index}
-                                advance={emp.advance[year][month]|| 0}
+                                advance={emp.advance[year] && emp.advance[year][month] && emp.advance[year][month] || 0}
                                 name={emp.name}
                                 salaryPerDay={emp.salaryPerDay}
                                 esi={emp.esi}

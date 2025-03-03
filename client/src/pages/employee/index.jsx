@@ -95,7 +95,7 @@ const Employee = ({
             Add Employee
           </Button>
         </div>
-        <div className="pt-4">
+        <div className="pt-4 customTable">
           <Table canSearch={false} isClickable={false} onClick={onClickTable} hoverable={true} cols={tableConstants({editEmployee, deleteEmployeeHandler})} data={employeeData} />
         </div>
     </React.Fragment>

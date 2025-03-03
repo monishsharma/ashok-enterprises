@@ -18,7 +18,7 @@ const setEmployeeDetail = (data) => ({
 
 export const employeeList = ({date, sortByKey = "", qp = {}}) => (dispatch) => {
     return new Promise((resolve, reject) => {
-        EmployeeService.getEmployeeList({date, month: qp.month})
+        EmployeeService.getEmployeeList({date, month: qp.month, ...(qp.year && {year: qp.year})})
         .then((res) => {
             let data = [...res.data];
             if (sortByKey) {
@@ -33,9 +33,9 @@ export const employeeList = ({date, sortByKey = "", qp = {}}) => (dispatch) => {
     })
 }
 
-export const employeeDetail = ({id, month}) => (dispatch) => {
+export const employeeDetail = ({id, month, year}) => (dispatch) => {
     return new Promise((resolve, reject) => {
-        EmployeeService.getEmployeeDetail({id, month})
+        EmployeeService.getEmployeeDetail({id, month, year})
         .then((res) => {
             dispatch(setEmployeeDetail(res.data));
             resolve(res.data);

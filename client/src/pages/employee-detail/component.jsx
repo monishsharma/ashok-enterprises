@@ -49,7 +49,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
   useEffect(() => {
     if (id) {
       setIsLoading(true);
-      employeeDetailConnect({id, month})
+      employeeDetailConnect({id, month, year})
         .then(() => setIsLoading(false))
         .catch(() => setIsLoading(false));
     }
@@ -186,7 +186,7 @@ const EmployeeDetail = ({ detail = {}, employeeDetailConnect, markAttendanceConn
             />
 
           </div>
-          <div className="mt-4">
+          <div className="mt-4 customTable">
             <Tabs
               id="controlled-tab-example"
               activeKey={key}

@@ -55,7 +55,7 @@ const BulkUploader = ({
             isAbsent: false,
             isSunday: timeSelected.getDay() == 0,
             checkinTime: `${timeSelected.getTime()}`,
-            month: getMonth(),
+            month: getMonth(dateValue),
             year: timeSelected.getFullYear()
             };
 

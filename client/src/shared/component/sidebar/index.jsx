@@ -22,10 +22,20 @@ const Side = ({
     return (
         <React.Fragment>
             <div className={isActive ? "navigation active" : "navigation"}>
-                <div>
+                <Link to="/" style={{textDecoration: "none"}}>
                     <span className="companyTitle">{isActive ? "AS" : "Ashok Enterprises"}</span>
-                </div>
+                </Link>
                 <ul>
+
+                    <li className={pathname === "/" ? "activeLi" : ""} onClick={onClick}>
+                        <Link to="/">
+                            <span className="icon">
+                                <ion-icon name="grid-outline"></ion-icon>
+                            </span>
+                            <span className="title">Dashboard</span>
+                        </Link>
+                    </li>
+
 
                     <li className={pathname === "/attendance" ? "activeLi" : ""} onClick={onClick}>
                         <Link to="/attendance">
@@ -59,6 +69,22 @@ const Side = ({
                                 <ion-icon name="wallet-outline"></ion-icon>
                             </span>
                             <span className="title">Invoice</span>
+                        </Link>
+                    </li>
+                    <li className={pathname .includes("/pauwels") ? "activeLi" : ""} onClick={onClick}>
+                        <Link to="/pauwels">
+                            <span className="icon">
+                                <ion-icon name="list-outline"></ion-icon>
+                            </span>
+                            <span className="title">Pauwels</span>
+                        </Link>
+                    </li>
+                    <li className={pathname .includes("/inspection-report") ? "activeLi" : ""} onClick={onClick}>
+                        <Link to="/inspection-report">
+                            <span className="icon">
+                                <ion-icon name="newspaper-outline"></ion-icon>
+                            </span>
+                            <span className="title">Inspection Report</span>
                         </Link>
                     </li>
 

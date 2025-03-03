@@ -23,9 +23,9 @@ const NewInvoice = props => {
             </Form.Select>
           </Col>
         </Row>
-        {/* <div className="mt-4">
+        <div className="mt-4">
         <Bill />
-        </div> */}
+        </div>
     </div>
   )
 }

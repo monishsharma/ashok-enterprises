@@ -14,35 +14,42 @@ const collectionName = process.env.NODE_ENV === "dev" ? "attendance" : "employee
 
         let query = {};
         let options = {};
-        const key = Object.keys(req.query);
-        if (key && key.length) {
-            query = {};
+        const queryKeys = Object.keys(req.query);
+        if (queryKeys.length > 0) {
+            // Dynamically construct the filter conditions
+            const filterConditions = queryKeys.map(key => {
+                if (key === "year") {
+                    return {
+                        $or: [
+                            { $eq: [`$$item.${key}`, parseInt(req.query[key])] }, // Match the year
+                            { $not: { $in: [`$$item.${key}`, [null, undefined]] } } // Handle missing year
+                        ]
+                    };
+                } else {
+                    return { $eq: [`$$item.${key}`, req.query[key]] }; // Match other fields
+                }
+            });
+
             options = {
                 projection: {
-                  _id: 1,
-                  name: 1,
-                  salaryPerDay: 1,
-                  payment: 1,
-                  advance: 1,
-                  extraAdvance:1,
-                  esi: 1,
-                  attendance: {
-                    $map: {
-                      input: {
+                    _id: 1,
+                    name: 1,
+                    salaryPerDay: 1,
+                    payment: 1,
+                    advance: 1,
+                    esi: 1,
+                    extraAdvance: 1,
+                    attendance: {
                         $filter: {
-                          input: "$attendance",
-                          as: "item",
-                          cond: { $eq: [`$$item.${key}`,  req.query[key]] }
+                            input: "$attendance",
+                            as: "item",
+                            cond: {
+                                $and: filterConditions
+                            }
                         }
-                      },
-                      as: "filteredItem",
-                      in: {
-                        $mergeObjects: ["$$filteredItem"]
-                      }
                     }
-                  }
                 }
-              };
+            };
         }
 
 
@@ -56,47 +63,59 @@ const collectionName = process.env.NODE_ENV === "dev" ? "attendance" : "employee
         }
     });
 
-    router.get("/detail/:id", async(req, res) => {
-        const query = {_id: new ObjectId(req.params.id)};
+    router.get("/detail/:id", async (req, res) => {
+        const query = { _id: new ObjectId(req.params.id) };
+        const queryKeys = Object.keys(req.query);
+
         let options = {};
-        const key = Object.keys(req.query);
-        if (key && key.length) {
+        if (queryKeys.length > 0) {
+            // Dynamically construct the filter conditions
+            const filterConditions = queryKeys.map(key => {
+                if (key === "year") {
+                    return {
+                        $or: [
+                            { $eq: [`$$item.${key}`, parseInt(req.query[key])] }, // Match the year
+                            { $not: { $in: [`$$item.${key}`, [null, undefined]] } } // Handle missing year
+                        ]
+                    };
+                } else {
+                    return { $eq: [`$$item.${key}`, req.query[key]] }; // Match other fields
+                }
+            });
+
             options = {
                 projection: {
-                  _id: 1,
-                  name: 1,
-                  salaryPerDay: 1,
-                  payment: 1,
-                  advance: 1,
-                  esi: 1,
-                  extraAdvance:1,
-                  attendance: {
-                    $map: {
-                      input: {
+                    _id: 1,
+                    name: 1,
+                    salaryPerDay: 1,
+                    payment: 1,
+                    advance: 1,
+                    esi: 1,
+                    extraAdvance: 1,
+                    attendance: {
                         $filter: {
-                          input: "$attendance",
-                          as: "item",
-                          cond: { $eq: [`$$item.${key}`,  req.query[key]] }
+                            input: "$attendance",
+                            as: "item",
+                            cond: {
+                                $and: filterConditions
+                            }
                         }
-                      },
-                      as: "filteredItem",
-                      in: {
-                        $mergeObjects: ["$$filteredItem"]
-                      }
                     }
-                  }
                 }
-              };
+            };
         }
+
         try {
             let collection = db.collection(collectionName);
+            console.log("Mongo Query Options:", JSON.stringify(options, null, 2));
             let results = await collection.find(query, options).toArray();
-            res.send(results).status(200);
+            res.status(200).send(results);
         } catch (err) {
             console.error(err);
             res.status(500).send("Error retrieving employee details");
         }
     });
+
 
 
   router.post("/new", async (req, res) => {

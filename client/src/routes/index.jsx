@@ -8,11 +8,18 @@ import Invoice from "../pages/invoice";
 import NewInvoice from "../pages/new-invoice";
 import SalaryCard from "../components/salary-card";
 
+import Dashboard from "../pages/dashboard";
+import Pauwels from "../components/pauwels";
+import InspectionReport from "../pages/inspection-report";
 const routes = [
   {
     path: "/",
     element: <App />,
     children: [
+      {
+        path: "/",
+        element: <Dashboard />
+      },
       {
         path: "attendance",
         element: <AttendanceView />
@@ -31,7 +38,15 @@ const routes = [
       },
       {
         path: "salary/distribution/:month/:year",
-        element: <SalaryCard />
+        element: <SalaryCard/>
+      },
+      {
+        path: "pauwels",
+        element: <Pauwels/>
+      },
+      {
+        path: "inspection-report",
+        element: <InspectionReport/>
       }
     ],
     errorElement: <ErrorPage />,
