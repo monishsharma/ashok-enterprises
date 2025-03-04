@@ -193,6 +193,17 @@ h1,h2,h3,h4,h5 {
   background-color: #198754 !important;
     border-color: #198754 !important;
 }
+
+.warningElistCheckbox input[type=checkbox] {
+  outline: 2px solid #ffc107 !important;
+  accent-color: #ffc107;
+}
+
+.warningElistCheckbox > .form-check-input:checked  {
+  background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+}
+
 .elistCheckbox label {
   text-transform: capitalize;
 }
