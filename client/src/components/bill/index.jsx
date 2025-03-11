@@ -47,7 +47,8 @@ const Bill = (props) => {
             <th>PAN:-</th>
             <th>State & Code:-</th>
             <th>Invoice No:-</th>
-            <th>Invoice Date:-</th>
+            <td>AE/24-25-1627</td>
+
           </tr>
         </thead>
         <tbody>
@@ -55,7 +56,7 @@ const Bill = (props) => {
             <td colSpan="2">23AQGPS4032C1ZA</td>
             <td>AQGPS4032C</td>
             <td>MP & 23</td>
-            <td>AE/24-25-1627</td>
+            <th>Invoice Date:-</th>
             <td>31/7/2024</td>
           </tr>
           <tr>

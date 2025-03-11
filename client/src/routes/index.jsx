@@ -47,21 +47,23 @@ const routes = [
       {
         path: "inspection-report",
         element: <InspectionReport/>
-      }
+      },
+      {
+        path: "invoice",
+        element: <Invoice />,
+        errorElement: <ErrorPage />,
+      },
+      {
+        path: "new/invoice",
+        element: <NewInvoice />,
+        errorElement: <ErrorPage />,
+      },
     ],
     errorElement: <ErrorPage />,
   },
   // Invoice routes without App
-  {
-    path: "invoice",
-    element: <Invoice />,
-    errorElement: <ErrorPage />,
-  },
-  {
-    path: "new/invoice",
-    element: <NewInvoice />,
-    errorElement: <ErrorPage />,
-  },
+
+
 ];
 
 export default routes;
