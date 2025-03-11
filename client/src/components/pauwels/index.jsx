@@ -87,7 +87,7 @@ const Pauwels = () => {
           {details.slice().reverse().map((item) => (
             <React.Fragment key={item.id}>
               <div className="d-flex justify-content-between">
-                <Form.Group className="mb-3" controlId="formBasicCheckbox">
+                <Form.Group className="mb-3" controlId={`formBasicCheckbox_${item.id}`}>
                   <Form.Check
                     type="checkbox"
                     checked={item.check}
