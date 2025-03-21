@@ -4,7 +4,7 @@ export const getEmployee = (data) => {
     data.filter(emp=> {
         if (emp.attendance && emp.attendance.length) {
             const detail = emp.attendance[0];
-            if (!detail.status && !detail.isAbsent && !detail.checkinTime) {
+            if (!detail.status && !detail.isAbsent) {
                 employee.push(emp);
             }
         } else {
