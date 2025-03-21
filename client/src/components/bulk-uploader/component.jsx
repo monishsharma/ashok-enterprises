@@ -54,8 +54,8 @@ const BulkUploader = ({
         emp &&
         emp.status &&
         emp.checkinTime &&
-        !emp.isAbsent &&
-        !emp.checkoutTime
+        // !emp.isAbsent &&
+        // !emp.checkoutTime
       ) {
         const punchOutTime = new Date(timeSelected);
         const { _id: id } = data;
