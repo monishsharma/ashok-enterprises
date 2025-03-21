@@ -53,7 +53,7 @@ const BulkUploader = ({
       if (
         emp &&
         emp.status &&
-        emp.checkinTime &&
+        emp.checkinTime
         // !emp.isAbsent &&
         // !emp.checkoutTime
       ) {
