@@ -67,7 +67,7 @@ const BulkUploader = ({
           dateValue
         );
         const { overTimeHours, overTimeMin } = totalOverTime(
-          timeSelected,
+          timeSelected.getTime(),
           dateValue
         );
 
