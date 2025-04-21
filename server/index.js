@@ -22,7 +22,9 @@ const corsOptions = {
 }
 console.log(process.env.NODE_ENV)
 
-app.use(cors());
+app.use(cors({
+  exposedHeaders: ["Content-Disposition"]
+}));
 app.use(express.json());
 
 //public path
