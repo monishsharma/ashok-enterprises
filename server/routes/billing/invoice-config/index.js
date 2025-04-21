@@ -247,8 +247,8 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
   const browser = await getBrowser();
   const page = await browser.newPage();
 
-  const { id, downloadOriginal } = req.params;
-  console.log(req.params)
+  const { id } = req.params;
+
   try {
     const data = await db.collection("invoices").findOne({ _id: new ObjectId(id) });
     if (!data) return res.status(404).send("Invoice not found");
@@ -269,11 +269,13 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
     const imageBuffer = fs.readFileSync(logoPath);
     const base64Image = imageBuffer.toString('base64');
     const mimeType = 'image/png'; // or jpg if it's jpeg
-    console.log(typeof downloadOriginal)
-  const logoDataURI = `data:${mimeType};base64,${base64Image}`;
+    const logoDataURI = `data:${mimeType};base64,${base64Image}`;
     const amountInWords = `Indian Rupees ${convertAmountToWords(data.goodsDescription.Total)}`;
+    const date = new Date(data.invoiceDetail.invoiceDate);
+    const formattedDate = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
     const html = await ejs.renderFile(path.join(__dirname, './templates/invoice.ejs'), {
       data,
+      formattedDate,
       amountInWords,
       logoBase64: logoDataURI,
       bankDetail,
