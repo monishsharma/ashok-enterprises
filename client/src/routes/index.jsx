@@ -4,8 +4,6 @@ import AttendanceView from "../pages/attendance";
 import EmployeeView from "../pages/employee";
 import EmployeeDetail from "../pages/employee-detail";
 import Salary from "../pages/salary";
-import Invoice from "../pages/invoice";
-import NewInvoice from "../pages/new-invoice";
 import SalaryCard from "../components/salary-card";
 
 import Dashboard from "../pages/dashboard";
@@ -47,17 +45,7 @@ const routes = [
       {
         path: "inspection-report",
         element: <InspectionReport/>
-      },
-      {
-        path: "invoice",
-        element: <Invoice />,
-        errorElement: <ErrorPage />,
-      },
-      {
-        path: "new/invoice",
-        element: <NewInvoice />,
-        errorElement: <ErrorPage />,
-      },
+      }
     ],
     errorElement: <ErrorPage />,
   },
