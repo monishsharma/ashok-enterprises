@@ -8,22 +8,4 @@ services:
     envVars:
       - key: NODE_ENV
         value: prod
-      - key: MONGODB_URI
-        value: your-mongodb-uri
-      - key: OTHER_SECRET
-        value: your-secret
 
-  - type: cron
-    name: invoice-cron
-    env: node
-    plan: free
-    schedule: "0 0 * * *"  # This runs at 12:00 AM daily
-    buildCommand: npm install
-    startCommand: node controller.js  # Run controller.js for the cron job
-    envVars:
-      - key: NODE_ENV
-        value: prod
-      - key: MONGODB_URI
-        value: your-mongodb-uri
-      - key: OTHER_SECRET
-        value: your-secret
