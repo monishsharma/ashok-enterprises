@@ -53,7 +53,7 @@ const convertAmountToWords = (amount) => {
   return toWords.convert(parseFloat(amount));
 };
 
-router.get("/get-invoice-config", async (req, res) => {
+router.get("get-invoice-config", async (req, res) => {
     try {
       const billingCollection = db.collection("billing");
       const config = await billingCollection.findOne({});
