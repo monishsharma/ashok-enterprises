@@ -1,5 +1,4 @@
 import express from "express";
-import InvoiceConfig from "./schema.js";
 import db from "../../../db/connection.js";
 import ejs from "ejs";
 import path from "path";
@@ -12,9 +11,29 @@ import { format } from "@fast-csv/format";
 const router = express.Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+
 // Puppeteer config
 let browser;
 let isProduction = process.env.NODE_ENV === "prod";
+
+// Logo caching
+const logoMap = {
+  ASHOK: "ashoklogo.png",
+  PADMA: "padma.png",
+};
+
+const base64Logos = {};
+for (const [key, file] of Object.entries(logoMap)) {
+  const imageBuffer = fs.readFileSync(path.join(__dirname, file));
+  base64Logos[key] = `data:image/png;base64,${imageBuffer.toString("base64")}`;
+}
+
+// Compile EJS template once
+const invoiceTemplateString = fs.readFileSync(
+  path.join(__dirname, "./templates/invoice.ejs"),
+  "utf8"
+);
+const compiledInvoiceTemplate = ejs.compile(invoiceTemplateString);
 
 async function getBrowser() {
   if (browser) return browser;
@@ -124,53 +143,62 @@ router.get("/invoice/:id", async (req, res) => {
 });
 
 router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
-  const browser = await getBrowser();
-  const page = await browser.newPage();
+  console.time("pdf-generation");
+
   const { id, downloadOriginal } = req.params;
 
   try {
+    console.time("browser-launch");
+    const browser = await getBrowser();
+    const page = await browser.newPage();
+    console.timeEnd("browser-launch");
+
+    console.time("db-fetch");
     const data = await db.collection("invoices").findOne({ _id: new ObjectId(id) });
+    console.timeEnd("db-fetch");
+
     if (!data) return res.status(404).send("Invoice not found");
 
-    const img = data.company === "ASHOK" ? "ashoklogo.png" : "padma.png";
+    const logoDataURI = base64Logos[data.company];
+    const amountInWords = `Indian Rupees ${convertAmountToWords(data.goodsDescription.Total)}`;
+
     const bankDetail =
       data.company === "PADMA"
         ? `
         <ul style="margin: 0; text-align: left; padding-left: 20px; list-style-type: decimal; line-height: 1.5;">
-        <li>HDFC Bank (Kanti Nagar Gwalior, MP, 474002)<br />A/C NO: 50200047766504 <br/> IFSC CODE: HDFC0009437</li>
-        <li>Goods once sold will not be back</li>
-        <li>Subject to Gwalior jurisdiction only</li>
+          <li>HDFC Bank (Kanti Nagar Gwalior, MP, 474002)<br />A/C NO: 50200047766504 <br/> IFSC CODE: HDFC0009437</li>
+          <li>Goods once sold will not be back</li>
+          <li>Subject to Gwalior jurisdiction only</li>
         </ul>`
         : `
         <ul style="margin: 0; text-align: left; padding-left: 20px; list-style-type: decimal; line-height: 1.5;">
-        <li>STATE BANK OF INDIA (SME BRANCH PATANKAR BAZAR LASHKAR)<br />A/C NO: 63008044566 <br/> IFSC CODE: SBIN0030119</li>
-        <li>Goods once sold will not be back</li>
-        <li>Subject to Gwalior jurisdiction only</li>
+          <li>STATE BANK OF INDIA (SME BRANCH PATANKAR BAZAR LASHKAR)<br />A/C NO: 63008044566 <br/> IFSC CODE: SBIN0030119</li>
+          <li>Goods once sold will not be back</li>
+          <li>Subject to Gwalior jurisdiction only</li>
         </ul>`;
 
-    const logoPath = path.join(__dirname, img);
-    const imageBuffer = fs.readFileSync(logoPath);
-    const base64Image = imageBuffer.toString("base64");
-    const mimeType = "image/png";
-    const logoDataURI = `data:${mimeType};base64,${base64Image}`;
-    const amountInWords = `Indian Rupees ${convertAmountToWords(data.goodsDescription.Total)}`;
-
-    const html = await ejs.renderFile(path.join(__dirname, "./templates/invoice.ejs"), {
+    console.time("html-render");
+    const html = compiledInvoiceTemplate({
       data,
       amountInWords,
       logoBase64: logoDataURI,
       bankDetail,
-      showLogo: req.params.downloadOriginal === "true",
+      showLogo: downloadOriginal === "true",
     });
+    console.timeEnd("html-render");
 
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    console.time("set-content");
+    await page.setContent(html, { waitUntil: "load" }); // Faster than networkidle0
+    console.timeEnd("set-content");
 
+    console.time("generate-pdf");
     const pdfBuffer = await page.pdf({
       format: "LEGAL",
       margin: { top: "0", bottom: "0", left: "0", right: "0" },
       printBackground: true,
       scale: 1,
     });
+    console.timeEnd("generate-pdf");
 
     await page.close();
 
@@ -180,12 +208,14 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
       "Content-Length": pdfBuffer.length,
     });
 
+    console.timeEnd("pdf-generation");
     res.send(Buffer.from(pdfBuffer));
   } catch (error) {
     console.error("Error generating PDF:", error);
     res.status(500).send("Internal server error");
   }
 });
+
 
 router.get("/generate-csv", async (req, res) => {
   const { month, year, company } = req.query;
