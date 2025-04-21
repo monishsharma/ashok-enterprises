@@ -290,10 +290,12 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
     });
 
     await page.close(); // don't close browser, just the page
-
+    const sanitizeFilename = (name) =>
+      name.replace(/[\/\\:*?"<>|]/g, '-');
+    const invoiceNo = data.invoiceDetail.invoiceNO || 'invoice';
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename=invoice.pdf',
+      'Content-Disposition': `attachment; filename=${sanitizeFilename(invoiceNo)}.pdf`,
       'Content-Length': pdfBuffer.length,
     });
 
