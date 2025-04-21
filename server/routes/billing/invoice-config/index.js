@@ -1,10 +1,9 @@
 import express from "express";
-import chromium from 'chrome-aws-lambda';
 import InvoiceConfig from "./schema.js";
 import db from "../../../db/connection.js";
 import ejs from 'ejs';
 import path from 'path';
-import puppeteer from 'puppeteer';
+// import puppeteer from 'puppeteer';
 import { fileURLToPath } from 'url';
 import { ObjectId } from "mongodb";
 const router = express.Router();
@@ -15,13 +14,31 @@ import { format } from '@fast-csv/format';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
-
-
+// Puppeteer config
 let browser;
+let isProduction = process.env.NODE_ENV === "production";
 
-(async () => {
-  browser = await puppeteer.launch(); // launch once
-})();
+async function getBrowser() {
+  if (browser) return browser;
+
+  if (isProduction) {
+    const puppeteer = (await import("puppeteer-core")).default;
+    const chromium = (await import("@sparticuz/chromium")).default;
+
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
+  } else {
+    const puppeteer = (await import("puppeteer")).default;
+    browser = await puppeteer.launch();
+  }
+
+  return browser;
+}
+
 
 const toWords = new ToWords({
   localeCode: 'en-IN',
@@ -227,9 +244,8 @@ router.patch('/update/invoice/:id', async (req, res) => {
 
 router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
 
-  if (!browser) {
-    browser = await puppeteer.launch(); // fallback
-  }
+  const browser = await getBrowser();
+  const page = await browser.newPage();
 
   const { id, downloadOriginal } = req.params;
   console.log(req.params)
@@ -264,7 +280,6 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
       showLogo: req.params.downloadOriginal === 'true'
     });
 
-    const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
 
     const pdfBuffer = await page.pdf({
