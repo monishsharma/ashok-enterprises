@@ -1,4 +1,5 @@
 import express from "express";
+import chromium from 'chrome-aws-lambda';
 import InvoiceConfig from "./schema.js";
 import db from "../../../db/connection.js";
 import ejs from 'ejs';
@@ -18,9 +19,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 let browser;
 
-(async () => {
-  browser = await puppeteer.launch(); // launch once
-})();
 
 const toWords = new ToWords({
   localeCode: 'en-IN',
@@ -227,11 +225,15 @@ router.patch('/update/invoice/:id', async (req, res) => {
 router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
 
   if (!browser) {
-    browser = await puppeteer.launch(); // fallback
+    browser = await chromium.puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
+    });
   }
-
   const { id, downloadOriginal } = req.params;
-  console.log(req.params)
+
   try {
     const data = await db.collection("invoices").findOne({ _id: new ObjectId(id) });
     if (!data) return res.status(404).send("Invoice not found");

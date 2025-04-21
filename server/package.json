@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@fast-csv/format": "^5.0.2",
+    "chrome-aws-lambda": "^10.1.0",
     "cors": "^2.8.5",
     "csv": "^6.3.10",
     "csv-parser": "^3.0.0",
@@ -28,7 +29,8 @@
     "number-to-words": "^1.2.4",
     "parser": "^0.1.4",
     "path": "^0.12.7",
-    "puppeteer": "^24.6.0",
+    "puppeteer": "^10.4.0",
+    "puppeteer-core": "^10.4.0",
     "stream": "^0.0.3",
     "to-words": "^4.4.0",
     "url": "^0.11.4"
