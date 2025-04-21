@@ -4,8 +4,9 @@ import AttendanceView from "../pages/attendance";
 import EmployeeView from "../pages/employee";
 import EmployeeDetail from "../pages/employee-detail";
 import Salary from "../pages/salary";
-import Dashboard from "../pages/dashboard";
 import SalaryCard from "../components/salary-card";
+
+import Dashboard from "../pages/dashboard";
 import Pauwels from "../components/pauwels";
 import InspectionReport from "../pages/inspection-report";
 const routes = [
@@ -47,8 +48,10 @@ const routes = [
       }
     ],
     errorElement: <ErrorPage />,
-
   },
+  // Invoice routes without App
+
+
 ];
 
 export default routes;
