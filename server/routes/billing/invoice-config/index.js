@@ -272,7 +272,7 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
     const logoDataURI = `data:${mimeType};base64,${base64Image}`;
     const amountInWords = `Indian Rupees ${convertAmountToWords(data.goodsDescription.Total)}`;
     const date = new Date(data.invoiceDetail.invoiceDate);
-    const formattedDate = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+    const formattedDate = `${date.getDate().padStart(2, '0')}-${date.getMonth() + 1}-${date.getFullYear()}`;
     const html = await ejs.renderFile(path.join(__dirname, './templates/invoice.ejs'), {
       data,
       formattedDate,
