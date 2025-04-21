@@ -17,8 +17,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Puppeteer config
 let browser;
 let isProduction = process.env.NODE_ENV === "prod";
+
 async function getBrowser() {
-  if (!browser) {
+  if (browser) return browser;
+
+  if (isProduction) {
     const puppeteer = (await import("puppeteer-core")).default;
     const chromium = (await import("@sparticuz/chromium")).default;
 
@@ -28,12 +31,12 @@ async function getBrowser() {
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
     });
-
-    // Create a page globally so it doesn't need to be created for every request.
-    page = await browser.newPage();
+  } else {
+    const puppeteer = (await import("puppeteer")).default;
+    browser = await puppeteer.launch();
   }
 
-  return { browser, page };
+  return browser;
 }
 
 
@@ -244,8 +247,8 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
   const browser = await getBrowser();
   const page = await browser.newPage();
 
-  const { id } = req.params;
-
+  const { id, downloadOriginal } = req.params;
+  console.log(req.params)
   try {
     const data = await db.collection("invoices").findOne({ _id: new ObjectId(id) });
     if (!data) return res.status(404).send("Invoice not found");
@@ -266,8 +269,8 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
     const imageBuffer = fs.readFileSync(logoPath);
     const base64Image = imageBuffer.toString('base64');
     const mimeType = 'image/png'; // or jpg if it's jpeg
-
-    const logoDataURI = `data:${mimeType};base64,${base64Image}`;
+    console.log(typeof downloadOriginal)
+  const logoDataURI = `data:${mimeType};base64,${base64Image}`;
     const amountInWords = `Indian Rupees ${convertAmountToWords(data.goodsDescription.Total)}`;
     const html = await ejs.renderFile(path.join(__dirname, './templates/invoice.ejs'), {
       data,
@@ -283,8 +286,7 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
       format: 'LEGAL',
       margin: { top: '0', bottom: '0', left: '0', right: '0' },
       printBackground: true,
-      scale: 1,
-      waitUntil: 'load',
+      scale: 1
     });
 
     await page.close(); // don't close browser, just the page
