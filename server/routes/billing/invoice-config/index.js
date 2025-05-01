@@ -90,11 +90,20 @@ router.get('/invoice/list/:company', async (req,res) => {
   const page = parseInt(req.query.page) || 1; // default to page 1
   const limit = parseInt(req.query.limit) || 10; // default to 10 items per page
   const skip = (page - 1) * limit;
+  const { month, year } = req.query;
+  let query = { company: company };
+  // If month and year are provided, add date filtering
+  if (month && year) {
+    const startDate = new Date(`${year}-${month}-01`);
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + 1);
+    query.invoiceDate = { $gte: startDate, $lt: endDate };
+  }
   try {
     const invoiceCollection = db.collection("invoices");
-    const totalCount = await invoiceCollection.countDocuments({ company: company });
+    const totalCount = await invoiceCollection.countDocuments(query);
     const invoiceList = await invoiceCollection
-      .find({ company: company })
+      .find(query)
       .sort({ "invoiceDetail.invoiceNO": -1 })
       .skip(skip)
       .limit(limit)
