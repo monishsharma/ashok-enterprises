@@ -197,6 +197,29 @@ if (year) {
   });
 }
 
+const customerTotals = {};
+
+currentMonthInvoices.forEach(invoice => {
+  const customer = invoice.buyerDetail.customer || "Unknown";
+  const amount = parseFloat(invoice.goodsDescription.Total || 0);
+
+  if (!customerTotals[customer]) {
+    customerTotals[customer] = {
+      total: 0,
+      paid: 0,
+      unpaid: 0
+    };
+  }
+
+  customerTotals[customer].total += amount;
+  if (invoice.paid) {
+    customerTotals[customer].paid += amount;
+  } else {
+    customerTotals[customer].unpaid += amount;
+  }
+});
+
+
 
 
 res.status(200).json({
@@ -212,7 +235,8 @@ res.status(200).json({
     invoiceCountChange: {
       percentage: invoiceCountChange,
       growth: invoiceCountGrowth
-    }
+    },
+    customerTotals
 });
 
 
