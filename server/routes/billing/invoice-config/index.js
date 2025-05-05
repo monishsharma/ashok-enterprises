@@ -85,6 +85,144 @@ router.get('/vendor/list', async (req,res) => {
     }
 })
 
+router.get('/get/invoice/report/:company', async (req, res) => {
+  const company = req.params.company;
+  let query = { company: company };
+  const { month, year } = req.query;
+
+  try {
+    const invoiceCollection = db.collection("invoices");
+
+    let currentMonthInvoices = [];
+    let prevMonthInvoices = [];
+    let totalCount = 0;
+    let preInvoiceCount = 0;
+    let invoiceAmount = [];
+
+    if (month && year) {
+      // Parse input as integers
+      const currentMonth = parseInt(month); // 1–12
+      const currentYear = parseInt(year);
+
+      // Current month date range
+      const startDate = new Date(currentYear, currentMonth - 1, 1);
+      const endDate = new Date(currentYear, currentMonth, 1);
+
+      // Previous month date range
+      const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+      const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+
+      const prevStartDate = new Date(prevYear, prevMonth - 1, 1);
+      const prevEndDate = new Date(prevYear, prevMonth, 1);
+
+      // Fetch current month invoices
+      const currentQuery = {
+        ...query,
+        invoiceDate: { $gte: startDate, $lt: endDate }
+      };
+      currentMonthInvoices = await invoiceCollection.find(currentQuery).sort({ "invoiceDetail.invoiceNO": -1 }).toArray();
+      totalCount = await invoiceCollection.countDocuments(currentQuery);
+
+      // Fetch previous month invoices
+      const prevQuery = {
+        ...query,
+        invoiceDate: { $gte: prevStartDate, $lt: prevEndDate }
+      };
+      prevMonthInvoices = await invoiceCollection.find(prevQuery).sort({ "invoiceDetail.invoiceNO": -1 }).toArray();
+      preInvoiceCount = await invoiceCollection.countDocuments(prevQuery);
+
+    }
+
+    // Helper to calculate totals
+    const calculateTotals = (invoices) => {
+      let total = 0, paid = 0, unpaid = 0;
+      invoices.forEach(inv => {
+        const amount = parseFloat(inv.goodsDescription.Total);
+        invoiceAmount.push(amount)
+        total += amount;
+        if (inv.paid) paid += amount;
+        else unpaid += amount;
+      });
+      return { total, paid, unpaid };
+    };
+
+    const current = calculateTotals(currentMonthInvoices);
+    const previous = calculateTotals(prevMonthInvoices);
+
+    // Calculate percentage and growth flag for invoice amount
+let invoiceAmountChange = 0;
+let invoiceAmountGrowth = false;
+if (previous.total > 0) {
+  invoiceAmountChange = ((current.total - previous.total) / previous.total) * 100;
+  invoiceAmountChange = parseFloat(invoiceAmountChange.toFixed(2));
+  invoiceAmountGrowth = current.total > previous.total;
+} else if (current.total > 0) {
+  invoiceAmountChange = 100;
+  invoiceAmountGrowth = true;
+}
+
+// Calculate percentage and growth flag for total invoice count
+let invoiceCountChange = 0;
+let invoiceCountGrowth = false;
+if (preInvoiceCount > 0) {
+  invoiceCountChange = ((totalCount - preInvoiceCount) / preInvoiceCount) * 100;
+  invoiceCountChange = parseFloat(invoiceCountChange.toFixed(2));
+  invoiceCountGrowth = totalCount > preInvoiceCount;
+} else if (totalCount > 0) {
+  invoiceCountChange = 100;
+  invoiceCountGrowth = true;
+}
+// Monthly invoice totals from April (index 0) to March (index 11)
+const monthlyTotals = Array(12).fill(0);
+
+if (year) {
+  const selectedYear = parseInt(year);
+
+  // Financial year starts in April of current year and ends in March of next year
+  const fyStart = new Date(selectedYear, 3, 1);   // April 1
+  const fyEnd = new Date(selectedYear + 1, 3, 1); // April 1 next year
+
+  const fyInvoices = await invoiceCollection.find({
+    ...query,
+    invoiceDate: { $gte: fyStart, $lt: fyEnd }
+  }).toArray();
+
+  fyInvoices.forEach(inv => {
+    const amount = parseFloat(inv.goodsDescription.Total || 0);
+    const actualMonth = new Date(inv.invoiceDate).getMonth(); // 0–11
+
+    // Reindex month to start from April as 0, May as 1, ..., March as 11
+    const fiscalMonthIndex = (actualMonth + 9) % 12;
+    monthlyTotals[fiscalMonthIndex] += amount;
+  });
+}
+
+
+
+res.status(200).json({
+    totalItems: totalCount,
+    totalInvoiceAmount: current.total,
+    paidTotal: current.paid,
+    unpaidTotal: current.unpaid,
+    monthlyTotals,
+    invoiceAmountChange: {
+      percentage: invoiceAmountChange,
+      growth: invoiceAmountGrowth
+    },
+    invoiceCountChange: {
+      percentage: invoiceCountChange,
+      growth: invoiceCountGrowth
+    }
+});
+
+
+  } catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 router.get('/invoice/list/:company', async (req,res) => {
   const company = req.params.company;
   const page = parseInt(req.query.page) || 1; // default to page 1
