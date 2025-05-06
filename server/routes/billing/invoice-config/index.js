@@ -246,6 +246,66 @@ res.status(200).json({
   }
 });
 
+// router.patch(`/update/invoice`, async(req,res) => {
+
+//   const updates = [
+//     { invoiceNO: "AE/25-26-36", type: "NOS" },
+//     { invoiceNO: "AE/25-26-35", type: "KGS" },
+//     { invoiceNO: "AE/25-26-34", type: "KGS" },
+//     { invoiceNO: "AE/25-26-33", type: "NOS" },
+//     { invoiceNO: "AE/25-26-32", type: "KGS" },
+//     { invoiceNO: "AE/25-26-31", type: "KGS" },
+//     { invoiceNO: "AE/25-26-30", type: "NOS" },
+//     { invoiceNO: "AE/25-26-29", type: "KGS" },
+//     { invoiceNO: "AE/25-26-28", type: "KGS" },
+//     { invoiceNO: "AE/25-26-27", type: "NOS" },
+//     { invoiceNO: "AE/25-26-26", type: "KGS" },
+//     { invoiceNO: "AE/25-26-25", type: "NOS" },
+//     { invoiceNO: "AE/25-26-24", type: "KGS" },
+//     { invoiceNO: "AE/25-26-23", type: "KGS" },
+//     { invoiceNO: "AE/25-26-22", type: "NOS" },
+//     { invoiceNO: "AE/25-26-21", type: "NOS" },
+//     { invoiceNO: "AE/25-26-20", type: "KGS" },
+//     { invoiceNO: "AE/25-26-19", type: "KGS" },
+//     { invoiceNO: "AE/25-26-18", type: "KGS" },
+//     { invoiceNO: "AE/25-26-17", type: "KGS" },
+//     { invoiceNO: "AE/25-26-16", type: "KGS" },
+//     { invoiceNO: "AE/25-26-15", type: "KGS" },
+//     { invoiceNO: "AE/25-26-14", type: "KGS" },
+//     { invoiceNO: "AE/25-26-13", type: "KGS" },
+//     { invoiceNO: "AE/25-26-12", type: "KGS" },
+//     { invoiceNO: "AE/25-26-11", type: "KGS" },
+//     { invoiceNO: "AE/25-26-10", type: "KGS" },
+//     { invoiceNO: "AE/25-26-09", type: "KGS" },
+//     { invoiceNO: "AE/25-26-08", type: "KGS" },
+//     { invoiceNO: "AE/25-26-07", type: "NOS" },
+//     { invoiceNO: "AE/25-26-06", type: "KGS" },
+//     { invoiceNO: "AE/25-26-05", type: "KGS" },
+//     { invoiceNO: "AE/25-26-04", type: "NOS" },
+//     { invoiceNO: "AE/25-26-03", type: "KGS" },
+//     { invoiceNO: "AE/25-26-02", type: "KGS" },
+//     { invoiceNO: "AE/25-26-01", type: "KGS" }
+//   ];
+
+//   try {
+
+//     for (const { invoiceNO, type } of updates) {
+//       const result = await db.collection("invoices").updateOne(
+//         { "invoiceDetail.invoiceNO": invoiceNO },
+//         { $set: { "goodsDescription.type": type } }
+//       );
+
+//       console.log(`Updated ${invoiceNO}:`, result.modifiedCount === 1 ? "Success" : "Not found");
+//     }
+
+
+//     res.json({ message: "Invoice updated successfully" });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ error: "Update failed" });
+//   }
+// })
+
 
 router.get('/invoice/list/:company', async (req,res) => {
   const company = req.params.company;
@@ -518,6 +578,7 @@ router.get('/generate-csv', async (req,res) => {
       const items = invoice.goodsDescription?.items || [];
       const sgst = invoice.goodsDescription.SGST;
       const cgst = invoice.goodsDescription.SGST;
+      const type = invoice.goodsDescription.type;
       const taxableValue = invoice.goodsDescription.taxableValue
       let totalQty = 0;
       items.forEach((item,index) => {
@@ -529,7 +590,7 @@ router.get('/generate-csv', async (req,res) => {
         invoiceDate,
         hsn,
         totalQty,
-        "",
+        type,
         sgst,
         cgst,
         taxableValue,

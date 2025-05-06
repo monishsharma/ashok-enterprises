@@ -211,7 +211,7 @@
               <%
                 let totalRenderedRows = 0;
                 data.goodsDescription.items.forEach(function(item) {
-                  const descChunks = item.description.match(/.{1,50}(\s|$)/g) || [''];
+                  const descChunks = item.description.match(/.{1,40}(\s|$)/g) || [''];
                   totalRenderedRows += descChunks.length;
 
                   descChunks.forEach(function(chunk, index) {
@@ -221,7 +221,7 @@
                     <td><%= item.sno %></td>
                     <td colspan="2" style="text-align: left;"><%= chunk.trim() %></td>
                     <td><%= item.wo %></td>
-                    <td><%= item.qty %></td>
+                    <td><%= parseInt(item.qty).toFixed(2) %></td>
                     <td><%= parseFloat(item.rate).toFixed(2) %></td>
                     <td colspan="2">
                       <%= parseFloat(item.value).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>
@@ -323,7 +323,7 @@
               <tr style="font-size: 13px">
                 <th style="text-align: left;" colspan="4">Payment terms:- <%= data.invoiceDetail.paymentTerms %></th>
                 <th rowspan="2" colspan="2">GRAND TOTAL</th>
-                <td rowspan="2">
+                <td rowspan="2" style="font-weight: bold;">
                   Rs <%= parseFloat(data.goodsDescription.Total).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>
                 </td>
               </tr>
