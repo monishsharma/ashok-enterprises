@@ -17,7 +17,7 @@
       .wrapper {
         /* padding-top: 233px; */
         margin: 15px;
-        min-height: 200px;
+        min-height: 240px;
         /* border: 2px  solid black; */
         border-collapse: collapse !important;
       }
@@ -82,27 +82,27 @@
        height: 200px;
       }
       .logo-container {
-  min-height: 200px;
-  width: 100%;
-  display: flex;
-  border-top: 2px solid black;
-  border-left: 1px solid black;
-  border-right: 1px solid black;
-  justify-content: center;
-  align-items: center;
-}
-.logo-container img {
-  height: 200px;
-  margin: 10px;
-  width: 98%;
-  object-fit: cover;
-}
+        min-height: <%= height %>;
+        width: 100%;
+        display: flex;
+        border-top: 2px solid black;
+        border-left: 1px solid black;
+        border-right: 1px solid black;
+        justify-content: center;
+        align-items: center;
+      }
+      .logo-container img {
+        height: auto;
+        /* margin: 10px; */
+        width: 98%;
+        object-fit: cover;
+      }
     </style>
   </head>
   <body>
     <div class="invoice-page">
       <div class="wrapper">
-        <div class="logo-container">
+        <div class="logo-container" style="min-height: <%= height %>;">
           <% if (showLogo === false || showLogo == 'false') { %>
             <img src="<%= logoBase64 %>" />
           <% } %>
@@ -136,9 +136,11 @@
                 </th>
               </tr>
               <tr>
-                <th colspan="4" rowspan="4" style="text-align: left; line-height: 1.5; font-size: 15px;">
-                  <%= data.buyerDetail.name.toUpperCase() %><br />
+                <th colspan="4" rowspan="4" style="text-align: left; line-height: 1.5; ">
+                  <h4 style="font-size: 18px;">
+                    <%= data.buyerDetail.name.toUpperCase() %><br />
                   <%= data.buyerDetail.address.toUpperCase() %> <br />
+                  </h4>
                 </th>
                 <th colspan="2" style="font-size: 12px; text-align: left;">BUYER GSTIN</th>
                 <td colspan="2" style="font-size: 12px"><%= data.buyerDetail.GSTIN %></td>
@@ -284,7 +286,7 @@
               <tr>
                 <th style="text-align: left; padding: 10px;" rowspan="4" colspan="4">
                   Invoice value (in words): - <br />
-                  <h4 style="font-size: 15px;">
+                  <h4 style="font-size: 18px;">
                     <%= amountInWords %>
                   </h4>
                 </th>

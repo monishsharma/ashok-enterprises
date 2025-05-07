@@ -510,16 +510,17 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
       amountInWords,
       logoBase64: logoDataURI,
       bankDetail,
-      showLogo: req.params.downloadOriginal === 'true'
+      showLogo: req.params.downloadOriginal === 'true',
+      height: req.params.downloadOriginal ?"180px" : "250px"
     });
 
     await page.setContent(html, { waitUntil: 'networkidle0' });
 
     const pdfBuffer = await page.pdf({
       format: 'LEGAL',
-      margin: { top: '0', bottom: '0', left: '0', right: '0' },
+      margin: { top: req.params.downloadOriginal ? "6px" : "15px", bottom: 0, left: "10px", right: "10px" },
       printBackground: true,
-      scale: 1
+      scale: 0.9
     });
 
     await page.close(); // don't close browser, just the page
