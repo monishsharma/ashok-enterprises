@@ -6,7 +6,7 @@
   "deploy": {
     "runtime": "V2",
     "numReplicas": 1,
-    "startCommand": "node server/index.js",
+    "startCommand": "node index.js",
     "sleepApplication": false,
     "multiRegionConfig": {
       "europe-west4-drams3a": {
@@ -19,7 +19,7 @@
     {
       "name": "daily-job",
       "schedule": "0 0 * * *",
-      "command": "node server/controller.js"
+      "command": "node controller.js"
     }
   ]
 }
