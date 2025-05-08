@@ -9,6 +9,9 @@ import path from 'path';
 import { fileURLToPath } from "url";
 const PORT = process.env.PORT || 5050;
 const app = express();
+import { connectToDatabase } from "./db/connection.js";
+
+await connectToDatabase(); // waits before app starts
 
 
 const __filename = fileURLToPath(import.meta.url);

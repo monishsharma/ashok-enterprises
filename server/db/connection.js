@@ -1,8 +1,9 @@
 import { MongoClient, ServerApiVersion } from "mongodb";
 
 const connection_url = "mongodb+srv://sharmamonish17:DX2YvfTRFgPrxcKV@cluster-ae.viv07hp.mongodb.net/AEDB?retryWrites=true&w=majority&appName=Cluster-AE";
-const uri = connection_url || "";
-const client = new MongoClient(uri, {
+import { MongoClient, ServerApiVersion } from "mongodb";
+
+const client = new MongoClient(connection_url, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
@@ -10,18 +11,19 @@ const client = new MongoClient(uri, {
   },
 });
 
-try {
-  // Connect the client to the server
-  await client.connect();
-  // Send a ping to confirm a successful connection
-  await client.db("admin").command({ ping: 1 });
-  console.log(process.env.NODE_ENV)
-  console.log(
-   "Pinged your deployment. You successfully connected to MongoDB!"
-  );
-} catch(err) {
-  console.error(err);
+let db;
+
+export async function connectToDatabase() {
+  try {
+    await client.connect();
+    await client.db("admin").command({ ping: 1 });
+    console.log("✅ Connected to MongoDB");
+    db = client.db("AEDB");
+    return db;
+  } catch (err) {
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1); // Exit so Railway sees failure
+  }
 }
 
-let db = client.db("AEDB");
-export default db;
+export { db };
