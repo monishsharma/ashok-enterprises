@@ -36,6 +36,10 @@ app.use("/employee", Employee);
 app.use("/attendance", Attendance);
 app.use("/billing", Billing);
 
+app.get("/health", (req, res) => {
+  res.send("OK");
+});
+
 
 // start the Express server
 app.listen(PORT, () => {
