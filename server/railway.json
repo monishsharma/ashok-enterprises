@@ -19,7 +19,7 @@
     {
       "name": "daily-job",
       "schedule": "0 0 * * *",
-      "command": "node controller.js"
+      "command": "node server/controller.js"
     }
   ]
 }
