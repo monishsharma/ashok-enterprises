@@ -39,9 +39,9 @@ app.use("/billing", Billing);
 app.get("/health", (req, res) => {
   res.send("OK");
 });
-
+console.log(PORT)
 
 // start the Express server
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", function () {
   console.log(`Server listening on port ${PORT}`);
 });
