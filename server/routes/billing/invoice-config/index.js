@@ -511,7 +511,8 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
       logoBase64: logoDataURI,
       bankDetail,
       showLogo: req.params.downloadOriginal === 'true',
-      height: req.params.downloadOriginal ?"180px" : "250px"
+      height: req.params.downloadOriginal ?"180px" : "250px",
+      isUniqueVendor: data.buyerDetail.customer == "Rajasthan Explosives"
     });
 
     await page.setContent(html, { waitUntil: 'networkidle0' });
