@@ -140,7 +140,7 @@ router.get('/get/invoice/report/:company', async (req, res) => {
         const amount = parseFloat(inv.goodsDescription.Total);
         invoiceAmount.push(amount)
         total += amount;
-        if (inv.paid) paid += amount;
+        if (inv.paid) paid += inv.paymentAmount || 0;
         else unpaid += amount;
       });
       return { total, paid, unpaid };
