@@ -15,7 +15,6 @@ const PORT = process.env.PORT || 5050;
 const app = express();
 
 const startServer = async () => {
-  await connectToDB();
 
   app.use(cors({
     exposedHeaders: ["Content-Disposition"]
@@ -37,6 +36,7 @@ const startServer = async () => {
     console.log("🔍 Unmatched route accessed:", req.originalUrl);
     res.status(404).send("Not found");
   });
+  await connectToDB();
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Server listening on port ${PORT}`);
