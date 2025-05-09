@@ -177,7 +177,12 @@
                 <th>Material Code</th>
                 <th>Purchase Order No</th>
                 <th>Serial No</th>
-                <th  colspan="2">Vehicle No</th>
+                <% if (isUniqueVendor) { %>
+                  <th  colspan="2">Challan No</th>
+                <% } else { %>
+                  <th  colspan="2">Vehicle No</th>
+                <% } %>
+
                 <% if (data.buyerDetail.isInterState) { %>
                   <th colspan="2">Eway Bill No</th>
                 <% } else { %>

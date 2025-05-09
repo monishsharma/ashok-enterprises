@@ -9,17 +9,20 @@ import path from 'path';
 import { fileURLToPath } from "url";
 const PORT = process.env.PORT || 5050;
 const app = express();
+import { connectToDB } from "./db/connection.js";
+
 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+await connectToDB();
 // Allow requests from http://localhost:5173
-const corsOptions = {
-  // origin: 'http://localhost:5173',
-  origin: 'https://ashok-enterprises.vercel.app',
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-}
+// const corsOptions = {
+//   // origin: 'http://localhost:5173',
+//   origin: 'https://ashok-enterprises.vercel.app',
+//   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+// }
 console.log(process.env.NODE_ENV)
 
 app.use(cors({
@@ -36,8 +39,9 @@ app.use("/employee", Employee);
 app.use("/attendance", Attendance);
 app.use("/billing", Billing);
 
-app.get("/health", (req, res) => {
-  res.send("OK");
+app.use("*", (req, res) => {
+  console.log("🔍 Unmatched route accessed:", req.originalUrl);
+  res.status(404).send("Not found");
 });
 console.log(PORT)
 

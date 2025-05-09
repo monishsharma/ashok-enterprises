@@ -1,5 +1,5 @@
 import {getTodayDate} from "./helper/server-today-date.js";
-import db from "./db/connection.js"
+import {db} from "./db/connection.js"
 
 export const cron = async() => {
 

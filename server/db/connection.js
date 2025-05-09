@@ -1,7 +1,7 @@
+// db/connection.js
 import { MongoClient, ServerApiVersion } from "mongodb";
 
-const connection_url = "mongodb+srv://sharmamonish17:DX2YvfTRFgPrxcKV@cluster-ae.viv07hp.mongodb.net/AEDB?retryWrites=true&w=majority&appName=Cluster-AE";
-const uri = connection_url || "";
+const uri = "your_mongo_uri_here";
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -10,18 +10,17 @@ const client = new MongoClient(uri, {
   },
 });
 
-try {
-  // Connect the client to the server
-  await client.connect();
-  // Send a ping to confirm a successful connection
-  await client.db("admin").command({ ping: 1 });
-  console.log(process.env.NODE_ENV)
-  console.log(
-   "Pinged your deployment. You successfully connected to MongoDB!"
-  );
-} catch(err) {
-  console.error(err);
-}
+const connectToDB = async () => {
+  try {
+    await client.connect();
+    await client.db("admin").command({ ping: 1 });
+    console.log("✅ Connected to MongoDB");
+  } catch (err) {
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1); // prevent server start
+  }
+};
 
-let db = client.db("AEDB");
-export default db;
+const db = client.db("AEDB");
+
+export { connectToDB, db };

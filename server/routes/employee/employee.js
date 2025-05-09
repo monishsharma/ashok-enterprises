@@ -1,5 +1,5 @@
 import express from "express";
-import db from "../../db/connection.js";
+import {db} from "../../db/connection.js";
 import Employees from "./employeeSchema.js";
 import { ObjectId } from "mongodb";
 import { getTodayDate } from "../../helper/server-today-date.js";

@@ -1,6 +1,6 @@
 import express from "express";
 import InvoiceConfig from "./schema.js";
-import db from "../../../db/connection.js";
+import {db} from "../../../db/connection.js";
 import ejs from 'ejs';
 import path from 'path';
 // import puppeteer from 'puppeteer';
