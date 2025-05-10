@@ -135,15 +135,18 @@ router.get('/get/invoice/report/:company', async (req, res) => {
 
     // Helper to calculate totals
     const calculateTotals = (invoices) => {
-      let total = 0, paid = 0, unpaid = 0;
+      let total = 0, paid = 0, unpaid = 0, due = 0;
       invoices.forEach(inv => {
         const amount = parseFloat(inv.goodsDescription.Total);
         invoiceAmount.push(amount)
         total += amount;
-        if (inv.paid) paid += inv.paymentAmount || 0;
+        if (inv.paid) {
+          paid += inv.paymentAmount || 0
+          due += inv.duePayment || 0
+        }
         else unpaid += amount;
       });
-      return { total, paid, unpaid };
+      return { total, paid, unpaid, due };
     };
 
     const current = calculateTotals(currentMonthInvoices);
@@ -227,6 +230,7 @@ res.status(200).json({
     totalInvoiceAmount: current.total,
     paidTotal: current.paid,
     unpaidTotal: current.unpaid,
+    dueTotal: current.due,
     monthlyTotals,
     invoiceAmountChange: {
       percentage: invoiceAmountChange,
@@ -501,9 +505,16 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
     const base64Image = imageBuffer.toString('base64');
     const mimeType = 'image/png'; // or jpg if it's jpeg
     const logoDataURI = `data:${mimeType};base64,${base64Image}`;
-    const amountInWords = `Indian Rupees ${convertAmountToWords(data.goodsDescription.Total)}`;
+    const amountInWords = `Indian Rupees  ${convertAmountToWords(data.goodsDescription.Total)}`;
     const date = new Date(data.invoiceDetail.invoiceDate);
     const formattedDate = `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+    const returnHeight = () => {
+      if (data.company === "ASHOK") {
+        if (req.params.downloadOriginal) return "180px";
+        return "250px";
+      }
+      return "250px";
+    }
     const html = await ejs.renderFile(path.join(__dirname, './templates/invoice.ejs'), {
       data,
       formattedDate,
@@ -511,7 +522,7 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
       logoBase64: logoDataURI,
       bankDetail,
       showLogo: req.params.downloadOriginal === 'true',
-      height: req.params.downloadOriginal ?"180px" : "250px",
+      height: returnHeight(),
       isUniqueVendor: data.buyerDetail.customer == "Rajasthan Explosives"
     });
 
