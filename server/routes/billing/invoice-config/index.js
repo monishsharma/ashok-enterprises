@@ -39,6 +39,8 @@ async function getBrowser() {
   return browser;
 }
 
+getBrowser().then(() => console.log("✅ Puppeteer browser warmed up"));
+
 
 const toWords = new ToWords({
   localeCode: 'en-IN',
