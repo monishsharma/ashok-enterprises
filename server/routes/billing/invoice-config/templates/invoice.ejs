@@ -218,7 +218,7 @@
               <%
                 let totalRenderedRows = 0;
                 data.goodsDescription.items.forEach(function(item) {
-                  const descChunks = item.description.match(/.{1,40}(\s|$)/g) || [''];
+                  const descChunks = item.description.match(/.{1,45}(\s|$)/g) || [''];
                   totalRenderedRows += descChunks.length;
 
                   descChunks.forEach(function(chunk, index) {
