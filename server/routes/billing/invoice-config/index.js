@@ -20,8 +20,17 @@ let isProduction = process.env.NODE_ENV === "prod";
 
 async function getBrowser() {
   if (browser) return browser;
+  if (isProduction) {
+    const puppeteer = (await import("puppeteer-core")).default;
+    const chromium = (await import("@sparticuz/chromium")).default;
 
-
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
+  } else {
     const puppeteer = (await import("puppeteer")).default;
     browser = await puppeteer.launch();
 
