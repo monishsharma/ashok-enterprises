@@ -502,7 +502,7 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
         if (req.params.downloadOriginal) return "190px";
         return "250px";
       }
-      return "250px";
+      return "230px";
     }
     const html = await ejs.renderFile(path.join(__dirname, './templates/invoice.ejs'), {
       data,
