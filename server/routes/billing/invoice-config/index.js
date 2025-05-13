@@ -18,8 +18,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 let browser;
 let isProduction = process.env.NODE_ENV === "prod";
 
+
 async function getBrowser() {
   if (browser) return browser;
+
   if (isProduction) {
     const puppeteer = (await import("puppeteer-core")).default;
     const chromium = (await import("@sparticuz/chromium")).default;
@@ -33,10 +35,11 @@ async function getBrowser() {
   } else {
     const puppeteer = (await import("puppeteer")).default;
     browser = await puppeteer.launch();
+  }
 
   return browser;
 }
-}
+
 
 
 const toWords = new ToWords({
