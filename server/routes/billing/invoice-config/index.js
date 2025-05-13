@@ -36,6 +36,7 @@ async function getBrowser() {
 
   return browser;
 }
+}
 
 
 const toWords = new ToWords({
