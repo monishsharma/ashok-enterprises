@@ -290,9 +290,22 @@
                   </h4>
                 </th>
                 <th style="font-size: 12px" colspan="2">Assessable value</th>
-                <td>
-                  <%= parseFloat(data.goodsDescription.taxableValue).toFixed(2) %>
-                </td>
+                <% if (data.invoiceDetail.company === "PADMA") { %>
+                  <td>
+                    <%
+                      let totalValue = 0;
+                      data.goodsDescription.items.forEach(function(item) {
+                        totalValue += parseFloat(item.value);
+                      });
+                    %>
+                    <%= parseFloat(totalValue).toFixed(2) %>
+                  </td>
+                <% } else { %>
+                  <td>
+                    <%= parseFloat(data.goodsDescription.taxableValue).toFixed(2) %>
+                  </td>
+                <% } %>
+
               </tr>
 
               <% if (data.buyerDetail.isInterState) {
