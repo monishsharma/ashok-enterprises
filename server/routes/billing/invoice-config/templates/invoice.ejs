@@ -209,7 +209,7 @@
                 <th>S.No</th>
                 <th colspan="2" >Description of Goods</th>
                 <th>W.O.No / DRG</th>
-                <th>QTY/KGS/NOS</th>
+                <th>KGS/NOS/SQFT</th>
                 <th colspan="1">Rate/Unit</th>
                 <th colspan="2">VALUE</th>
               </tr>
@@ -246,7 +246,7 @@
                   });
                 });
 
-                const remainingRows = 6 - totalRenderedRows;
+                const remainingRows = 10 - totalRenderedRows;
                 for (let j = 0; j < remainingRows; j++) {
               %>
                 <tr>
@@ -278,7 +278,7 @@
               <tr>
                 <td style="text-align: left;" colspan="3">Rs: - <%= data.goodsDescription.Total %></td>
                 <td colspan="3">Freight</td>
-                <td>
+                <td style="text-align: right;">
                   <%= parseFloat(data.goodsDescription.freight || 0).toFixed(2) %>
                 </td>
               </tr>
@@ -291,7 +291,7 @@
                 </th>
                 <th style="font-size: 12px" colspan="2">Assessable value</th>
                 <% if (data.invoiceDetail.company === "PADMA") { %>
-                  <td>
+                  <td style="text-align: right;">
                     <%
                       let totalValue = 0;
                       data.goodsDescription.items.forEach(function(item) {
@@ -301,7 +301,7 @@
                     <%= parseFloat(totalValue).toFixed(2) %>
                   </td>
                 <% } else { %>
-                  <td>
+                  <td style="text-align: right;">
                     <%= parseFloat(data.goodsDescription.taxableValue).toFixed(2) %>
                   </td>
                 <% } %>
@@ -313,31 +313,31 @@
               %>
                 <tr style="font-size: 12px" >
                   <th  colspan="2">G Total</th>
-                  <td><%= parseFloat(data.goodsDescription.taxableValue).toFixed(2) %></td>
+                  <td style="text-align: right;"><%= parseFloat(data.goodsDescription.taxableValue).toFixed(2) %></td>
                 </tr>
                 <tr style="font-size: 12px">
                   <th colspan="2">IGS TAX 18%</th>
-                  <td><%= igst.toFixed(2) %></td>
+                  <td style="text-align: right;"><%= igst.toFixed(2) %></td>
                 </tr>
               <% } else { %>
                 <tr style="font-size: 12px">
                   <th colspan="2">SGS TAX 9%</th>
-                  <td><%= data.goodsDescription.SGST %></td>
+                  <td style="text-align: right;"><%= data.goodsDescription.SGST %></td>
                 </tr>
                 <tr style="font-size: 12px">
                   <th colspan="2">CGS TAX 9%</th>
-                  <td><%= data.goodsDescription.CGST %></td>
+                  <td style="text-align: right;"><%= data.goodsDescription.CGST %></td>
                 </tr>
               <% } %>
 
               <tr style="font-size: 12px">
                 <th colspan="2">ROUND OFF</th>
-                <td><%= data.goodsDescription.roundOff %></td>
+                <td style="text-align: right;"><%= data.goodsDescription.roundOff %></td>
               </tr>
               <tr style="font-size: 13px">
                 <th style="text-align: left;" colspan="4">Payment terms:- <%= data.invoiceDetail.paymentTerms %></th>
                 <th rowspan="2" colspan="2">GRAND TOTAL</th>
-                <td rowspan="2" style="font-weight: bold;">
+                <td rowspan="2" style="font-weight: bold; text-align: right;">
                   Rs <%= parseFloat(data.goodsDescription.Total).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>
                 </td>
               </tr>
