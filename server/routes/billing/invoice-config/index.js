@@ -623,5 +623,81 @@ router.get('/generate-csv', async (req,res) => {
 
 })
 
+router.get('/search/invoice', async (req, res) => {
+  try {
+    const {
+      searchTerm,
+      startDate,
+      endDate,
+      company,
+      page = 1,
+      limit = 10
+    } = req.query;
+
+
+    // Build query object
+    const query = {};
+
+    // Add company filter if provided
+    if (company) {
+      query.company = company;
+    }
+
+    // Add search term across multiple fields if provided
+    if (searchTerm) {
+      query.$or = [
+        // Search in invoice number
+        { "invoiceDetail.invoiceNO": { $regex: searchTerm, $options: 'i' } },
+        // Search in customer name
+        { "buyerDetail.customer": { $regex: searchTerm, $options: 'i' } },
+        // Search in items array descriptions
+        { "goodsDescription.items": {
+          $elemMatch: {
+            description: { $regex: searchTerm, $options: 'i' }
+          }
+        }}
+      ];
+    }
+
+    // Add date range if provided
+    if (startDate || endDate) {
+      query.invoiceDate = {};
+      if (startDate) {
+        query.invoiceDate.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        query.invoiceDate.$lte = new Date(endDate);
+      }
+    }
+
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Execute search with pagination
+    const [invoices, totalCount] = await Promise.all([
+      db.collection("invoices")
+        .find(query)
+        .sort({ "invoiceDetail.invoiceNO": -1 })
+        .skip(skip)
+        .limit(parseInt(limit))
+        .toArray(),
+      db.collection("invoices").countDocuments(query)
+    ]);
+
+    console.log("Number of results found:", invoices.length); // Debug log
+    console.log("Query used:", JSON.stringify(query)); // Debug log
+
+    res.status(200).json({
+      data: invoices,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(totalCount / parseInt(limit)),
+      totalItems: totalCount
+    });
+
+  } catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 export default router;
