@@ -266,7 +266,7 @@
               <!-- Totals & Summary Rows -->
               <tr>
                 <td colspan="3"></td>
-                <td>Total Qty</td>
+                <td>Total</td>
                 <td colspan="1">
                   <%
                     let totalQty = 0;
@@ -277,7 +277,15 @@
                   <%= totalQty.toFixed(2) %>
                 </td>
                 <td colspan="1"></td>
-                <td colspan="1"></td>
+                <td colspan="1" style="text-align: right;">
+                  <%
+                      let totalValue = 0;
+                      data.goodsDescription.items.forEach(function(item) {
+                        totalValue += parseFloat(item.value);
+                      });
+                    %>
+                    <%= parseFloat(totalValue).toFixed(2) %>
+                </td>
               </tr>
               <tr>
                 <td style="text-align: left;" colspan="3">Rs: - <%= data.goodsDescription.Total %></td>
@@ -294,26 +302,15 @@
                   </h4>
                 </th>
                 <th style="font-size: 12px" colspan="2">Assessable value</th>
-                <% if (data.invoiceDetail.company === "PADMA") { %>
-                  <td style="text-align: right;">
-                    <%
-                      let totalValue = 0;
-                      data.goodsDescription.items.forEach(function(item) {
-                        totalValue += parseFloat(item.value);
-                      });
-                    %>
-                    <%= parseFloat(totalValue).toFixed(2) %>
-                  </td>
-                <% } else { %>
-                  <td style="text-align: right;">
+                <td style="text-align: right;">
                     <%= parseFloat(data.goodsDescription.taxableValue).toFixed(2) %>
                   </td>
-                <% } %>
 
               </tr>
 
               <% if (data.buyerDetail.isInterState) {
                 const igst = parseFloat(data.goodsDescription.CGST) + parseFloat(data.goodsDescription.SGST);
+                const tx = parseFloat(data.goodsDescription.taxableValue).toFixed(2) + parseFloat(data.goodsDescription.freight).toFixed(2)
               %>
                 <tr style="font-size: 12px" >
                   <th  colspan="2">G Total</th>

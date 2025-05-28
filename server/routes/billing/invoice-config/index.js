@@ -653,7 +653,12 @@ router.get('/search/invoice', async (req, res) => {
         // Search in items array descriptions
         { "goodsDescription.items": {
           $elemMatch: {
-            description: { $regex: searchTerm, $options: 'i' }
+            description: { $regex: searchTerm, $options: 'i' },
+          }
+        }},
+        { "goodsDescription.items": {
+          $elemMatch: {
+            wo: { $regex: searchTerm, $options: 'i' }
           }
         }}
       ];
@@ -684,8 +689,6 @@ router.get('/search/invoice', async (req, res) => {
       db.collection("invoices").countDocuments(query)
     ]);
 
-    console.log("Number of results found:", invoices.length); // Debug log
-    console.log("Query used:", JSON.stringify(query)); // Debug log
 
     res.status(200).json({
       data: invoices,
