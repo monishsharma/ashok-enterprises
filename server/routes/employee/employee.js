@@ -18,16 +18,10 @@ const collectionName = process.env.NODE_ENV === "dev" ? "attendance" : "employee
         if (queryKeys.length > 0) {
             // Dynamically construct the filter conditions
             const filterConditions = queryKeys.map(key => {
-                if (key === "year") {
-                    return {
-                        $or: [
-                            { $eq: [`$$item.${key}`, parseInt(req.query[key])] }, // Match the year
-                            { $not: { $in: [`$$item.${key}`, [null, undefined]] } } // Handle missing year
-                        ]
-                    };
-                } else {
-                    return { $eq: [`$$item.${key}`, req.query[key]] }; // Match other fields
-                }
+            const value = req.query[key];
+            return {
+                $eq: [`$$item.${key}`, key === "year" ? parseInt(value) : value]
+            };
             });
 
             options = {
