@@ -17,7 +17,8 @@ const Dashboard = ({
     const employeeListHandler = () => {
         setIsLoading(true);
         const qp = {
-          month:  getMonth()
+          month:  getMonth(),
+            year: new Date().getFullYear()
         }
         employeeListConnect({sortByKey: "name", qp})
           .then(() => {
