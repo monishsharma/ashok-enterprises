@@ -329,19 +329,28 @@ router.get('/invoice/list/:company', async (req,res) => {
   }
   try {
     const invoiceCollection = db.collection("invoices");
+
     const totalCount = await invoiceCollection.countDocuments(query);
     const invoiceList = await invoiceCollection
       .find(query)
-      .sort({ "invoiceDetail.invoiceNO": -1 })
-      .skip(skip)
-      .limit(limit)
+      // .sort({ "invoiceDetail.invoiceNO": -1 })
+      // .skip(skip)
+      // .limit(limit)
       .toArray();
       if (!invoiceList || invoiceList.length === 0) {
         return res.status(404).json({ error: "No invoices found" });
       }
 
+      const sortedInvoices = invoiceList.sort((a, b) => {
+        const aNum = parseInt(a.invoiceDetail.invoiceNO.split('-').pop()) || 0;
+        const bNum = parseInt(b.invoiceDetail.invoiceNO.split('-').pop()) || 0;
+        return bNum - aNum; // descending order
+      });
+
+      const paginatedInvoices = sortedInvoices.slice(skip, skip + limit);
+
       res.status(200).json({
-        data: invoiceList,
+        data: paginatedInvoices,
         currentPage: page,
         totalPages: Math.ceil(totalCount / limit),
         totalItems: totalCount
