@@ -212,7 +212,7 @@
               <tr style="font-size: 12px">
                 <th>S.No</th>
                 <th colspan="2" >Description of Goods</th>
-                <th>W.O.No / DRG</th>
+                <th style="white-space: nowrap">W.O.No / DRG</th>
                 <th>KGS/NOS/SQFT</th>
                 <th colspan="1">Rate/Unit</th>
                 <th colspan="2">VALUE</th>
@@ -295,7 +295,7 @@
                 </td>
               </tr>
               <tr>
-                <th style="text-align: left; padding: 10px;" rowspan="4" colspan="4">
+                <th style="text-align: left; padding: 10px;" rowspan="3" colspan="4">
                   Invoice value (in words): - <br />
                   <h4 style="font-size: 18px;">
                     <%= amountInWords %>
@@ -312,10 +312,10 @@
                 const igst = parseFloat(data.goodsDescription.CGST) + parseFloat(data.goodsDescription.SGST);
                 const tx = parseFloat(data.goodsDescription.taxableValue).toFixed(2) + parseFloat(data.goodsDescription.freight).toFixed(2)
               %>
-                <tr style="font-size: 12px" >
+                <!-- <tr style="font-size: 12px" >
                   <th  colspan="2">G Total</th>
                   <td style="text-align: right;"><%= parseFloat(data.goodsDescription.taxableValue).toFixed(2) %></td>
-                </tr>
+                </tr> -->
                 <tr style="font-size: 12px">
                   <th colspan="2">IGS TAX 18%</th>
                   <td style="text-align: right;"><%= igst.toFixed(2) %></td>
