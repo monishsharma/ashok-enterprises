@@ -465,12 +465,15 @@ router.post('/invoice', async (req, res) => {
 router.patch('/update/invoice/:id', async (req, res) => {
   const id = new ObjectId(req.params.id);
   const payload = req.body;
+
+
   if (payload._id) {
     delete payload._id;
   }
-  if (payload.invoiceDate && typeof payload.invoiceDate === "string") {
-    payload.invoiceDate = new Date(payload.invoiceDate);
-  }
+
+  payload.invoiceDate = new Date(payload.invoiceDetail.invoiceDate);
+
+
   try {
     const result = await db.collection("invoices").updateOne(
       { _id: id },
@@ -573,6 +576,7 @@ router.get('/generate-csv', async (req,res) => {
   const startDate = new Date(`${year}-${month}-01`);
   const endDate = new Date(startDate);
   endDate.setMonth(endDate.getMonth() + 1);
+  const isAshok = company === "ASHOK";
 
   try {
     const invoices = await db.collection("invoices").find({
@@ -585,23 +589,44 @@ router.get('/generate-csv', async (req,res) => {
     res.setHeader('Content-Disposition', `attachment; filename=${company.toUpperCase()} SALES ${monthLabel} ${year}.csv`);
     res.setHeader('Content-Type', 'text/csv');
 
+    const getHeader = () => {
+      return [
+        'S N0',
+        'BILL',
+        'DATE',
+        'PARTY NAME',
+        'GSTIN',
+        'HSN',
+        'QTY',
+        "TYPE",
+        'SGST 9%',
+        'CGST 9%',
+        'IGST 18%',
+        'TAXABLE VALUE',
+        'AMOUNT',
+        'FREIGHT'
+      ]
+    }
 
-
-    const csvStream = format({ headers: [
-      'S N0', 'BILL', 'DATE', 'HSN', 'QTY', "TYPE", 'SGST 9%', 'CGST 9%', 'TAXABLE VALUE', 'AMOUNT', 'FREIGHT'
-    ]});
+    const csvStream = format({
+      headers:  getHeader()
+    });
     csvStream.pipe(res);
     let sn =1;
 
     invoices.forEach(invoice => {
+      const isLocalVendor = invoice.buyerDetail?.GSTIN.substring(0, 2);
       const billNo = invoice.invoiceDetail?.invoiceNO || '';
       const invoiceDate = new Date(invoice.invoiceDate).toISOString().split('T')[0];
+      const partyName = invoice.buyerDetail?.customer || '';
+      const gstin = invoice.buyerDetail?.GSTIN || '';
       const hsn = invoice.goodsDescription?.HSN || '';
       const freight = invoice.goodsDescription?.freight || 0;
       const amount = invoice.goodsDescription.Total || 0;
       const items = invoice.goodsDescription?.items || [];
       const sgst = invoice.goodsDescription.SGST;
       const cgst = invoice.goodsDescription.SGST;
+      const igst = invoice.goodsDescription?.SGST || 0 + invoice.goodsDescription?.SGST || 0;
       const type = invoice.goodsDescription.type;
       const taxableValue = invoice.goodsDescription.taxableValue
       let totalQty = 0;
@@ -612,11 +637,14 @@ router.get('/generate-csv', async (req,res) => {
         sn++,
         billNo.split("-")[2],
         invoiceDate,
+        partyName,
+        gstin,
         hsn,
         totalQty,
         type,
-        sgst,
-        cgst,
+        isLocalVendor === "23" ? sgst : 0,
+        isLocalVendor === "23" ? cgst : 0,
+        isLocalVendor !== "23" ? igst : 0,
         taxableValue,
         amount,
         freight
