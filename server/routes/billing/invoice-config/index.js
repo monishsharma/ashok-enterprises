@@ -11,7 +11,7 @@ import { ToWords } from 'to-words';
 import fs from "fs"
 import { format } from '@fast-csv/format';
 import {GST_STATE_CODES} from "./constant.js";
-
+import moment from 'moment';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
@@ -597,7 +597,7 @@ router.get('/generate-csv', async (req,res) => {
         'Invoice date',
         'Taxable Value',
         'Invoice Value',
-        'Place of Supply',
+        'Place Of Supply',
         'Reverse Charge',
         'Rate',
         'Invoice Type',
@@ -634,7 +634,7 @@ router.get('/generate-csv', async (req,res) => {
       const isLocalVendor = invoice.buyerDetail?.GSTIN.substring(0, 2);
       const placeOfSupply = `${isLocalVendor}-${GST_STATE_CODES[isLocalVendor]}`;
       const billNo = invoice.invoiceDetail?.invoiceNO || '';
-      const invoiceDate = new Date(invoice.invoiceDate).toISOString().split('T')[0];
+      const invoiceDate = moment(invoice.invoiceDate).format("DD-MMM-YY");
       const partyName = invoice.buyerDetail?.customer || '';
       const gstin = invoice.buyerDetail?.GSTIN || '';
       const hsn = invoice.goodsDescription?.HSN || '';
@@ -643,7 +643,7 @@ router.get('/generate-csv', async (req,res) => {
       const items = invoice.goodsDescription?.items || [];
       const sgst = invoice.goodsDescription.SGST;
       const cgst = invoice.goodsDescription.SGST;
-      const igst = invoice.goodsDescription?.SGST || 0 + invoice.goodsDescription?.SGST || 0;
+      const igst = invoice.goodsDescription?.SGST * 2;
       const type = invoice.goodsDescription.type;
       const taxableValue = invoice.goodsDescription.taxableValue
       let totalQty = 0;
@@ -660,8 +660,8 @@ router.get('/generate-csv', async (req,res) => {
           amount,
           placeOfSupply,
           "N",
-          "Regular B2B",
           "18",
+          "Regular B2B",
           isLocalVendor !== "23" ? igst : 0,
           isLocalVendor === "23" ? cgst : 0,
           isLocalVendor === "23" ? sgst : 0
