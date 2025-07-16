@@ -10,6 +10,7 @@ const router = express.Router();
 import { ToWords } from 'to-words';
 import fs from "fs"
 import { format } from '@fast-csv/format';
+import {GST_STATE_CODES} from "./constant.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -568,7 +569,7 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
 
 router.get('/generate-csv', async (req,res) => {
 
-  const { month, year, company } = req.query;
+  const { month, year, company, GST: forGST } = req.query;
   if (!month || !year) {
     return res.status(400).json({ error: 'Month and year are required.' });
   }
@@ -586,11 +587,26 @@ router.get('/generate-csv', async (req,res) => {
     const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
     const monthLabel = monthNames[parseInt(month, 10) - 1];
 
-    res.setHeader('Content-Disposition', `attachment; filename=${company.toUpperCase()} SALES ${monthLabel} ${year}.csv`);
+    res.setHeader('Content-Disposition', `attachment; filename=${company.toUpperCase()} ${forGST ? "GST" : "SALES"} ${monthLabel} ${year}.csv`);
     res.setHeader('Content-Type', 'text/csv');
 
     const getHeader = () => {
-      return [
+      return forGST ? [
+        'GSTIN/UIN of Recipient',
+        'Invoice Number',
+        'Invoice date',
+        'Taxable Value',
+        'Invoice Value',
+        'Place of Supply',
+        'Reverse Charge',
+        'Rate',
+        'Invoice Type',
+        'IGST Paid',
+        'Central Tax Paid',
+        'State/UT Tax Paid',
+      ] :
+
+      [
         'S N0',
         'BILL',
         'DATE',
@@ -616,6 +632,7 @@ router.get('/generate-csv', async (req,res) => {
 
     invoices.forEach(invoice => {
       const isLocalVendor = invoice.buyerDetail?.GSTIN.substring(0, 2);
+      const placeOfSupply = `${isLocalVendor}-${GST_STATE_CODES[isLocalVendor]}`;
       const billNo = invoice.invoiceDetail?.invoiceNO || '';
       const invoiceDate = new Date(invoice.invoiceDate).toISOString().split('T')[0];
       const partyName = invoice.buyerDetail?.customer || '';
@@ -633,22 +650,41 @@ router.get('/generate-csv', async (req,res) => {
       items.forEach((item,index) => {
         totalQty += parseFloat(item.qty) || 0;
       });
-      csvStream.write([
-        sn++,
-        billNo.split("-")[2],
-        invoiceDate,
-        partyName,
-        gstin,
-        hsn,
-        totalQty,
-        type,
-        isLocalVendor === "23" ? sgst : 0,
-        isLocalVendor === "23" ? cgst : 0,
-        isLocalVendor !== "23" ? igst : 0,
-        taxableValue,
-        amount,
-        freight
-      ]);
+      let csvValue = [];
+      if (forGST) {
+        csvValue = [
+          gstin,
+          billNo.split("-")[2],
+          invoiceDate,
+          taxableValue,
+          amount,
+          placeOfSupply,
+          "N",
+          "Regular B2B",
+          "18",
+          isLocalVendor !== "23" ? igst : 0,
+          isLocalVendor === "23" ? cgst : 0,
+          isLocalVendor === "23" ? sgst : 0
+        ];
+      } else {
+        csvValue = [
+          sn++,
+          billNo.split("-")[2],
+          invoiceDate,
+          partyName,
+          gstin,
+          hsn,
+          totalQty,
+          type,
+          isLocalVendor === "23" ? sgst : 0,
+          isLocalVendor === "23" ? cgst : 0,
+          isLocalVendor !== "23" ? igst : 0,
+          taxableValue,
+          amount,
+          freight
+        ];
+      }
+      csvStream.write(csvValue);
     });
     csvStream.end();
 
