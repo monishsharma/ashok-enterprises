@@ -365,8 +365,6 @@ router.get('/invoice/list/:company', async (req,res) => {
 
 router.get('/invoice/:id', async (req,res) => {
   const id = new ObjectId(req.params.id);
-  console.log("Param ID:", req.params.id); // Should print "67f77e75cb0bc5dfaccc4760"
-  console.log("Is Valid:", ObjectId.isValid(req.params.id));
   try {
     const invoiceCollection = await db.collection("invoices").findOne({_id:id});
       if (!invoiceCollection) {
@@ -569,7 +567,8 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
 
 router.get('/generate-csv', async (req,res) => {
 
-  const { month, year, company, GST: forGST } = req.query;
+  const { month, year, company, GST } = req.query;
+  const forGST = GST === "true";
   if (!month || !year) {
     return res.status(400).json({ error: 'Month and year are required.' });
   }
@@ -623,7 +622,6 @@ router.get('/generate-csv', async (req,res) => {
         'FREIGHT'
       ]
     }
-
     const csvStream = format({
       headers:  getHeader()
     });
