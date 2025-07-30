@@ -12,6 +12,7 @@ import fs from "fs"
 import { format } from '@fast-csv/format';
 import {GST_STATE_CODES} from "./constant.js";
 import moment from 'moment';
+import { getCsvBody, getCSVHeader, getFileName } from "../../../helper/csv-helper.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
@@ -101,6 +102,7 @@ router.get('/get/invoice/report/:company', async (req, res) => {
     let totalCount = 0;
     let preInvoiceCount = 0;
     let invoiceAmount = [];
+    let unpaidInvoices = [];
 
     if (month && year) {
       // Parse input as integers
@@ -125,7 +127,7 @@ router.get('/get/invoice/report/:company', async (req, res) => {
       };
       currentMonthInvoices = await invoiceCollection.find(currentQuery).sort({ "invoiceDetail.invoiceNO": -1 }).toArray();
       totalCount = await invoiceCollection.countDocuments(currentQuery);
-
+      unpaidInvoices = await invoiceCollection.find({ ...currentQuery, paid: false }).toArray();
       // Fetch previous month invoices
       const prevQuery = {
         ...query,
@@ -235,6 +237,7 @@ res.status(200).json({
     unpaidTotal: current.unpaid,
     dueTotal: current.due,
     monthlyTotals,
+    unpaidInvoices,
     invoiceAmountChange: {
       percentage: invoiceAmountChange,
       growth: invoiceAmountGrowth
@@ -567,8 +570,9 @@ router.get('/generate-pdf/:id/:downloadOriginal', async (req, res) => {
 
 router.get('/generate-csv', async (req,res) => {
 
-  const { month, year, company, GST } = req.query;
+  const { month, year, company, GST, forUnpaid: unpaid } = req.query;
   const forGST = GST === "true";
+  const forUnpaid = unpaid === "true";
   if (!month || !year) {
     return res.status(400).json({ error: 'Month and year are required.' });
   }
@@ -576,114 +580,28 @@ router.get('/generate-csv', async (req,res) => {
   const startDate = new Date(`${year}-${month}-01`);
   const endDate = new Date(startDate);
   endDate.setMonth(endDate.getMonth() + 1);
-  const isAshok = company === "ASHOK";
 
   try {
     const invoices = await db.collection("invoices").find({
       company: company,
       invoiceDate: { $gte: startDate, $lt: endDate }
-    }).toArray()
+    }).toArray();
+    const unpaidInvoices = invoices.filter(inv => !inv.paid);
     const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
     const monthLabel = monthNames[parseInt(month, 10) - 1];
-
-    res.setHeader('Content-Disposition', `attachment; filename=${company.toUpperCase()} ${forGST ? "GST" : "SALES"} ${monthLabel} ${year}.csv`);
+    res.setHeader('Content-Disposition', `attachment; filename=${company.toUpperCase()} ${getFileName({forGST, forUnpaid})} ${monthLabel} ${year}.csv`);
     res.setHeader('Content-Type', 'text/csv');
 
-    const getHeader = () => {
-      return forGST ? [
-        'GSTIN/UIN of Recipient',
-        'Invoice Number',
-        'Invoice date',
-        'Taxable Value',
-        'Invoice Value',
-        'Place Of Supply',
-        'Reverse Charge',
-        'Rate',
-        'Invoice Type',
-        'IGST Paid',
-        'Central Tax Paid',
-        'State/UT Tax Paid',
-      ] :
-
-      [
-        'S N0',
-        'BILL',
-        'DATE',
-        'PARTY NAME',
-        'GSTIN',
-        'HSN',
-        'QTY',
-        "TYPE",
-        'SGST 9%',
-        'CGST 9%',
-        'IGST 18%',
-        'TAXABLE VALUE',
-        'AMOUNT',
-        'FREIGHT'
-      ]
-    }
     const csvStream = format({
-      headers:  getHeader()
+      headers:  getCSVHeader({forGST, forUnpaid}),
     });
     csvStream.pipe(res);
-    let sn =1;
+    const rows = getCsvBody({ forGST, forUnpaid, data: forUnpaid? unpaidInvoices : invoices });
 
-    invoices.forEach(invoice => {
-      const isLocalVendor = invoice.buyerDetail?.GSTIN.substring(0, 2);
-      const placeOfSupply = `${isLocalVendor}-${GST_STATE_CODES[isLocalVendor]}`;
-      const billNo = invoice.invoiceDetail?.invoiceNO || '';
-      const invoiceDate = moment(invoice.invoiceDate).format("DD-MMM-YY");
-      const partyName = invoice.buyerDetail?.customer || '';
-      const gstin = invoice.buyerDetail?.GSTIN || '';
-      const hsn = invoice.goodsDescription?.HSN || '';
-      const freight = invoice.goodsDescription?.freight || 0;
-      const amount = invoice.goodsDescription.Total || 0;
-      const items = invoice.goodsDescription?.items || [];
-      const sgst = invoice.goodsDescription.SGST;
-      const cgst = invoice.goodsDescription.SGST;
-      const igst = invoice.goodsDescription?.SGST * 2;
-      const type = invoice.goodsDescription.type;
-      const taxableValue = invoice.goodsDescription.taxableValue
-      let totalQty = 0;
-      items.forEach((item,index) => {
-        totalQty += parseFloat(item.qty) || 0;
-      });
-      let csvValue = [];
-      if (forGST) {
-        csvValue = [
-          gstin,
-          billNo.split("-")[2],
-          invoiceDate,
-          taxableValue,
-          amount,
-          placeOfSupply,
-          "N",
-          "18",
-          "Regular B2B",
-          isLocalVendor !== "23" ? igst : 0,
-          isLocalVendor === "23" ? cgst : 0,
-          isLocalVendor === "23" ? sgst : 0
-        ];
-      } else {
-        csvValue = [
-          sn++,
-          billNo.split("-")[2],
-          invoiceDate,
-          partyName,
-          gstin,
-          hsn,
-          totalQty,
-          type,
-          isLocalVendor === "23" ? sgst : 0,
-          isLocalVendor === "23" ? cgst : 0,
-          isLocalVendor !== "23" ? igst : 0,
-          taxableValue,
-          amount,
-          freight
-        ];
-      }
-      csvStream.write(csvValue);
+    rows.forEach(row => {
+      csvStream.write(row);
     });
+
     csvStream.end();
 
 
