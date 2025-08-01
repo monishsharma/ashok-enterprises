@@ -612,6 +612,43 @@ router.get('/generate-csv', async (req,res) => {
 
 })
 
+router.get('/hsn-codes', async (req, res) => {
+  try {
+    const hsnCollection = db.collection("hsnCodes");
+    const hsnCodes = await hsnCollection.find({}).toArray();
+    res.status(200).json(hsnCodes);
+  } catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+})
+
+router.post('/hsn-codes', async (req, res) => {
+  try {
+    const hsnCollection = db.collection("hsnCodes");
+    let result = await hsnCollection.insertOne(req.body);
+    res.status(201).send(result);
+  }
+  catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+})
+
+router.delete('/hsn-codes/:hsnId', async (req, res) => {
+  try {
+    const {hsnId} = req.params;
+    const result = await db.collection("hsnCodes").findOneAndDelete({
+        _id: new ObjectId(hsnId),
+    })
+    res.status(201).send(result);
+  }
+  catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+})
+
 router.get('/search/invoice', async (req, res) => {
   try {
     const {
