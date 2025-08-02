@@ -127,7 +127,6 @@ router.get('/get/invoice/report/:company', async (req, res) => {
       };
       currentMonthInvoices = await invoiceCollection.find(currentQuery).sort({ "invoiceDetail.invoiceNO": -1 }).toArray();
       totalCount = await invoiceCollection.countDocuments(currentQuery);
-      unpaidInvoices = await invoiceCollection.find({ ...currentQuery, paid: false }).toArray();
       // Fetch previous month invoices
       const prevQuery = {
         ...query,
@@ -135,6 +134,7 @@ router.get('/get/invoice/report/:company', async (req, res) => {
       };
       prevMonthInvoices = await invoiceCollection.find(prevQuery).sort({ "invoiceDetail.invoiceNO": -1 }).toArray();
       preInvoiceCount = await invoiceCollection.countDocuments(prevQuery);
+
 
     }
 
@@ -237,7 +237,6 @@ res.status(200).json({
     unpaidTotal: current.unpaid,
     dueTotal: current.due,
     monthlyTotals,
-    unpaidInvoices,
     invoiceAmountChange: {
       percentage: invoiceAmountChange,
       growth: invoiceAmountGrowth
@@ -256,66 +255,42 @@ res.status(200).json({
   }
 });
 
-// router.patch(`/update/invoice`, async(req,res) => {
+router.get('/invoice/list/unpaid', async (req, res) => {
 
-//   const updates = [
-//     { invoiceNO: "AE/25-26-36", type: "NOS" },
-//     { invoiceNO: "AE/25-26-35", type: "KGS" },
-//     { invoiceNO: "AE/25-26-34", type: "KGS" },
-//     { invoiceNO: "AE/25-26-33", type: "NOS" },
-//     { invoiceNO: "AE/25-26-32", type: "KGS" },
-//     { invoiceNO: "AE/25-26-31", type: "KGS" },
-//     { invoiceNO: "AE/25-26-30", type: "NOS" },
-//     { invoiceNO: "AE/25-26-29", type: "KGS" },
-//     { invoiceNO: "AE/25-26-28", type: "KGS" },
-//     { invoiceNO: "AE/25-26-27", type: "NOS" },
-//     { invoiceNO: "AE/25-26-26", type: "KGS" },
-//     { invoiceNO: "AE/25-26-25", type: "NOS" },
-//     { invoiceNO: "AE/25-26-24", type: "KGS" },
-//     { invoiceNO: "AE/25-26-23", type: "KGS" },
-//     { invoiceNO: "AE/25-26-22", type: "NOS" },
-//     { invoiceNO: "AE/25-26-21", type: "NOS" },
-//     { invoiceNO: "AE/25-26-20", type: "KGS" },
-//     { invoiceNO: "AE/25-26-19", type: "KGS" },
-//     { invoiceNO: "AE/25-26-18", type: "KGS" },
-//     { invoiceNO: "AE/25-26-17", type: "KGS" },
-//     { invoiceNO: "AE/25-26-16", type: "KGS" },
-//     { invoiceNO: "AE/25-26-15", type: "KGS" },
-//     { invoiceNO: "AE/25-26-14", type: "KGS" },
-//     { invoiceNO: "AE/25-26-13", type: "KGS" },
-//     { invoiceNO: "AE/25-26-12", type: "KGS" },
-//     { invoiceNO: "AE/25-26-11", type: "KGS" },
-//     { invoiceNO: "AE/25-26-10", type: "KGS" },
-//     { invoiceNO: "AE/25-26-09", type: "KGS" },
-//     { invoiceNO: "AE/25-26-08", type: "KGS" },
-//     { invoiceNO: "AE/25-26-07", type: "NOS" },
-//     { invoiceNO: "AE/25-26-06", type: "KGS" },
-//     { invoiceNO: "AE/25-26-05", type: "KGS" },
-//     { invoiceNO: "AE/25-26-04", type: "NOS" },
-//     { invoiceNO: "AE/25-26-03", type: "KGS" },
-//     { invoiceNO: "AE/25-26-02", type: "KGS" },
-//     { invoiceNO: "AE/25-26-01", type: "KGS" }
-//   ];
+  const { month, year } = req.query;
+  let unpaidInvoices = []
+  if (!month || !year) {
+    return res.status(400).json({ error: 'Month and year are required.' });
+  }
 
-//   try {
+  try {
+       const invoiceCollection = db.collection("invoices");
+      if (month && year) {
+        // Parse input as integers
+        const currentMonth = parseInt(month); // 1–12
+        const currentYear = parseInt(year);
 
-//     for (const { invoiceNO, type } of updates) {
-//       const result = await db.collection("invoices").updateOne(
-//         { "invoiceDetail.invoiceNO": invoiceNO },
-//         { $set: { "goodsDescription.type": type } }
-//       );
+        // Current month date range
+        const startDate = new Date(currentYear, currentMonth - 1, 1);
+        const endDate = new Date(currentYear, currentMonth, 1);
 
-//       console.log(`Updated ${invoiceNO}:`, result.modifiedCount === 1 ? "Success" : "Not found");
-//     }
+        const currentQuery = {
+          company: "ASHOK", // or any specific company
+          invoiceDate: { $gte: startDate, $lt: endDate }
+        };
+        // Fetch previous month invoices
+
+        unpaidInvoices = await invoiceCollection.find({ ...currentQuery, paid: false }).toArray();
+        res.status(200).json(unpaidInvoices);
+
+      }
+  } catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
 
 
-//     res.json({ message: "Invoice updated successfully" });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Update failed" });
-//   }
-// })
-
+});
 
 router.get('/invoice/list/:company', async (req,res) => {
   const company = req.params.company;
