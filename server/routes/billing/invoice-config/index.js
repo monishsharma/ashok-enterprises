@@ -22,7 +22,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Puppeteer config
 let browser;
 let isProduction = process.env.NODE_ENV === "prod";
-const collectionName = isProduction ? "invoices" : "invoicesCopy";
+const collectionName = isProduction ? "invoicesCopy" : "invoicesCopy";
+// const collectionName = isProduction ? "invoices" : "invoicesCopy";
 
 async function getBrowser() {
   if (browser) return browser;
@@ -963,28 +964,22 @@ router.get("/search/invoice", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
 router.post("/update/payment", async (req, res) => {
   try {
     const { file, fileName } = req.body;
-    if (!file) {
-      return res.status(400).json({ error: "File is required" });
-    }
+    if (!file) return res.status(400).json({ error: "File is required" });
+
     const invoiceCollection = db.collection(collectionName);
     const paymentCollection = db.collection("payment");
+
     const buffer = Buffer.from(file, "base64");
     const fileHash = crypto.createHash("sha256").update(buffer).digest("hex");
 
-    const workbook = xlsx.read(buffer, { type: "buffer" });
-    const sheetName = workbook.SheetNames[0];
-    const rows = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], {
-      defval: "",
-    });
-
-    let updates = [];
-    let alreadyPaid = [];
-
-    const existingByHash = await paymentCollection.findOne({ fileHash });
+    // Fast idempotency check; also put a UNIQUE INDEX on payment.fileHash
+    const existingByHash = await paymentCollection.findOne(
+      { fileHash },
+      { projection: { fileName: 1, _id: 0 } }
+    );
     if (existingByHash) {
       return res.status(409).json({
         error: "File already uploaded (same file contents)",
@@ -992,78 +987,113 @@ router.post("/update/payment", async (req, res) => {
       });
     }
 
-    for (let row of rows) {
-      if (row["Posting Key Name"]?.trim() !== "Invoice") continue;
+    // Parse once (consider streaming if files can be huge)
+    const workbook = xlsx.read(buffer, { type: "buffer" });
+    const sheetName = workbook.SheetNames[0];
+    const rows = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
 
+    // Filter & prepare keys
+    const entries = [];
+    for (const row of rows) {
+      if ((row["Posting Key Name"] || "").trim() !== "Invoice") continue;
       const refNo = row["Reference Number"];
-      const amount = Math.round(Math.abs(Number(row["Amount"] || 0)));
       if (!refNo) continue;
+      const amount = Math.round(Math.abs(Number(row["Amount"] || 0)));
+      entries.push({ refNo, amount });
+    }
+    if (entries.length === 0) {
+      return res.status(400).json({ error: "No invoice rows found in file." });
+    }
 
-      // 🔎 Check invoice in DB
-      const invoice = await invoiceCollection.findOne({
-        "invoiceDetail.invoiceNO": refNo,
-      });
+    const refNos = [...new Set(entries.map(e => e.refNo))];
 
+    // Fetch all invoices in one go
+    const invoices = await invoiceCollection
+      .find(
+        { "invoiceDetail.invoiceNO": { $in: refNos } },
+        {
+          projection: {
+            "invoiceDetail.invoiceNO": 1,
+            "goodsDescription.Total": 1,
+            paid: 1,
+            invoiceDate: 1,
+            _id: 0,
+          },
+        }
+      )
+      .toArray();
+
+    // Build a map for quick lookup
+    const byNo = new Map(invoices.map(doc => [doc.invoiceDetail.invoiceNO, doc]));
+
+    const bulkOps = [];
+    const updates = [];
+    const alreadyPaid = [];
+
+    for (const { refNo, amount } of entries) {
+      const invoice = byNo.get(refNo);
       if (!invoice) continue; // no match in DB
 
       if (invoice.paid) {
-        // ✅ Already paid → add to separate list
-        alreadyPaid.push({
-          invoiceNo: refNo,
-          amount,
-        });
+        alreadyPaid.push({ invoiceNo: refNo, amount });
         continue;
       }
 
-      // 🔄 Update unpaid invoice
-      const result = await invoiceCollection.updateOne(
-        { "invoiceDetail.invoiceNO": refNo },
-        {
-          $set: {
-            paid: true,
-            paymentAmount: amount,
-            bulkUpload: true,
-            duePayment: parseFloat(invoice.goodsDescription.Total) - amount,
-          },
-        }
-      );
+      const total = Number(invoice.goodsDescription?.Total || 0);
+      const duePayment = Math.max(0, total - amount);
 
-      if (result.modifiedCount > 0) {
-        updates.push({
-          referenceNumber: refNo,
-          paidAmount: amount,
-          invoiceAmount: invoice.goodsDescription.Total,
-          bulkUpload: true,
-          invoiceDate: invoice.invoiceDate || null,
-        });
-      }
+      bulkOps.push({
+        updateOne: {
+          filter: { "invoiceDetail.invoiceNO": refNo },
+          update: {
+            $set: {
+              paid: true,
+              paymentAmount: amount,
+              bulkUpload: true,
+              duePayment,
+            },
+          },
+        },
+      });
+
+      updates.push({
+        referenceNumber: refNo,
+        paidAmount: amount,
+        invoiceAmount: total,
+        bulkUpload: true,
+        invoiceDate: invoice.invoiceDate || null,
+      });
     }
 
-    let paymentRecord = {
+    if (bulkOps.length === 0) {
+      // Record the attempt (optional), but respond clearly
+      return res.status(500).json({ error: "No invoices were updated" });
+    }
+
+    // Execute all updates at once
+    const bulkResult = await invoiceCollection.bulkWrite(bulkOps, { ordered: false });
+
+    // Write the payment record (consider unique index: { fileHash: 1 }, unique: true)
+    await paymentCollection.insertOne({
       updates,
+      alreadyPaid, // keep this if you want to show it later
       date: new Date(),
       createdAt: new Date(),
       fileName: fileName || "",
       fileHash,
-    };
+    });
 
-    if (updates.length === 0) {
-      return res.status(500).json({
-        error: "No invoices were updated",
-      });
-    } else {
-      await paymentCollection.insertOne(paymentRecord);
-    }
-
-    res.json({
+    return res.json({
       message: "Bulk update completed",
-      totalUpdated: updates.length,
+      totalUpdated: bulkResult.modifiedCount || updates.length,
+      alreadyPaidCount: alreadyPaid.length,
     });
   } catch (error) {
     console.error("❌ Server Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 router.get("/payment-details", async (req, res) => {
   let query = {};
   const { month, year } = req.query;
