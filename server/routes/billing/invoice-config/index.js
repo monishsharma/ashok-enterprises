@@ -22,7 +22,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Puppeteer config
 let browser;
 let isProduction = process.env.NODE_ENV === "prod";
-const collectionName = isProduction ? "invoicesCopy" : "invoicesCopy";
+const collectionName = isProduction ? "invoices" : "invoicesCopy";
 // const collectionName = isProduction ? "invoices" : "invoicesCopy";
 
 async function getBrowser() {
