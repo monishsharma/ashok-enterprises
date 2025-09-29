@@ -294,7 +294,7 @@ router.get("/get/invoice/report/:company", async (req, res) => {
 });
 
 router.get("/invoice/list/unpaid", async (req, res) => {
-  const { month, year } = req.query;
+  const { month, year, company } = req.query;
   let unpaidInvoices = [];
   if (!month || !year) {
     return res.status(400).json({ error: "Month and year are required." });
@@ -312,7 +312,7 @@ router.get("/invoice/list/unpaid", async (req, res) => {
       const endDate = new Date(currentYear, currentMonth, 1);
 
       const currentQuery = {
-        company: "ASHOK", // or any specific company
+        company, // or any specific company
         invoiceDate: { $gte: startDate, $lt: endDate },
       };
       // Fetch previous month invoices
