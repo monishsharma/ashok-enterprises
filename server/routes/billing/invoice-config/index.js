@@ -941,6 +941,7 @@ router.get("/search/invoice", async (req, res) => {
         .collection(collectionName)
         .find(query)
         // .sort({ "invoiceDetail.invoiceNO": -1 })
+        .sort({ invoiceDate: -1 })
         .skip(skip)
         .limit(parseInt(limit))
         .toArray(),
