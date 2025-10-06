@@ -367,7 +367,8 @@ router.get("/invoice/list/:company", async (req, res) => {
     //   return date.toISOString().split('T')[0];
     // }))];
 
-    const paginatedInvoices = sortedInvoices.slice(skip, skip + limit);
+    const paginatedInvoices = sortedInvoices;
+    // const paginatedInvoices = sortedInvoices.slice(skip, skip + limit);
 
     res.status(200).json({
       data: paginatedInvoices,
@@ -903,6 +904,7 @@ router.get("/search/invoice", async (req, res) => {
         { "invoiceDetail.invoiceNO": { $regex: searchTerm, $options: "i" } },
         // Search in customer name
         { "buyerDetail.customer": { $regex: searchTerm, $options: "i" } },
+        { "goodsDescription.po": { $regex: searchTerm, $options: "i" } },
         // Search in items array descriptions
         {
           "goodsDescription.items": {
@@ -933,7 +935,7 @@ router.get("/search/invoice", async (req, res) => {
     }
 
     // Calculate pagination
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    // const skip = (parseInt(page) - 1) * parseInt(limit);
 
     // Execute search with pagination
     let [invoices, totalCount] = await Promise.all([
@@ -942,8 +944,8 @@ router.get("/search/invoice", async (req, res) => {
         .find(query)
         // .sort({ "invoiceDetail.invoiceNO": -1 })
         .sort({ invoiceDate: -1 })
-        .skip(skip)
-        .limit(parseInt(limit))
+        // .skip(skip)
+        // .limit(parseInt(limit))
         .toArray(),
       db.collection(collectionName).countDocuments(query),
     ]);
