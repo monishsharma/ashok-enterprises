@@ -1106,7 +1106,7 @@ router.get("/payment-details", async (req, res) => {
     const endDate = new Date(startDate);
     endDate.setMonth(endDate.getMonth() + 1);
     query.date = { $gte: startDate, $lt: endDate };
-    // query.company = "ASHOK";
+    query.company = "ASHOK";
   }
 
   try {
