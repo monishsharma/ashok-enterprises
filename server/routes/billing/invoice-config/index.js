@@ -516,6 +516,7 @@ router.patch("/update/invoice/:id", async (req, res) => {
   }
   const id = new ObjectId(req.params.id);
   const payload = req.body || {};
+  const {company} = payload
   if (payload._id) delete payload._id;
   // keep invoiceDate if you need it on invoice doc (optional)
   if (payload.invoiceDetail && payload.invoiceDetail.invoiceDate) {
@@ -580,7 +581,8 @@ router.patch("/update/invoice/:id", async (req, res) => {
     // Determine paid flag from payload or existing invoice
     const paidFlag = typeof payload.paid !== "undefined" ? Boolean(payload.paid) : Boolean(existing.paid);
 
-    if (paidFlag) {
+    if (company === "ASHOK") {
+      if (paidFlag) {
       // SELECTIVE CLEANUP: remove previous individual entries from other UTC-day docs (keep bulk)
       const docsWithIndividual = await paymentCol.find({
         "updates.referenceNumber": refNo,
@@ -669,6 +671,7 @@ router.patch("/update/invoice/:id", async (req, res) => {
           await paymentCol.updateOne({ _id: todayDoc._id }, { $pull: { updates: { referenceNumber: refNo } } });
         }
       }
+    }
     }
 
     const updatedInvoice = await invoicesCol.findOne({ _id: id });
@@ -1106,8 +1109,9 @@ router.get("/payment-details", async (req, res) => {
     const endDate = new Date(startDate);
     endDate.setMonth(endDate.getMonth() + 1);
     query.date = { $gte: startDate, $lt: endDate };
-    query.company = "ASHOK";
+    // query.company = "ASHOK";
   }
+  const invoiceCollectionQuery = { ...query, company: "ASHOK" };
 
   try {
     const paymentCollection = db.collection("payment");
@@ -1118,7 +1122,7 @@ router.get("/payment-details", async (req, res) => {
       .toArray();
 
     const invoices = await invoiceCollection
-    .find(query)
+    .find(invoiceCollectionQuery)
     .toArray();
 
     const totalInvoiceAmount = invoices.reduce((sum, inv) => {
