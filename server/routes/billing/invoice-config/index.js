@@ -242,6 +242,9 @@ router.get("/get/invoice/report/:company", async (req, res) => {
     currentMonthInvoices.forEach((invoice) => {
       const customer = invoice.buyerDetail.customer || "Unknown";
       const amount = parseFloat(invoice.goodsDescription.Total || 0);
+      const items = invoice.goodsDescription.items || [];
+
+      const totalItemQty = items.reduce((sum, item) => sum + (parseFloat(item.qty) || 0), 0);
       const type = invoice.buyerDetail.orderType || "";
 
       if (!customerTotals[customer]) {
@@ -255,10 +258,12 @@ router.get("/get/invoice/report/:company", async (req, res) => {
       if (!ashokSalesType[type]) {
         ashokSalesType[type] = {
           total: 0,
+          qty: 0,
         };
       }
 
       ashokSalesType[type].total += amount;
+      ashokSalesType[type].qty += totalItemQty;
 
       customerTotals[customer].total += amount;
       if (invoice.paid) {
