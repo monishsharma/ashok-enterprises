@@ -1,0 +1,1 @@
+export const CG_COOKIE = "CKCgPen=DisplayName=ASHOK ENTERPRISES&UserID=0010000943&RoleID=VEND&EmailID=ashok_entp@rediffmail.com&dtFinyear=4/1/2025 12:00:00 AM&FinYear=2025-2026&UserType=N&Division="

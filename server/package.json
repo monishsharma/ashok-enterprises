@@ -14,6 +14,8 @@
   "dependencies": {
     "@fast-csv/format": "^5.0.2",
     "@sparticuz/chromium": "^133.0.0",
+    "axios": "^1.13.2",
+    "cheerio": "^1.1.2",
     "chrome-aws-lambda": "^10.1.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
