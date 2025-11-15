@@ -32,7 +32,9 @@ router.get("/get/ASN/detail/:poNumber/:invoiceId", async(req,res) => {
         const {invoiceDetail: {invoiceNO}} = invoiceDetail;
         const parts = invoiceNO.split('-'); // splits by '-'
         const lastPart = parts[parts.length - 1];
-        const existingASN = asnDetail.asnList.find(a => a.invoiceNo === invoiceNO || a.invoiceNo == lastPart);
+        const existingASN = asnDetail.asnList.find(a =>
+            (a.invoiceNo === invoiceNO || a.invoiceNo === lastPart) && a.asnNumber
+        );
         if (existingASN) {
             // Update invoice in DB with this ASN number
             // await db.collection("invoices").updateOne(

@@ -45,7 +45,7 @@ export const getAsnDetail = async ({poNumber, invoiceDetail}) => {
         const links = $(tds[4]).find('a');
         const viewLink = links.filter((_, a) => $(a).text().trim() === "View").attr('href') || null;
         const printLink = links.filter((_, a) => $(a).text().trim() === "Print").attr('href') || null;
-        const editLink = links.filter((_, a) => $(a).text().trim() === "Edit").attr('href') || null;
+        const editLink = $(tds[4]).find('a:contains("Edit")').attr('href') || null;
         return {
             invoiceNo,
             asnNumber,
@@ -127,7 +127,7 @@ export const saveASN = async({invoiceDetail, asnDetail, poNumber, finalStep}) =>
     const lastPart = parts[parts.length - 1];
 
 
-    const asnGeneratedAlready = asnList.find(item => item.invoiceNo === invoiceNO || item.invoiceNO == lastPart);
+    const asnGeneratedAlready = asnList.find(item =>  item.invoiceNO == lastPart || item.invoiceNo === invoiceNO);
 
     if (asnGeneratedAlready) {
         asnNumber = getAsnNumber(asnGeneratedAlready.editLink);
