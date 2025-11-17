@@ -74,6 +74,7 @@ export const getCSVHeader = ({ forGST, forUnpaid }) => {
         return [
             'S N0',
             'BILL',
+            'Po Number',
             'DATE',
             'AMOUNT',
         ]
@@ -99,8 +100,10 @@ export const getCSVHeader = ({ forGST, forUnpaid }) => {
 }
 
 export const getCsvBody = ({ forGST, forUnpaid, data }) => {
+  console.log(data)
   return data.map((item, index) => {
     const billNo = item.invoiceDetail?.invoiceNO || '';
+    const poNumber = item.goodsDescription?.po || '';
     const invoiceDate = moment(item.invoiceDate).format("DD-MMM-YY");
     const gstin = item.buyerDetail?.GSTIN || '';
     const partyName = item.buyerDetail?.customer || '';
@@ -139,6 +142,7 @@ export const getCsvBody = ({ forGST, forUnpaid, data }) => {
       return [
         index + 1,
         billNo.split("-")[2] || '',
+        poNumber,
         invoiceDate,
         amount
       ];

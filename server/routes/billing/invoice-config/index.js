@@ -17,12 +17,14 @@ import {
   getCSVHeader,
   getFileName,
 } from "../../../helper/csv-helper.js";
+import { get } from "http";
+import { calcualteCustomerTotals, calculateFYSales, calculateGrowth, calculateTonsGrowth, calculateTotalSales, calculateTotalTons, calculateYearlyGrowth, calculateYearlyPayment, getFYCustomerTotals, getFYItemBreakdown, getFYYearlyTotals, getItemBreakdown, getQuery, getYearlySales, getYearlyTons, monthlySalesQuery } from "../../../helper/growth-api-.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Puppeteer config
 let browser;
 let isProduction = process.env.NODE_ENV === "prod";
-const collectionName = isProduction ? "invoices" : "invoicesCopy";
+const collectionName = isProduction ? "invoices" : "invoices";
 // const collectionName = isProduction ? "invoices" : "invoicesCopy";
 
 async function getBrowser() {
@@ -92,246 +94,159 @@ router.get("/vendor/list", async (req, res) => {
 
 router.get("/get/invoice/report/:company", async (req, res) => {
   const company = req.params.company;
-  let query = { company: company };
-  const { month, year, type } = req.query;
+  const { month, year } = req.query;
+    let currentMonthInvoices, prevMonthInvoices;
+    let currentMonthSales, prevMonthSales;
 
-  try {
-    const invoiceCollection = db.collection(collectionName);
+    try {
+      const invoiceCollection = db.collection(collectionName);
+      const currentMonthQuery = getQuery({month, year, previous: false, company});
+      const prevMonthQuery = getQuery({month, year, previous: true, company});
 
-    let currentMonthInvoices = [];
-    let prevMonthInvoices = [];
-    let totalCount = 0;
-    let preInvoiceCount = 0;
-    let invoiceAmount = [];
-    let unpaidInvoices = [];
-
-    if (month && year) {
-      // Parse input as integers
-      const currentMonth = parseInt(month); // 1–12
-      const currentYear = parseInt(year);
-
-      // Current month date range
-      const startDate = new Date(currentYear, currentMonth - 1, 1);
-      const endDate = new Date(currentYear, currentMonth, 1);
-
-      // Previous month date range
-      const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
-      const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
-
-      const prevStartDate = new Date(prevYear, prevMonth - 1, 1);
-      const prevEndDate = new Date(prevYear, prevMonth, 1);
-
-      // Fetch current month invoices
-      const currentQuery = {
-        ...query,
-        invoiceDate: { $gte: startDate, $lt: endDate },
-      };
       currentMonthInvoices = await invoiceCollection
-        .find(currentQuery)
+        .find(currentMonthQuery)
         .sort({ "invoiceDetail.invoiceNO": -1 })
         .toArray();
-      totalCount = await invoiceCollection.countDocuments(currentQuery);
-      // Fetch previous month invoices
-      const prevQuery = {
-        ...query,
-        invoiceDate: { $gte: prevStartDate, $lt: prevEndDate },
-      };
+
       prevMonthInvoices = await invoiceCollection
-        .find(prevQuery)
+        .find(prevMonthQuery)
         .sort({ "invoiceDetail.invoiceNO": -1 })
         .toArray();
-      preInvoiceCount = await invoiceCollection.countDocuments(prevQuery);
-    }
 
-    // Helper to calculate totals
-    const calculateTotals = (invoices) => {
-      let total = 0,
-        paid = 0,
-        unpaid = 0,
-        due = 0;
-      invoices.forEach((inv) => {
-        const amount = parseFloat(inv.goodsDescription.Total);
-        invoiceAmount.push(amount);
-        total += amount;
-        if (inv.paid) {
-          paid += inv.paymentAmount || 0;
-          due += inv.duePayment || 0;
-        } else unpaid += amount;
-      });
-      return { total, paid, unpaid, due };
-    };
+      currentMonthSales = calculateTotalSales(currentMonthInvoices);
+      prevMonthSales = calculateTotalSales(prevMonthInvoices);
 
-    const current = calculateTotals(currentMonthInvoices);
-    const previous = calculateTotals(prevMonthInvoices);
-
-    // Calculate percentage and growth flag for invoice amount
-    let invoiceAmountChange = 0;
-    let invoiceAmountGrowth = false;
-    if (previous.total > 0) {
-      invoiceAmountChange =
-        ((current.total - previous.total) / previous.total) * 100;
-      invoiceAmountChange = parseFloat(invoiceAmountChange.toFixed(2));
-      invoiceAmountGrowth = current.total > previous.total;
-    } else if (current.total > 0) {
-      invoiceAmountChange = 100;
-      invoiceAmountGrowth = true;
-    }
-
-    // Calculate percentage and growth flag for total invoice count
-    let invoiceCountChange = 0;
-    let invoiceCountGrowth = false;
-    if (preInvoiceCount > 0) {
-      invoiceCountChange =
-        ((totalCount - preInvoiceCount) / preInvoiceCount) * 100;
-      invoiceCountChange = parseFloat(invoiceCountChange.toFixed(2));
-      invoiceCountGrowth = totalCount > preInvoiceCount;
-    } else if (totalCount > 0) {
-      invoiceCountChange = 100;
-      invoiceCountGrowth = true;
-    }
-    // Monthly invoice totals from April (index 0) to March (index 11)
-    const monthlyTotals = Array(12).fill(0);
-
-    if (year) {
-      const selectedYear = parseInt(year);
-
-      // Financial year starts in April of current year and ends in March of next year
-      const fyStart = new Date(selectedYear, 3, 1); // April 1
-      const fyEnd = new Date(selectedYear + 1, 3, 1); // April 1 next year
+      // CALCULATING MONTHLY SALES IN FINANCIAL YEAR //
+      const financialYearQuery = monthlySalesQuery({company, year});
 
       const fyInvoices = await invoiceCollection
-        .find({
-          ...query,
-          invoiceDate: { $gte: fyStart, $lt: fyEnd },
-        })
+        .find({ ...financialYearQuery })
         .toArray();
 
-      fyInvoices.forEach((inv) => {
-        const amount = parseFloat(inv.goodsDescription.Total || 0);
-        const actualMonth = new Date(inv.invoiceDate).getMonth(); // 0–11
 
-        // Reindex month to start from April as 0, May as 1, ..., March as 11
-        const fiscalMonthIndex = (actualMonth + 9) % 12;
-        monthlyTotals[fiscalMonthIndex] += amount;
-      });
+      // SALES MONTHLY TOTALS //
+      const monthlyTotals = calculateFYSales(fyInvoices);
+
+      // SALES YEARLY TOTALS FOR NEXT 5 YEARS //
+      const fyResult = await getFYYearlyTotals(invoiceCollection, company);
+
+      // yearly tons //
+      const yearlyTons = await getYearlyTons({invoiceCollection, company, year});
+      const yearlyTonsObj = await getYearlyTons({invoiceCollection, company, needObj: true, year});
+
+      res.status(200).json({
+        sales: {
+          monthly: currentMonthSales.total,
+          yearly: getYearlySales({yearlyTotals: fyResult, year}),
+        },
+        tons: {
+          monthly: calculateTotalTons(currentMonthInvoices),
+          yearly: yearlyTons,
+        },
+        growth: {
+          sales: {
+            monthly: calculateGrowth(currentMonthSales, prevMonthSales),
+            yearly: calculateYearlyGrowth({yearlyTotals: fyResult, year}),
+          },
+          tons: {
+            monthly: calculateTonsGrowth({currentMonthInvoices, prevMonthInvoices}),
+            yearly: calculateYearlyGrowth({yearlyTotals: yearlyTonsObj, year}),
+          }
+        },
+        payment:{
+          monthly: {
+            paid: currentMonthSales.paid,
+            unpaid: currentMonthSales.unpaid
+          },
+          yearly: {
+            paid: await calculateYearlyPayment({invoiceCollection, company, paid: true, year}),
+            unpaid: await calculateYearlyPayment({invoiceCollection, company, paid: false, year})
+          }
+        },
+        itemBreakdown: {
+          monthly: getItemBreakdown(currentMonthInvoices),
+          yearly: await getFYItemBreakdown({invoiceCollection, company, year})
+        },
+        customerBreakdown:{
+          monthly: calcualteCustomerTotals(currentMonthInvoices),
+          yearly: await getFYCustomerTotals({invoiceCollection, company})
+        },
+        monthlyTotals,
+        fyResult: fyResult,
+      })
+
+    } catch (error) {
+      console.error("❌ Server Error:", error);
+      res.status(500).json({ error: "Server error" });
     }
 
-    // Collect yearly totals (for multiple years)
-    const yearlyTotals = {};
-
-    // Fetch all invoices of this company
-    const allInvoices = await invoiceCollection.find(query).toArray();
-
-    allInvoices.forEach((inv) => {
-      const amount = parseFloat(inv.goodsDescription.Total || 0);
-      const d = new Date(inv.invoiceDate);
-
-      // Financial year calculation (April = start)
-      const fyYear = d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear() - 1;
-      const fyLabel = `${fyYear}-${fyYear + 1}`;
-
-      if (!yearlyTotals[fyLabel]) yearlyTotals[fyLabel] = 0;
-      yearlyTotals[fyLabel] += amount;
-    });
-
-    // yearlyTotals = { "2022-2023": 12345, "2023-2024": 67890, ... }
-
-    const customerTotals = {};
-    const ashokSalesType = {};
-
-    currentMonthInvoices.forEach((invoice) => {
-      const customer = invoice.buyerDetail.customer || "Unknown";
-      const amount = parseFloat(invoice.goodsDescription.Total || 0);
-      const items = invoice.goodsDescription.items || [];
-
-      const totalItemQty = items.reduce((sum, item) => sum + (parseFloat(item.qty) || 0), 0);
-      const type = invoice.buyerDetail.orderType || "";
-
-      if (!customerTotals[customer]) {
-        customerTotals[customer] = {
-          total: 0,
-          paid: 0,
-          unpaid: 0,
-        };
-      }
-
-      if (!ashokSalesType[type]) {
-        ashokSalesType[type] = {
-          total: 0,
-          qty: 0,
-        };
-      }
-
-      ashokSalesType[type].total += amount;
-      ashokSalesType[type].qty += totalItemQty;
-
-      customerTotals[customer].total += amount;
-      if (invoice.paid) {
-        customerTotals[customer].paid += amount;
-      } else {
-        customerTotals[customer].unpaid += amount;
-      }
-    });
-
-    res.status(200).json({
-      totalItems: totalCount,
-      totalInvoiceAmount: current.total,
-      paidTotal: current.paid,
-      unpaidTotal: current.unpaid,
-      dueTotal: current.due,
-      monthlyTotals,
-      ashokSalesType,
-      yearlyTotals,
-      invoiceAmountChange: {
-        percentage: invoiceAmountChange,
-        growth: invoiceAmountGrowth,
-      },
-      invoiceCountChange: {
-        percentage: invoiceCountChange,
-        growth: invoiceCountGrowth,
-      },
-      customerTotals,
-    });
-  } catch (error) {
-    console.error("❌ Server Error:", error);
-    res.status(500).json({ error: "Server error" });
-  }
 });
+
 
 router.get("/invoice/list/unpaid", async (req, res) => {
   const { month, year, company } = req.query;
-  let unpaidInvoices = [];
-  if (!month || !year) {
-    return res.status(400).json({ error: "Month and year are required." });
+
+  if (!year) {
+    return res.status(400).json({ error: "Year is required." });
   }
 
   try {
     const invoiceCollection = db.collection(collectionName);
-    if (month && year) {
-      // Parse input as integers
-      const currentMonth = parseInt(month); // 1–12
-      const currentYear = parseInt(year);
 
-      // Current month date range
-      const startDate = new Date(currentYear, currentMonth - 1, 1);
-      const endDate = new Date(currentYear, currentMonth, 1);
+    const selectedYear = parseInt(year);
 
-      const currentQuery = {
-        company, // or any specific company
-        invoiceDate: { $gte: startDate, $lt: endDate },
-      };
-      // Fetch previous month invoices
+    let monthly = [];
+    let yearly = [];
 
-      unpaidInvoices = await invoiceCollection
-        .find({ ...currentQuery, paid: false })
+    // ----------------------------------------------------
+    // ✅ 1. MONTHLY UNPAID (only if month is passed)
+    // ----------------------------------------------------
+    if (month) {
+      const m = parseInt(month);
+
+      const startDateMonth = new Date(selectedYear, m - 1, 1);  // first day
+      const endDateMonth = new Date(selectedYear, m, 1);        // next month start
+
+      monthly = await invoiceCollection
+        .find({
+          company,
+          paid: false,
+          invoiceDate: { $gte: startDateMonth, $lt: endDateMonth }
+        })
         .toArray();
-      res.status(200).json(unpaidInvoices);
     }
+
+    // ----------------------------------------------------
+    // ✅ 2. YEARLY UNPAID (financial year)
+    // FY 2025 = 01-Apr-2025 → 31-Mar-2026
+    // ----------------------------------------------------
+    const fyStart = new Date(selectedYear, 3, 1);  // Apr 1st
+    const fyEnd = new Date(selectedYear + 1, 2, 31, 23, 59, 59); // Mar 31 next year
+
+    yearly = await invoiceCollection
+      .find({
+        company,
+        paid: false,
+        invoiceDate: { $gte: fyStart, $lte: fyEnd }
+      })
+      .toArray();
+
+    // ----------------------------------------------------
+    // SEND RESPONSE
+    // ----------------------------------------------------
+    res.status(200).json({
+      month: month || null,
+      financialYear: `${selectedYear}-${selectedYear + 1}`,
+      monthly,
+      yearly
+    });
+
   } catch (error) {
     console.error("❌ Server Error:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 router.get("/invoice/list/:company", async (req, res) => {
   const company = req.params.company;
@@ -785,8 +700,10 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
   }
 });
 
-router.get("/generate-csv", async (req, res) => {
+router.post("/generate-csv", async (req, res) => {
   const { month, year, company, GST, forUnpaid: unpaid } = req.query;
+  const unpaidInvoicesList = req.body
+  console.log(unpaidInvoicesList)
   const forGST = GST === "true";
   const forUnpaid = unpaid === "true";
   if (!month || !year) {
@@ -837,7 +754,7 @@ router.get("/generate-csv", async (req, res) => {
     const rows = getCsvBody({
       forGST,
       forUnpaid,
-      data: forUnpaid ? unpaidInvoices : invoices,
+      data: forUnpaid ? unpaidInvoicesList : invoices,
     });
 
     rows.forEach((row) => {
