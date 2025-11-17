@@ -130,9 +130,8 @@ export const saveASN = async({invoiceDetail, asnDetail, poNumber, finalStep}) =>
     const asnGeneratedAlready = asnList.find(item =>  item.invoiceNO == lastPart || item.invoiceNo === invoiceNO);
 
     if (asnGeneratedAlready) {
-        asnNumber = getAsnNumber(asnGeneratedAlready.editLink);
+        asnNumber = await getAsnNumber(asnGeneratedAlready.editLink);
     }
-
     const payload = getPayloadForASN({invoiceDetail, poNumber, finalStep, asnNumber});
     const url = "https://itapps.cgglobal.com/CGSCM/PEN/Delivery/SAVE_ASN";
 
