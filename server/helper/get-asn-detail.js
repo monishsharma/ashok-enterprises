@@ -29,11 +29,12 @@ export const getAsnDetail = async ({poNumber, invoiceDetail}) => {
         throw new Error(`ASN data not found for PO ${poNumber}`);
     }
 
-
+    const poRow = $("#gridT > tbody > tr").first();
     const poCell = $('td.colCenter a[target="_blank"]').first();
     const poHref = poCell.attr('href');
     const poNum = poCell.text().trim();
     const generateAsnHref = $('a:contains("Generate ASN")').attr('href') || null;
+    const isBlocked = poRow.find("i.fa-ban").length > 0;
 
     const asnRows = $('#subT tbody tr').map((i, el) => {
         const tds = $(el).find('td');
@@ -62,47 +63,16 @@ export const getAsnDetail = async ({poNumber, invoiceDetail}) => {
     poNum,
     poHref,
     generateAsnHref,
-    asnList: asnRows
+    asnList: asnRows,
+    isBlocked
     };
 
     return result;
 
 }
 
-const getPayloadForASN = ({invoiceDetail, poNumber, finalStep, asnNumber = ""}) => {
 
-    const {
-        invoiceDetail: {
-            invoiceNO,
-            invoiceDate
-        },
-        shippingDetail: {
-            vehicleNo,
-            eway
-        }
-    } = invoiceDetail;
-    return {
-        items: {
-            "vStatus": finalStep ? "CA":"GA",
-            "ASN": asnNumber ?  asnNumber : "0",
-            "INVOICE_NO": invoiceNO,
-            "dtINVOICE": formatDate(invoiceDate),
-            "PONumber": poNumber,
-            "TRANSPORT_NAME": "N/A",
-            "DRIVER_NAME": "N/A",
-            "DRIVER_CONTNO": "N/a",
-            "VEHICLE_NO": vehicleNo,
-            "LR_NO": "N/A",
-            "dtLR_DATE": formatDate(invoiceDate),
-            "EwayBillNo": eway || "N/A",
-            "dtEwayBillDate": formatDate(invoiceDate),
-            "SRN_XML": "<SRN></SRN>",
-            "NONCTQ_XML": "<SRNITEM></SRNITEM>"
-        }
-    }
-}
-
-const getAsnNumber = async(editLink) => {
+export const getAsnNumber = async(editLink) => {
     const url = `https://itapps.cgglobal.com${editLink}`;
 
      const { data } = await Axios.get(url, {
@@ -112,27 +82,14 @@ const getAsnNumber = async(editLink) => {
         "User-Agent": "Mozilla/5.0",
         },
     });
-
     const $ = cheerio.load(data);
     const existingAsn = $('#hfASN_No').val();
     return existingAsn;
 
 }
 
-export const saveASN = async({invoiceDetail, asnDetail, poNumber, finalStep}) => {
-    let asnNumber = "";
-    const { asnList } = asnDetail;
-    const {invoiceDetail: {invoiceNO}} = invoiceDetail;
-    const parts = invoiceNO.split('-'); // splits by '-'
-    const lastPart = parts[parts.length - 1];
+export const saveASN = async({ payload }) => {
 
-
-    const asnGeneratedAlready = asnList.find(item =>  item.invoiceNO == lastPart || item.invoiceNo === invoiceNO);
-
-    if (asnGeneratedAlready) {
-        asnNumber = await getAsnNumber(asnGeneratedAlready.editLink);
-    }
-    const payload = getPayloadForASN({invoiceDetail, poNumber, finalStep, asnNumber});
     const url = "https://itapps.cgglobal.com/CGSCM/PEN/Delivery/SAVE_ASN";
 
     try {
@@ -144,7 +101,7 @@ export const saveASN = async({invoiceDetail, asnDetail, poNumber, finalStep}) =>
             },
         });
 
-        return {...data, ...asnDetail};
+        return {...data};
 
     } catch(error) {
         console.log("❌ SAVE_ASN error:", error.message);
@@ -253,9 +210,9 @@ export const fetchItemsForDispatch = async({poNumber, asnNumber, invoiceDetail})
     }
 }
 
-export const generateASN = async({ invoiceDetail, poNumber }) => {
+export const generateASN = async({ payload }) => {
     try {
-        const result = await saveASN({invoiceDetail, poNumber, finalStep: true});
+        const result = await saveASN({ payload });
         return result;
     } catch (err) {
             console.error(`❌ generateASN failed for POITEM:`, err.message);
