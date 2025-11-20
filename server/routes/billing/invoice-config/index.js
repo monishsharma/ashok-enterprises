@@ -722,7 +722,6 @@ router.post("/generate-csv", async (req, res) => {
         invoiceDate: { $gte: startDate, $lt: endDate },
       })
       .toArray();
-    const unpaidInvoices = invoices.filter((inv) => !inv.paid);
     const monthNames = [
       "JAN",
       "FEB",
@@ -748,13 +747,14 @@ router.post("/generate-csv", async (req, res) => {
     res.setHeader("Content-Type", "text/csv");
 
     const csvStream = format({
-      headers: getCSVHeader({ forGST, forUnpaid }),
+      headers: getCSVHeader({ forGST, forUnpaid, company }),
     });
     csvStream.pipe(res);
     const rows = getCsvBody({
       forGST,
       forUnpaid,
       data: forUnpaid ? unpaidInvoicesList : invoices,
+      company
     });
 
     rows.forEach((row) => {

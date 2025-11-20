@@ -51,8 +51,8 @@ export const getFileName = ({ forGST, forUnpaid }) => {
     return "Sales";
 }
 
-export const getCSVHeader = ({ forGST, forUnpaid }) => {
-
+export const getCSVHeader = ({ forGST, forUnpaid, company }) => {
+  const isCompanyAshok = company === "ASHOK";
     if (forGST) {
         return [
             'GSTIN/UIN of Recipient',
@@ -74,7 +74,7 @@ export const getCSVHeader = ({ forGST, forUnpaid }) => {
         return [
             'S N0',
             'BILL',
-            'Po Number',
+            isCompanyAshok ? 'PO NUMBER' : 'PARTY NAME',
             'DATE',
             'AMOUNT',
         ]
@@ -99,8 +99,8 @@ export const getCSVHeader = ({ forGST, forUnpaid }) => {
 
 }
 
-export const getCsvBody = ({ forGST, forUnpaid, data }) => {
-  console.log(data)
+export const getCsvBody = ({ forGST, forUnpaid, data, company }) => {
+  const isCompanyAshok = company === "Ashok";
   return data.map((item, index) => {
     const billNo = item.invoiceDetail?.invoiceNO || '';
     const poNumber = item.goodsDescription?.po || '';
@@ -142,7 +142,7 @@ export const getCsvBody = ({ forGST, forUnpaid, data }) => {
       return [
         index + 1,
         billNo.split("-")[2] || '',
-        poNumber,
+        ...(isCompanyAshok ? [poNumber] : [partyName]),
         invoiceDate,
         amount
       ];
