@@ -98,6 +98,9 @@ router.post("/get/ASN/detail/:poNumber/:invoiceId", async(req,res) => {
         // step 3: Generate ASN
         let generatedASN;
         const updatedPayload = JSON.parse(JSON.stringify(payload));
+        if (asnSaveResult?.[0]?.ASN) {
+            updatedPayload.asnNumber = asnSaveResult[0].ASN;
+        }
         updatedPayload.items.vStatus = "CA";
         try {
             generatedASN = await generateASN({ payload: updatedPayload })
