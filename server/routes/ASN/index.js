@@ -99,7 +99,7 @@ router.post("/get/ASN/detail/:poNumber/:invoiceId", async(req,res) => {
         let generatedASN;
         const updatedPayload = JSON.parse(JSON.stringify(payload));
         if (asnSaveResult?.[0]?.ASN) {
-            updatedPayload.items.asnNumber = asnSaveResult[0].ASN;
+            updatedPayload.items.ASN = asnSaveResult[0].ASN;
         }
         updatedPayload.items.vStatus = "CA";
         try {
