@@ -6,15 +6,10 @@ import { db } from "../../db/connection.js";
 
 const router = express.Router();
 
-router.get("/check/ASN/generation/:poNumber/:invoiceId", async(req,res) => {
+router.post("/check/ASN/generation/:poNumber", async(req,res) => {
 
     const poNumber= req.params.poNumber;
-    const invoiceId = new ObjectId(req.params.invoiceId);
-
-    const invoiceDetail = await db.collection("invoices").findOne({ _id: invoiceId });
-    if (!invoiceDetail) {
-        return res.status(404).json({ error: "invoice not found" });
-    }
+    const invoiceDetail = req.body;
 
     const {invoiceDetail: {invoiceNO}} = invoiceDetail;
     const parts = invoiceNO.split('-'); // splits by '-'
@@ -62,21 +57,15 @@ router.get("/check/ASN/generation/:poNumber/:invoiceId", async(req,res) => {
 
 });
 
-router.post("/get/ASN/detail/:poNumber/:invoiceId", async(req,res) => {
+router.post("/get/ASN/detail/:poNumber", async(req,res) => {
 
     const poNumber= req.params.poNumber;
-    const payload = req.body;
-    const invoiceId = new ObjectId(req.params.invoiceId);
+    const {payload, invoiceDetail} = req.body;
 
     try {
 
-        // step 1: get invoice detail
-        const invoiceDetail = await db.collection("invoices").findOne({ _id: invoiceId });
-        if (!invoiceDetail) {
-            return res.status(404).json({ error: "invoice not found" });
-        }
 
-        // Step 2: Save ASN
+        // Step 1: Save ASN
         let asnSaveResult;
         try {
             asnSaveResult = await saveASN({ payload });
@@ -85,7 +74,7 @@ router.post("/get/ASN/detail/:poNumber/:invoiceId", async(req,res) => {
             return res.status(502).json({ success: false, step: "saveASN", error: error.message });
         }
 
-        // step 3: fetch items for Dispatch
+        // step 2: fetch items for Dispatch
         let itemsForDispatch;
         const asnNumber = asnSaveResult?.[0]?.ASN;
         try {

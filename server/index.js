@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import Employee from "./routes/employee/employee.js";
 import Attendance from "./routes/attendance/attendance.js";
 import Billing from "./routes/billing/invoice-config/index.js";
-// import PurchaseOrder from "./routes/purchase-order/index.js"
+import PurchaseOrder from "./routes/purchase-order/index.js"
 import ASN from "./routes/ASN/index.js"
 import { cron } from "./controller.js";
 import path from "path";
@@ -29,7 +29,7 @@ const startServer = async () => {
   app.use("/employee", Employee);
   app.use("/attendance", Attendance);
   app.use("/billing", Billing);
-  // app.use("/purchase-order", PurchaseOrder)
+  app.use("/purchase-order", PurchaseOrder)
   app.use("/ASN", ASN)
 
   app.get("/health", (req, res) => {

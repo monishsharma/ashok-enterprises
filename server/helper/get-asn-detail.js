@@ -178,8 +178,9 @@ export const fetchItemsForDispatch = async({poNumber, asnNumber, invoiceDetail})
         throw new Error(`Validation failed: ${items.length - passedItems.length} of ${items.length} items did not pass checks.`);
     }
 
+    const results = [];
+    const url = "https://itapps.cgglobal.com/CGSCM/PEN/Delivery/MOVETODISP";
     for (const passItem of passedItems) {
-
         const payload = {
             po: poNumber,
             ASN: asnNumber,
@@ -187,27 +188,27 @@ export const fetchItemsForDispatch = async({poNumber, asnNumber, invoiceDetail})
             item_XML: `<NCTQ><ROW><SCHID>${passItem.SCID}</SCHID><ITEM>${passItem.ITEMCODE}</ITEM><QTY>${passItem.QTY}</QTY></ROW></NCTQ>`
         };
 
-        // 5️⃣ Post to API
-        const url = "https://itapps.cgglobal.com/CGSCM/PEN/Delivery/MOVETODISP";
-
         try {
-
             const { data } = await Axios.post(url, payload, {
                 headers: {
-                Cookie: CG_COOKIE,
-                "User-Agent": "Mozilla/5.0",
+                    Cookie: CG_COOKIE,
+                    "User-Agent": "Mozilla/5.0",
                 },
             });
 
-            return data;
-
+            results.push({
+                item: passItem,
+                response: data,
+            });
 
         } catch (err) {
             console.error(`❌ MOVETODISP failed for POITEM:`, err.message);
             throw err;
         }
-
     }
+
+    return results;
+
 }
 
 export const generateASN = async({ payload }) => {
