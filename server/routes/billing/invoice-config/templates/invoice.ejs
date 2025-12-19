@@ -196,7 +196,7 @@
               <tr style="font-size: 12px">
                 <td><%= data.buyerDetail.vendorCode %></td>
                 <td><%= data.buyerDetail.materialCode %></td>
-                <td><%= data.goodsDescription.po %></td>
+                <td><%= data.goodsDescription.fullPo || data.goodsDescription.po %></td>
                 <td><%= data.goodsDescription.serial %></td>
                 <td colspan="2"><%= data.shippingDetail.vehicleNo %></td>
                 <% if (data.buyerDetail.isInterState) { %>

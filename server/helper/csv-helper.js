@@ -106,7 +106,7 @@ export const getCsvBody = ({ forGST, forUnpaid, data, company }) => {
     const poNumber = item.goodsDescription?.po || '';
     const invoiceDate = moment(item.invoiceDate).format("DD-MMM-YY");
     const gstin = item.buyerDetail?.GSTIN || '';
-    const partyName = item.buyerDetail?.customer || '';
+    const partyName = item.buyerDetail?.customerName || item.buyerDetail?.customer || '';
     const hsn = item.goodsDescription?.HSN || '';
     const freight = item.goodsDescription?.freight || 0;
     const amount = parseFloat(item.goodsDescription?.Total || 0);

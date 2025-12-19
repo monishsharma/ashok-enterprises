@@ -703,7 +703,6 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
 router.post("/generate-csv", async (req, res) => {
   const { month, year, company, GST, forUnpaid: unpaid } = req.query;
   const unpaidInvoicesList = req.body
-  console.log(unpaidInvoicesList)
   const forGST = GST === "true";
   const forUnpaid = unpaid === "true";
   if (!month || !year) {

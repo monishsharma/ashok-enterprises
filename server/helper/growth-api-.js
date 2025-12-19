@@ -121,7 +121,7 @@ export const calcualteCustomerTotals = (invoices) => {
   };
 
   invoices.forEach((inv) => {
-    let customer = inv.buyerDetail.customer?.trim() || "Unknown";
+    let customer = (inv.buyerDetail.customerName || inv.buyerDetail.customer)?.trim() || "Unknown";
     const amount = parseFloat(inv.goodsDescription.Total || 0);
 
     // Normalize to lowercase for matching
