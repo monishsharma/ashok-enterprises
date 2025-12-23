@@ -21,10 +21,6 @@
         },
         {
             "path": "/biometric/cron",
-            "schedule": "0 12 * * *"
-        },
-        {
-            "path": "/biometric/cron",
             "schedule": "0 18 * * *"
         }
     ]
