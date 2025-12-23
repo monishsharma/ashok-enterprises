@@ -38,6 +38,10 @@ const employeeeSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    emCode: {
+        type: "string",
+        required: true
+    },
     salaryPerDay: {
         type: String,
         required: true

@@ -6,7 +6,7 @@ import Table from "../../shared/component/table";
 import { getMonth, getTodayDate } from "../../helpers/today-date";
 import styles from "./attendance.module.css";
 import {tableConstants} from "../../constants/tableConstant"
-import { employeeList, markAttendance, employeeDetail, checkoutAllEmployee } from "../../store/employee/action";
+import { employeeList, markAttendance, employeeDetail, checkoutAllEmployee, fetchBiometricData } from "../../store/employee/action";
 import PageLoader from "../../shared/component/page-loader";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
@@ -14,17 +14,21 @@ import { filterEmployee, totalHoursWork, totalOverTime } from "./selector";
 import TimePicker from "../../shared/component/time=picker";
 import { useOutletContext } from "react-router-dom";
 import BulkUploader from "../../components/bulk-uploader";
+import moment from 'moment'
+
 
 
 const Attendance = ({
   employeeData,
   markAttendanceConnect,
   employeeListConnect,
-  employeeDetailConnect
+  employeeDetailConnect,
+  fetchBiometricDataConnect
 }) => {
 
   const {date} = getTodayDate();
   const {ref} = useOutletContext();
+  const sortedEmployeeData = employeeData?.sort((a,b) => Number(a.empCode) - Number(b.empCode))
   const scroll = localStorage.getItem("scroll");
   const day = String(date.getDate()).padStart(2, '0');
   const year = date.getFullYear();
@@ -202,12 +206,26 @@ const Attendance = ({
     setShowBulkAttendanceUploader(!showBulkAttendanceUploader);
   }
 
+  const fetchBiometricData = () => {
+      setIsLoading(true);
+
+    const fromDate = moment(dateValue).format('DD/MM/YYYY');
+    fetchBiometricDataConnect({fromDate: fromDate, toDate: fromDate  })
+    .then((res) => {
+      setIsLoading(false);
+    })
+    .catch(() => {
+      setIsLoading(false);
+
+    })
+  }
+
 if (isLoading) return <PageLoader/>
 
   return (
     <React.Fragment>
       {/* {isLoading && <PageLoader />} */}
-       {showBulkAttendanceUploader && <BulkUploader
+       {/* {showBulkAttendanceUploader && <BulkUploader
           data={employeeData}
           variant={isCheckout ? "warning": "success"}
           showModal={showBulkAttendanceUploader}
@@ -215,7 +233,7 @@ if (isLoading) return <PageLoader/>
           dateValue={dateValue}
           isCheckout={isCheckout}
           employeeListHandler={employeeListHandler}
-        />}
+        />} */}
         <div className={` ${styles.attendanceWrapper}`}>
           <h2 className="fw-bold">Attendance List</h2>
           <Row className="pt-4 ">
@@ -233,26 +251,31 @@ if (isLoading) return <PageLoader/>
 
             </Col>
             <Col md={9}>
-            <div className="gap-2 btnContainer">
-            <TimePicker dateValue={dateValue} callBack={({punchedTime}) => allPresentHandler({punchedTime})} >
+              <Col md={4} style={{marginLeft: "10px"}}>
+                <div className="gap-2 btnContainer">
+              <Button variant="success" style={{width: `100%`}} onClick={fetchBiometricData}>
+                Fetch  Data
+              </Button>
+            {/* <TimePicker dateValue={dateValue} callBack={({punchedTime}) => allPresentHandler({punchedTime})} >
               <Button variant="success" style={{width: `100%`}}>
                 All Present
               </Button>
-            </TimePicker>
+            </TimePicker> */}
             {/* <TimePicker dateValue={dateValue} callBack={({punchedTime}) => checkoutAll({punchedTime})} isDisabled={hasEmptyCheckinTime.length < 5}> */}
-              <Button onClick={()=> bulUploaderToggle(true)} variant="warning"  disabled={hasEmptyCheckinTime.length < 5}>
+              {/* <Button onClick={()=> bulUploaderToggle(true)} variant="warning"  disabled={hasEmptyCheckinTime.length < 5}>
                 Checkout All
-              </Button>
+              </Button> */}
             {/* </TimePicker> */}
-            <Button variant="success" onClick={() => bulUploaderToggle(false)}>
+            {/* <Button variant="success" onClick={() => bulUploaderToggle(false)}>
                 Bulk Uploader
-              </Button>
+              </Button> */}
             </div>
+              </Col>
             </Col>
           </Row>
         </div>
         <div className="pt-4 customTable" style={{minHeight: "1607px"}} >
-          <Table canSearch={false} cols={tableConstants({handleAttendance, handleCheckoutAttendance, dateValue, markAbsent})} data={employeeData} />
+          <Table canSearch={false} cols={tableConstants({handleAttendance, handleCheckoutAttendance, dateValue, markAbsent})} data={sortedEmployeeData} />
         </div>
     </React.Fragment>
   );
@@ -277,7 +300,8 @@ const mapDispatchToProps = (dispatch) => bindActionCreators({
     employeeListConnect: employeeList,
     markAttendanceConnect: markAttendance,
     employeeDetailConnect: employeeDetail,
-    checkoutAllEmployeeConnect: checkoutAllEmployee
+    checkoutAllEmployeeConnect: checkoutAllEmployee,
+    fetchBiometricDataConnect: fetchBiometricData
 }, dispatch);
 
 

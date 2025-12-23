@@ -19,6 +19,7 @@ const Employee = ({
 }) => {
 
   const navigate = useNavigate();
+  const sortedEmployeeData = employeeData?.sort((a,b) => Number(a.empCode) - Number(b.empCode))
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -51,7 +52,8 @@ const Employee = ({
       id: rowData._id,
       name: rowData.name,
       salary: rowData.salaryPerDay,
-      esi: rowData.esi || false
+      esi: rowData.esi || false,
+      empCode: rowData.empCode
     });
     setShowModal(true);
   }
@@ -83,6 +85,7 @@ const Employee = ({
         selectedEsi={selectedEmployee.esi}
         employeeId={selectedEmployee.id}
         selectedName={selectedEmployee.name}
+        selectedEmpCode={selectedEmployee.empCode}
         selectedSalary={selectedEmployee.salary}
         employeeListHandler={employeeListHandler}
         addEmployeeHandlerToggle={addEmployeeHandlerToggle}
@@ -96,7 +99,7 @@ const Employee = ({
           </Button>
         </div>
         <div className="pt-4 customTable">
-          <Table canSearch={false} isClickable={false} onClick={onClickTable} hoverable={true} cols={tableConstants({editEmployee, deleteEmployeeHandler})} data={employeeData} />
+          <Table canSearch={false} isClickable={false} onClick={onClickTable} hoverable={true} cols={tableConstants({editEmployee, deleteEmployeeHandler})} data={sortedEmployeeData} />
         </div>
     </React.Fragment>
   );

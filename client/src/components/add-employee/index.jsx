@@ -14,6 +14,7 @@ const AddEmployee = ({
     selectedName,
     selectedSalary,
     showModal,
+    selectedEmpCode,
     editEmployeeConnect,
     addEmployeeConnect,
     employeeListHandler,
@@ -23,13 +24,15 @@ const AddEmployee = ({
     const [isLoading, setIsLoading] = useState(false);
     const [name, setName] = useState("");
     const [salary, setSalary] = useState("");
+    const [empCode, setEmpCode] = useState("");
     const [esi, setEsi] = useState(false);
 
     useEffect(() => {
-      if (selectedName || selectedSalary || selectedEsi) {
+      if (selectedName || selectedSalary || selectedEsi || selectedEmpCode) {
         setName(selectedName);
         setSalary(selectedSalary);
         setEsi(selectedEsi)
+        setEmpCode(selectedEmpCode)
       }
     }, [selectedName, selectedSalary, selectedEsi])
 
@@ -41,7 +44,8 @@ const AddEmployee = ({
         const payload = {
             name,
             salaryPerDay: salary,
-            esi
+            esi,
+            empCode
         };
         try {
             if (isEditing) {
@@ -70,6 +74,13 @@ const AddEmployee = ({
                 isDisabled={getDisabledState()}
                 handleClose={addEmployeeHandlerToggle}
         >
+
+            <Form.Group className="mb-3" controlId="formGroupEmail">
+                <Form.Label className="font-weight-bold">EMP Code</Form.Label>
+                <Form.Control type="name" placeholder="Enter Emp Code" value={empCode} onChange={(e) => {setEmpCode(e.target.value)}} />
+            </Form.Group>
+
+
             <Form.Group className="mb-3" controlId="formGroupEmail">
                 <Form.Label className="font-weight-bold">Name</Form.Label>
                 <Form.Control type="name" placeholder="Enter name" value={name} onChange={(e) => {setName(e.target.value)}} />

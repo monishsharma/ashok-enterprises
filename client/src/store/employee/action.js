@@ -130,3 +130,15 @@ export const checkoutAllEmployee = (id, payload) => () => {
         })
     })
 }
+
+export const fetchBiometricData = (payload) => () => {
+    return new Promise((resolve, reject) => {
+        EmployeeService.fetchBiometricData(payload)
+        .then((res) => {
+            resolve(res.data);
+        })
+        .catch((err) => {
+            reject(err);
+        })
+    })
+}

@@ -18,6 +18,10 @@
         {
             "path": "/cron",
             "schedule": "0 0 * * *"
+        },
+        {
+            "path": "/biometric/cron",
+            "schedule": "0 12,18 * * *"
         }
     ]
 }

@@ -19,7 +19,12 @@ export const tableConstants = ({editEmployee, deleteEmployeeHandler}) => {
         return <h5 className={"name"}>{rowData.name}</h5>;
       },
     },
-
+    {
+      title: "Emp Code",
+      render: (rowData) => {
+        return <h5 className="name">{rowData.empCode}</h5>
+      }
+    },
     {
       title: "Salary Per Day",
       render: (rowData) => {

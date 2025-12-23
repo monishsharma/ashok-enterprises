@@ -57,6 +57,10 @@ export default (api) => {
         return api.patch(`/employee/checkout/all`, payload)
     };
 
+    const fetchBiometricData = ({fromDate, toDate}) => {
+        return api.get(`/employee/sync/etimeoffice?fromDate=${fromDate}&toDate=${toDate}`)
+    }
+
 
     return {
         getEmployeeList,
@@ -67,6 +71,7 @@ export default (api) => {
         deleteEmployee,
         markAttendance,
         getEmployeeDetail,
+        fetchBiometricData,
         updateEmployeePayment,
         getEmployeeAttendanceList
     };
