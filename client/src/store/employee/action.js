@@ -28,6 +28,7 @@ export const employeeList = ({date, sortByKey = "", qp = {}}) => (dispatch) => {
             resolve(data);
         })
         .catch((err) => {
+            console.log(err)
             reject(err);
         })
     })

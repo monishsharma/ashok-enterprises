@@ -10,7 +10,7 @@ import { employeeList, markAttendance, employeeDetail, checkoutAllEmployee, fetc
 import PageLoader from "../../shared/component/page-loader";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
-import { filterEmployee, totalHoursWork, totalOverTime } from "./selector";
+import { filterEmployee, toMinutes, totalHoursWork, totalOverTime, toTimestamp } from "./selector";
 import TimePicker from "../../shared/component/time=picker";
 import { useOutletContext } from "react-router-dom";
 import BulkUploader from "../../components/bulk-uploader";
@@ -28,7 +28,6 @@ const Attendance = ({
 
   const {date} = getTodayDate();
   const {ref} = useOutletContext();
-  const sortedEmployeeData = employeeData?.sort((a,b) => Number(a.empCode) - Number(b.empCode))
   const scroll = localStorage.getItem("scroll");
   const day = String(date.getDate()).padStart(2, '0');
   const year = date.getFullYear();
@@ -38,15 +37,15 @@ const Attendance = ({
   const [showBulkAttendanceUploader, setShowBulkAttendanceUploader] = useState(false);
   const [isCheckout, setIsCheckout] = useState(false);
 
-  const hasEmptyCheckinTime = employeeData.filter(employee =>
-      employee.attendance.some(attendance =>
-        attendance.date === dateValue && attendance.checkinTime
-      )
-    );
+  // const hasEmptyCheckinTime = employeeData.filter(employee =>
+  //     employee.attendance.some(attendance =>
+  //       attendance.date === dateValue && attendance.checkinTime
+  //     )
+  //   );
   const [isLoading, setIsLoading] = useState(false);
   const employeeListHandler = async() => {
     setIsLoading(true);
-    employeeListConnect({date: dateValue, sortByKey: "name"})
+    employeeListConnect({date: dateValue, sortByKey: "empCode"})
     .then(() => {
       setIsLoading(false);
     })
@@ -204,20 +203,57 @@ const Attendance = ({
   const bulUploaderToggle = (isCheckoutBulk = false) => {
     setIsCheckout(isCheckoutBulk);
     setShowBulkAttendanceUploader(!showBulkAttendanceUploader);
+  };
+
+  const toTotalMinutes = (hours, minutes) => {
+    return (parseInt(hours) * 60) + parseInt(minutes);
   }
 
   const fetchBiometricData = () => {
       setIsLoading(true);
+      const fromDate = moment(dateValue).format('DD/MM/YYYY');
+      fetchBiometricDataConnect({fromDate: fromDate, toDate: fromDate  })
+      .then(async({data}) => {
+        for (const d of data) {
+          const employee = employeeData.find(e => e.empCode === d.Empcode);
+          if (!employee?._id) continue;
+          // const {_id: id} = employee;
+          const totalWorkingHours =  {
+            hours: parseInt(d.WorkTime.split(":")[0]) - parseInt(d.OverTime.split(":")[0]),
+            min: parseInt(parseInt(toTotalMinutes(d.WorkTime.split(":")[0], d.WorkTime.split(":")[1]))
+            - parseInt(toTotalMinutes(d.OverTime.split(":")[0], d.OverTime.split(":")[1]),) - 30)
+          }
+          const payload = {
+            date: dateValue,
+            year: new Date(dateValue).getFullYear(),
+            isSunday: new Date(dateValue).getDay() === 0,
+            month: getMonth(dateValue),
+            isOverTime: toMinutes(d.OverTime) > 0,
+            checkinTime: toTimestamp(d.DateString, d.INTime),
+            checkoutTime: toTimestamp(d.DateString, d.OUTTime),
 
-    const fromDate = moment(dateValue).format('DD/MM/YYYY');
-    fetchBiometricDataConnect({fromDate: fromDate, toDate: fromDate  })
-    .then((res) => {
-      setIsLoading(false);
-    })
-    .catch(() => {
-      setIsLoading(false);
+            totalWorkingHours: totalWorkingHours,
+            overTimeHours: {
+              hours: parseInt(d.OverTime.split(":")[0]),
+              min: toTotalMinutes(d.OverTime.split(":")[0], d.OverTime.split(":")[1]),
+            },
+            status: d.Status === "P",
+            isAbsent: d.Status === "A",
+          }
+          try {
+            await markAttendanceConnect(employee._id, payload);
+          } catch (err) {
+            console.log(err);
+          }
+        }
+        await employeeListHandler()
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.log(err)
+        setIsLoading(false);
 
-    })
+      })
   }
 
 if (isLoading) return <PageLoader/>
@@ -275,7 +311,7 @@ if (isLoading) return <PageLoader/>
           </Row>
         </div>
         <div className="pt-4 customTable" style={{minHeight: "1607px"}} >
-          <Table canSearch={false} cols={tableConstants({handleAttendance, handleCheckoutAttendance, dateValue, markAbsent})} data={sortedEmployeeData} />
+          <Table canSearch={false} cols={tableConstants({handleAttendance, handleCheckoutAttendance, dateValue, markAbsent})} data={employeeData} />
         </div>
     </React.Fragment>
   );

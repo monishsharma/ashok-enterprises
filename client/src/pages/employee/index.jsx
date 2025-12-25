@@ -19,7 +19,6 @@ const Employee = ({
 }) => {
 
   const navigate = useNavigate();
-  const sortedEmployeeData = employeeData?.sort((a,b) => Number(a.empCode) - Number(b.empCode))
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -27,7 +26,7 @@ const Employee = ({
 
   const employeeListHandler = () => {
     setIsLoading(true);
-    employeeListConnect({sortByKey: "name"})
+    employeeListConnect({sortByKey: "empCode"})
       .then(() => {
         setIsLoading(false);
       })
@@ -99,7 +98,7 @@ const Employee = ({
           </Button>
         </div>
         <div className="pt-4 customTable">
-          <Table canSearch={false} isClickable={false} onClick={onClickTable} hoverable={true} cols={tableConstants({editEmployee, deleteEmployeeHandler})} data={sortedEmployeeData} />
+          <Table canSearch={false} isClickable={false} onClick={onClickTable} hoverable={true} cols={tableConstants({editEmployee, deleteEmployeeHandler})} data={employeeData} />
         </div>
     </React.Fragment>
   );

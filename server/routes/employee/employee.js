@@ -11,34 +11,48 @@ import { toISODate, toMinutes, toTimestamp } from "../../helper/time.js";
 const router = express.Router();
 
 const collectionName = process.env.NODE_ENV === "dev" ? "attendance" : "employeeDetails"
+console.log(process.env.NODE_ENV)
+
 
     router.get("/list", async(req, res) => {
 
         let query = {};
         let options = {};
-        // const queryKeys = Object.keys(req.query);
-        const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-        const pipeline = [
-            {
-                $addFields: {
+        const queryKeys = Object.keys(req.query);
+        if (queryKeys.length > 0) {
+            // Dynamically construct the filter conditions
+            const filterConditions = queryKeys.map(key => {
+            const value = req.query[key];
+            return {
+                $eq: [`$$item.${key}`, key === "year" ? parseInt(value) : value]
+            };
+            });
+
+            options = {
+                projection: {
+                    _id: 1,
+                    name: 1,
+                    salaryPerDay: 1,
+                    payment: 1,
+                    advance: 1,
+                    empCode: 1,
+                    esi: 1,
+                    extraAdvance: 1,
                     attendance: {
                         $filter: {
-                        input: "$attendance",
-                        as: "item",
-                        cond: {
-                            $eq: ["$$item.date", today]
-                        }
+                            input: "$attendance",
+                            as: "item",
+                            cond: {
+                                $and: filterConditions
+                            }
                         }
                     }
                 }
-            }
-        ];
-
-
+            };
+        }
         try {
             let collection = db.collection(collectionName);
-            const results = await collection.aggregate(pipeline).toArray();
-            // const results = await collection.find(query, options).toArray();
+            const results = await collection.find(query, options).toArray();
             res.send(results).status(200);
         } catch (err) {
             console.error(err);
@@ -325,60 +339,56 @@ const collectionName = process.env.NODE_ENV === "dev" ? "attendance" : "employee
     })
 
    router.get("/sync/etimeoffice", async(req,res) => {
-    const { fromDate, toDate } = req.params;
-    let synced = 0;
-    let skipped = 0;
+    const { fromDate, toDate } = req.query;
     try {
         const biometricData = await fetchEtimeAttendance({ fromDate, toDate });
-        const employeeCollection =  db.collection(collectionName)
-        for(const data of biometricData ) {
-            const isoDate = toISODate(data.DateString);
-            const employee = await employeeCollection.findOne(
-                { empCode: data.Empcode },
-                {
-                    projection: {
-                        name: 1,
-                        empCode: 1,
-                        attendance: { $elemMatch: { date: isoDate } } // 🔹 THIS IS KEY
-                    }
-                }
-            );
-            if (!employee) {
-                skipped++;
-                continue;
-            }
-            const attendanceObj = {
-                date: isoDate,
-                status: data.Status === "P",
-                isSunday: new Date(isoDate).getDay() === 0,
-                checkinTime: toTimestamp(data.DateString, data.INTime),
-                checkoutTime: toTimestamp(data.DateString, data.OUTTime),
-                isOverTime: toMinutes(data.OverTime) > 0,
-                isAbsent: data.Status === "A",
-                month: new Date(isoDate).toLocaleString("default", { month: "long" }),
-                year: new Date(isoDate).getFullYear(),
-                source: "BIOMETRIC",
-            };
+        // const employeeCollection =  db.collection(collectionName)
+        // for(const data of biometricData ) {
+        //     const isoDate = toISODate(data.DateString);
+        //     const employee = await employeeCollection.findOne(
+        //         { empCode: data.Empcode },
+        //         {
+        //             projection: {
+        //                 name: 1,
+        //                 empCode: 1,
+        //                 attendance: { $elemMatch: { date: isoDate } } // 🔹 THIS IS KEY
+        //             }
+        //         }
+        //     );
+        //     if (!employee) {
+        //         skipped++;
+        //         continue;
+        //     }
+        //     const attendanceObj = {
+        //         date: isoDate,
+        //         status: data.Status === "P",
+        //         isSunday: new Date(isoDate).getDay() === 0,
+        //         checkinTime: toTimestamp(data.DateString, data.INTime),
+        //         checkoutTime: toTimestamp(data.DateString, data.OUTTime),
+        //         isOverTime: toMinutes(data.OverTime) > 0,
+        //         isAbsent: data.Status === "A",
+        //         month: new Date(isoDate).toLocaleString("default", { month: "long" }),
+        //         year: new Date(isoDate).getFullYear(),
+        //         source: "BIOMETRIC",
+        //     };
 
-            await employeeCollection.updateOne(
-                {
-                    empCode: data.Empcode,
-                    "attendance.date": isoDate // find the array element
-                },
-                {
-                    $set: { "attendance.$": attendanceObj } // update that element
-                }
-            );
+        //     await employeeCollection.updateOne(
+        //         {
+        //             empCode: data.Empcode,
+        //             "attendance.date": isoDate // find the array element
+        //         },
+        //         {
+        //             $set: { "attendance.$": attendanceObj } // update that element
+        //         }
+        //     );
 
-            synced++;
+        //     synced++;
 
-            // console.log(employee)
-        }
+        //     // console.log(employee)
+        // }
         res.json({
             success: true,
-            synced,
-            skipped,
-            total: biometricData.length,
+            data: biometricData
         });
         //  res.status(200).json(employee);
 
