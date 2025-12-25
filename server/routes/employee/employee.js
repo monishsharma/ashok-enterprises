@@ -98,7 +98,6 @@ console.log(process.env.NODE_ENV)
 
         try {
             let collection = db.collection(collectionName);
-            console.log("Mongo Query Options:", JSON.stringify(options, null, 2));
             let results = await collection.find(query, options).toArray();
             res.status(200).send(results);
         } catch (err) {
@@ -129,64 +128,50 @@ console.log(process.env.NODE_ENV)
     });
 
     router.patch('/:employeeId', async (req, res) => {
-        const {employeeId} = req.params;
-        let updateQuery = {};
-        const updatedFields = req.body; // Fields to be updated
-        for (let key in updatedFields) {
-            if (updatedFields.hasOwnProperty(key)) {
-                updateQuery[`attendance.$[elem].${key}`] = updatedFields[key];
-            }
-        }
+  try {
+    const { employeeId } = req.params;
+    const updatedFields = req.body;
 
-        const todayData = await db.collection(collectionName).findOne({
-            _id: new ObjectId(employeeId),
-        });
-        if (todayData && todayData.attendance && todayData.attendance.length ) {
-            const todayAttendance = todayData.attendance.find(data => data.date === updatedFields.date);
-
-            if (todayAttendance) {
-                await db.collection(collectionName).findOneAndUpdate(
-                    {
-                        _id: new ObjectId(employeeId),
-                        'attendance.date': updatedFields.date
-                    },
-                    {
-                        $set: updateQuery
-                    },
-                    { new: true, arrayFilters: [{ 'elem.date': updatedFields.date }], upsert: true }
-                )
-                .then((response) => {
-                    res.status(200).send("success")
-                })
-                .catch((err) => {
-                    console.log(err)
-                    res.status(500).json({
-                        error: err
-                    })
-                })
-
-            } else {
-                await db.collection(collectionName).updateOne(
-                    {
-                        _id: new ObjectId(employeeId)
-                    },
-                    {
-                        $push: { attendance: updatedFields }
+    const result = await db.collection(collectionName).updateOne(
+      { _id: new ObjectId(employeeId) },
+      [
+        {
+          $set: {
+            attendance: {
+              $cond: {
+                if: {
+                  $in: [updatedFields.date, "$attendance.date"]
+                },
+                then: {
+                  $map: {
+                    input: "$attendance",
+                    as: "a",
+                    in: {
+                      $cond: [
+                        { $eq: ["$$a.date", updatedFields.date] },
+                        { $mergeObjects: ["$$a", updatedFields] },
+                        "$$a"
+                      ]
                     }
-                )
-                .then((response) => {
-                    res.status(200).send("success")
-                })
-                .catch((err) => {
-                    console.log(err)
-                    res.status(500).json({
-                        error: err
-                    })
-                })
-
+                  }
+                },
+                else: {
+                  $concatArrays: ["$attendance", [updatedFields]]
+                }
+              }
             }
+          }
         }
-    });
+      ]
+    );
+
+    res.status(200).send("success");
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
     router.patch('/edit/:employeeId', async (req, res) => {
         const {employeeId} = req.params;
