@@ -156,7 +156,7 @@ console.log(process.env.NODE_ENV)
                     { new: true, arrayFilters: [{ 'elem.date': updatedFields.date }], upsert: true }
                 )
                 .then((response) => {
-                    res.status(200).json(response)
+                    res.status(200).send("success")
                 })
                 .catch((err) => {
                     console.log(err)
@@ -175,7 +175,7 @@ console.log(process.env.NODE_ENV)
                     }
                 )
                 .then((response) => {
-                    res.status(200).json(response)
+                    res.status(200).send("success")
                 })
                 .catch((err) => {
                     console.log(err)
