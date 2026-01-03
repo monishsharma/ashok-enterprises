@@ -78,10 +78,11 @@ export const calculateTonsGrowth = ({currentMonthInvoices, prevMonthInvoices}) =
 }
 
 export const monthlySalesQuery = ({company, year}) => {
-      const selectedYear = parseInt(year);
-      const fyStart = new Date(selectedYear, 3, 1); // April 1
-      const fyEnd = new Date(selectedYear + 1, 3, 1); // April 1 next year
-
+  const currentYear = parseInt(year);
+      const currentMonth = new Date().getMonth();
+     const fyStartYear = currentMonth >= 3 ? currentYear : currentYear - 1;
+      const fyStart = new Date(fyStartYear, 3, 1); // April 1
+      const fyEnd = new Date(fyStartYear + 1, 3, 1); // April 1 next year
       return {
         company,
         invoiceDate: { $gte: fyStart, $lt: fyEnd }
@@ -138,6 +139,13 @@ export const calcualteCustomerTotals = (invoices) => {
   });
 
   return customerTotals;
+}
+
+export const getYear = (year) => {
+    const currentYear = parseInt(year);
+    const currentMonth = new Date().getMonth();
+    const fyStart = currentMonth >= 3 ? currentYear : currentYear - 1;
+    return fyStart;
 }
 
 export const getFYCustomerTotals = async ({ invoiceCollection, company }) => {
@@ -263,11 +271,13 @@ export const getFYYearlyTotals = async (invoiceCollection, company) => {
 };
 
 export const calculateYearlyGrowth = ({yearlyTotals, year}) => {
-    const selectedYear = parseInt(year);
+    const currentYear = parseInt(year);
+    const currentMonth = new Date().getMonth();
+    const fyStart = currentMonth >= 3 ? currentYear : currentYear - 1;
     const years = Object.keys(yearlyTotals)
         .sort((a, b) => parseInt(a.split('-')[0]) - parseInt(b.split('-')[0]));
 
-    const selectedIndex = years.findIndex(y => y.split("-")[0] == selectedYear);
+    const selectedIndex = years.findIndex(y => y.split("-")[0] == fyStart);
 
     const currYear = years[selectedIndex];
     const currentYearSalesTotal = yearlyTotals[currYear] || 0;
@@ -308,7 +318,7 @@ export const getItemBreakdown = (invoices) => {
 }
 
 export const getYearlySales = ({yearlyTotals, year}) => {
-    const selectedYear = parseInt(year);
+    const selectedYear = getYear(year);
     const yearKey = `${selectedYear}-${selectedYear + 1}`;
     return yearlyTotals[yearKey] || 0;
 }
@@ -334,7 +344,7 @@ export const getYearlyTons = async ({ invoiceCollection, company, needObj = fals
     0
   ];
 
-  const currentYear = parseInt(year);
+  const currentYear = getYear(year);
   const currentMonth = new Date().getMonth();
   const fyStart = currentMonth >= 3 ? currentYear : currentYear - 1;
 

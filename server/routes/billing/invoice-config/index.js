@@ -18,7 +18,7 @@ import {
   getFileName,
 } from "../../../helper/csv-helper.js";
 import { get } from "http";
-import { calcualteCustomerTotals, calculateFYSales, calculateGrowth, calculateTonsGrowth, calculateTotalSales, calculateTotalTons, calculateYearlyGrowth, calculateYearlyPayment, getFYCustomerTotals, getFYItemBreakdown, getFYYearlyTotals, getItemBreakdown, getQuery, getYearlySales, getYearlyTons, monthlySalesQuery } from "../../../helper/growth-api-.js";
+import { calcualteCustomerTotals, calculateFYSales, calculateGrowth, calculateTonsGrowth, calculateTotalSales, calculateTotalTons, calculateYearlyGrowth, calculateYearlyPayment, getFYCustomerTotals, getFYItemBreakdown, getFYYearlyTotals, getItemBreakdown, getQuery, getYear, getYearlySales, getYearlyTons, monthlySalesQuery } from "../../../helper/growth-api-.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Puppeteer config
@@ -193,7 +193,8 @@ router.get("/invoice/list/unpaid", async (req, res) => {
   try {
     const invoiceCollection = db.collection(collectionName);
 
-    const selectedYear = parseInt(year);
+    const selectedYear = getYear(year);
+    const yearForMonth = parseInt(year);
 
     let monthly = [];
     let yearly = [];
@@ -204,8 +205,8 @@ router.get("/invoice/list/unpaid", async (req, res) => {
     if (month) {
       const m = parseInt(month);
 
-      const startDateMonth = new Date(selectedYear, m - 1, 1);  // first day
-      const endDateMonth = new Date(selectedYear, m, 1);        // next month start
+      const startDateMonth = new Date(yearForMonth, m - 1, 1);  // first day
+      const endDateMonth = new Date(yearForMonth, m, 1);        // next month start
 
       monthly = await invoiceCollection
         .find({

@@ -100,7 +100,7 @@ export const getCSVHeader = ({ forGST, forUnpaid, company }) => {
 }
 
 export const getCsvBody = ({ forGST, forUnpaid, data, company }) => {
-  const isCompanyAshok = company === "Ashok";
+  const isCompanyAshok = company === "ASHOK";
   return data.map((item, index) => {
     const billNo = item.invoiceDetail?.invoiceNO || '';
     const poNumber = item.goodsDescription?.po || '';
