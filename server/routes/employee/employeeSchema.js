@@ -38,7 +38,7 @@ const employeeeSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    emCode: {
+    empCode: {
         type: "string",
         required: true
     },
