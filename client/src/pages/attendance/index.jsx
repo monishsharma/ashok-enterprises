@@ -209,52 +209,157 @@ const Attendance = ({
     return (parseInt(hours) * 60) + parseInt(minutes);
   }
 
-  const fetchBiometricData = () => {
-      setIsLoading(true);
-      const fromDate = moment(dateValue).format('DD/MM/YYYY');
-      fetchBiometricDataConnect({fromDate: fromDate, toDate: fromDate  })
-      .then(async({data}) => {
-        for (const d of data) {
-          const employee = employeeData.find(e => e.empCode === d.Empcode);
-          if (!employee?._id) continue;
-          // const {_id: id} = employee;
-          const totalWorkingHours =  {
-            hours: parseInt(d.WorkTime.split(":")[0]) - parseInt(d.OverTime.split(":")[0]),
-            min: parseInt(parseInt(toTotalMinutes(d.WorkTime.split(":")[0], d.WorkTime.split(":")[1]))
-            - parseInt(toTotalMinutes(d.OverTime.split(":")[0], d.OverTime.split(":")[1]),) - 30)
-          }
+
+const fetchBiometricData = () => {
+
+  const SHIFT_END = "17:30";
+  const OT_CUTOFF = "19:30";
+  const MAX_OT_MIN = 120;      // 2 hours
+  const LUNCH_BREAK_MIN = 30;
+  setIsLoading(true);
+
+  const fromDate = moment(dateValue).format("DD/MM/YYYY");
+
+  fetchBiometricDataConnect({ fromDate, toDate: fromDate })
+    .then(async ({ data }) => {
+
+      for (const d of data) {
+        const employee = employeeData.find(
+          e => e.empCode === d.Empcode
+        );
+        if (!employee?._id) continue;
+
+        /* =====================================================
+           1️⃣ ABSENT HANDLING (CRITICAL – FIXES 12:00 AM ISSUE)
+        ====================================================== */
+        if (d.Status === "A") {
           const payload = {
             date: dateValue,
             year: new Date(dateValue).getFullYear(),
-            isSunday: new Date(dateValue).getDay() === 0,
             month: getMonth(dateValue),
-            isOverTime: toMinutes(d.OverTime) > 0,
-            checkinTime: toTimestamp(d.DateString, d.INTime),
-            checkoutTime: toTimestamp(d.DateString, d.OUTTime),
+            isSunday: new Date(dateValue).getDay() === 0,
 
-            totalWorkingHours: totalWorkingHours,
-            overTimeHours: {
-              hours: parseInt(d.OverTime.split(":")[0]),
-              min: toTotalMinutes(d.OverTime.split(":")[0], d.OverTime.split(":")[1]),
-            },
-            status: d.Status === "P",
-            isAbsent: d.Status === "A",
-          }
+            status: false,
+            isAbsent: true,
+            isOverTime: false,
+
+            checkinTime: null,
+            checkoutTime: null,
+
+            totalWorkingHours: { hours: 0, min: 0 },
+            overTimeHours: { hours: 0, min: 0 },
+
+            remark: "Absent (from eTime)",
+          };
+
           try {
             await markAttendanceConnect(employee._id, payload);
           } catch (err) {
-            console.log(err);
+            console.error("Absent save failed:", err);
           }
-        }
-        await employeeListHandler()
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.log(err)
-        setIsLoading(false);
 
-      })
-  }
+          continue; // ⛔ skip all further calculations
+        }
+
+        /* =====================================================
+           2️⃣ TIME PARSING (ONLY FOR PRESENT USERS)
+        ====================================================== */
+
+        const checkin = moment(
+          `${d.DateString} ${d.INTime}`,
+          "DD/MM/YYYY HH:mm"
+        );
+
+        const actualCheckout = moment(
+          `${d.DateString} ${d.OUTTime}`,
+          "DD/MM/YYYY HH:mm"
+        );
+
+        const cutoffCheckout = moment(
+          `${d.DateString} ${OT_CUTOFF}`,
+          "DD/MM/YYYY HH:mm"
+        );
+
+        // Cap checkout at 19:30
+        const finalCheckout = actualCheckout.isAfter(cutoffCheckout)
+          ? cutoffCheckout
+          : actualCheckout;
+
+        /* =====================================================
+           3️⃣ TOTAL WORKING HOURS
+        ====================================================== */
+
+        let totalMinutes =
+          finalCheckout.diff(checkin, "minutes") - LUNCH_BREAK_MIN;
+
+        totalMinutes = Math.max(0, totalMinutes);
+
+        const totalWorkingHours = {
+          hours: Math.floor(totalMinutes / 60),
+          min: totalMinutes,
+        };
+
+        /* =====================================================
+           4️⃣ OT CALCULATION (17:30 → 19:30 ONLY)
+        ====================================================== */
+
+        const shiftEnd = moment(
+          `${d.DateString} ${SHIFT_END}`,
+          "DD/MM/YYYY HH:mm"
+        );
+
+        let otMinutes = finalCheckout.diff(shiftEnd, "minutes");
+        otMinutes = Math.max(0, Math.min(otMinutes, MAX_OT_MIN));
+
+        const overTimeHours = {
+          hours: Math.floor(otMinutes / 60),
+          min: otMinutes,
+        };
+
+        /* =====================================================
+           5️⃣ PAYLOAD (FINAL)
+        ====================================================== */
+
+        const payload = {
+          date: dateValue,
+          year: new Date(dateValue).getFullYear(),
+          month: getMonth(dateValue),
+          isSunday: new Date(dateValue).getDay() === 0,
+
+          status: true,
+          isAbsent: false,
+          isOverTime: otMinutes > 0,
+
+          checkinTime: checkin.valueOf(),
+          checkoutTime: finalCheckout.valueOf(),
+
+          totalWorkingHours,
+          overTimeHours,
+
+          remark: actualCheckout.isAfter(cutoffCheckout)
+            ? "OT capped at 19:30"
+            : d.Remark || "",
+        };
+
+        /* =====================================================
+           6️⃣ SAVE ATTENDANCE
+        ====================================================== */
+
+        try {
+          await markAttendanceConnect(employee._id, payload);
+        } catch (err) {
+          console.error("Attendance save failed:", err);
+        }
+      }
+
+      await employeeListHandler();
+      setIsLoading(false);
+    })
+    .catch(err => {
+      console.error(err);
+      setIsLoading(false);
+    });
+};
 
 if (isLoading) return <PageLoader/>
 
