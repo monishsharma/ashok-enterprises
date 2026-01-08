@@ -201,23 +201,19 @@ const Attendance = ({
     </Button>
    </div>
   ));
-  const bulUploaderToggle = (isCheckoutBulk = false) => {
-    setIsCheckout(isCheckoutBulk);
-    setShowBulkAttendanceUploader(!showBulkAttendanceUploader);
-  };
-
-  const toTotalMinutes = (hours, minutes) => {
-    return (parseInt(hours) * 60) + parseInt(minutes);
-  }
 
 
 
-const SHIFT_END = "17:30";
-const OT_CUTOFF = "19:30";
-const MAX_OT_MIN = 120;      // 2 hours
-const LUNCH_BREAK_MIN = 30;
+
 
 const fetchBiometricData = async () => {
+  const SHIFT_START = "09:00";
+const CHECKIN_GRACE = "09:10";
+const SHIFT_END = "17:30";
+const OT_CUTOFF = "19:30";
+
+const MAX_OT_MIN = 120;        // 2 hours
+const LUNCH_BREAK_MIN = 30;
   setIsLoading(true);
 
   const fromDate = moment(dateValue).format("DD/MM/YYYY");
@@ -266,7 +262,8 @@ const fetchBiometricData = async () => {
          PRESENT USERS
       ====================================================== */
 
-      const checkin = moment(
+      /* ---------- RAW TIMES ---------- */
+      const actualCheckin = moment(
         `${d.DateString} ${d.INTime}`,
         "DD/MM/YYYY HH:mm"
       );
@@ -276,6 +273,22 @@ const fetchBiometricData = async () => {
         "DD/MM/YYYY HH:mm"
       );
 
+      /* ---------- CHECK-IN NORMALIZATION ---------- */
+      const shiftStart = moment(
+        `${d.DateString} ${SHIFT_START}`,
+        "DD/MM/YYYY HH:mm"
+      );
+
+      const graceEnd = moment(
+        `${d.DateString} ${CHECKIN_GRACE}`,
+        "DD/MM/YYYY HH:mm"
+      );
+
+      const finalCheckin = actualCheckin.isBefore(graceEnd)
+        ? shiftStart
+        : actualCheckin;
+
+      /* ---------- CHECKOUT CAPPING ---------- */
       const cutoffCheckout = moment(
         `${d.DateString} ${OT_CUTOFF}`,
         "DD/MM/YYYY HH:mm"
@@ -285,13 +298,13 @@ const fetchBiometricData = async () => {
         ? cutoffCheckout
         : actualCheckout;
 
-      /* ---------- TOTAL WORK ---------- */
+      /* ---------- TOTAL WORKING HOURS ---------- */
       let totalMinutes =
-        finalCheckout.diff(checkin, "minutes") - LUNCH_BREAK_MIN;
+        finalCheckout.diff(finalCheckin, "minutes") - LUNCH_BREAK_MIN;
 
       totalMinutes = Math.max(0, totalMinutes);
 
-      /* ---------- OT ---------- */
+      /* ---------- OVERTIME ---------- */
       const shiftEnd = moment(
         `${d.DateString} ${SHIFT_END}`,
         "DD/MM/YYYY HH:mm"
@@ -300,6 +313,7 @@ const fetchBiometricData = async () => {
       let otMinutes = finalCheckout.diff(shiftEnd, "minutes");
       otMinutes = Math.max(0, Math.min(otMinutes, MAX_OT_MIN));
 
+      /* ---------- PUSH BULK RECORD ---------- */
       bulkRecords.push({
         employeeId: employee._id,
         date: dateValue,
@@ -311,7 +325,7 @@ const fetchBiometricData = async () => {
         isAbsent: false,
         isOverTime: otMinutes > 0,
 
-        checkinTime: checkin.valueOf(),
+        checkinTime: finalCheckin.valueOf(),
         checkoutTime: finalCheckout.valueOf(),
 
         totalWorkingHours: {
@@ -324,16 +338,18 @@ const fetchBiometricData = async () => {
           min: otMinutes,
         },
 
-        remark: actualCheckout.isAfter(cutoffCheckout)
-          ? "OT capped at 19:30"
-          : d.Remark || "",
+        remark:
+          actualCheckout.isAfter(cutoffCheckout)
+            ? "OT capped at 19:30"
+            : actualCheckin.isBefore(graceEnd)
+              ? "Check-in normalized to 09:00"
+              : d.Remark || "",
       });
     }
 
     /* =====================================================
-       BULK SAVE – SINGLE API CALL
+       BULK SAVE – SINGLE API HIT
     ====================================================== */
-
     if (bulkRecords.length > 0) {
       await bulkAttendanceConnect(bulkRecords);
     }
@@ -345,6 +361,7 @@ const fetchBiometricData = async () => {
     setIsLoading(false);
   }
 };
+
 
 
 if (isLoading) return <PageLoader/>
