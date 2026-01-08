@@ -206,14 +206,17 @@ const Attendance = ({
 
 
 
-const fetchBiometricData = async () => {
-  const SHIFT_START = "09:00";
-const CHECKIN_GRACE = "09:10";
+const SHIFT_START = "09:00";
+const CHECKIN_GRACE = "09:11";
+
 const SHIFT_END = "17:30";
+const OT_START_TIME = "18:00";
 const OT_CUTOFF = "19:30";
 
-const MAX_OT_MIN = 120;        // 2 hours
+const MAX_OT_MIN = 120;      // 2 hours
 const LUNCH_BREAK_MIN = 30;
+
+const fetchBiometricData = async () => {
   setIsLoading(true);
 
   const fromDate = moment(dateValue).format("DD/MM/YYYY");
@@ -288,15 +291,37 @@ const LUNCH_BREAK_MIN = 30;
         ? shiftStart
         : actualCheckin;
 
-      /* ---------- CHECKOUT CAPPING ---------- */
+      /* ---------- CHECKOUT NORMALIZATION ---------- */
+      const shiftEnd = moment(
+        `${d.DateString} ${SHIFT_END}`,
+        "DD/MM/YYYY HH:mm"
+      );
+
+      const otStart = moment(
+        `${d.DateString} ${OT_START_TIME}`,
+        "DD/MM/YYYY HH:mm"
+      );
+
       const cutoffCheckout = moment(
         `${d.DateString} ${OT_CUTOFF}`,
         "DD/MM/YYYY HH:mm"
       );
 
-      const finalCheckout = actualCheckout.isAfter(cutoffCheckout)
-        ? cutoffCheckout
-        : actualCheckout;
+      let finalCheckout;
+
+      if (actualCheckout.isBefore(shiftEnd)) {
+        // Early checkout → keep as-is
+        finalCheckout = actualCheckout;
+      } else if (actualCheckout.isBefore(otStart)) {
+        // 17:30–18:00 → no OT
+        finalCheckout = shiftEnd;
+      } else if (actualCheckout.isAfter(cutoffCheckout)) {
+        // After OT cutoff
+        finalCheckout = cutoffCheckout;
+      } else {
+        // Valid OT window
+        finalCheckout = actualCheckout;
+      }
 
       /* ---------- TOTAL WORKING HOURS ---------- */
       let totalMinutes =
@@ -305,11 +330,6 @@ const LUNCH_BREAK_MIN = 30;
       totalMinutes = Math.max(0, totalMinutes);
 
       /* ---------- OVERTIME ---------- */
-      const shiftEnd = moment(
-        `${d.DateString} ${SHIFT_END}`,
-        "DD/MM/YYYY HH:mm"
-      );
-
       let otMinutes = finalCheckout.diff(shiftEnd, "minutes");
       otMinutes = Math.max(0, Math.min(otMinutes, MAX_OT_MIN));
 
@@ -326,7 +346,7 @@ const LUNCH_BREAK_MIN = 30;
         isOverTime: otMinutes > 0,
 
         checkinTime: finalCheckin.valueOf(),
-        checkoutTime: finalCheckout.valueOf(),
+        checkoutTime: d.OUTTime === "--:--" ?  null : finalCheckout.valueOf(),
 
         totalWorkingHours: {
           hours: Math.floor(totalMinutes / 60),
@@ -341,14 +361,15 @@ const LUNCH_BREAK_MIN = 30;
         remark:
           actualCheckout.isAfter(cutoffCheckout)
             ? "OT capped at 19:30"
-            : actualCheckin.isBefore(graceEnd)
-              ? "Check-in normalized to 09:00"
-              : d.Remark || "",
+            : actualCheckout.isSameOrAfter(shiftEnd) &&
+              actualCheckout.isBefore(otStart)
+              ? "Checkout capped to 17:30 (no OT)"
+              : "",
       });
     }
 
     /* =====================================================
-       BULK SAVE – SINGLE API HIT
+       BULK SAVE – SINGLE API CALL
     ====================================================== */
     if (bulkRecords.length > 0) {
       await bulkAttendanceConnect(bulkRecords);
@@ -361,6 +382,7 @@ const LUNCH_BREAK_MIN = 30;
     setIsLoading(false);
   }
 };
+
 
 
 
