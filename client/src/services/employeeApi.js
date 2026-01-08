@@ -45,6 +45,10 @@ export default (api) => {
         return api.patch(`/employee/${id}`, payload)
     };
 
+    const bulkAttendance = (payload) => {
+        return api.post(`/employee/attendance/bulk`, payload)
+    };
+
     const updateEmployeePayment = (queryParams, payload) => {
         return api.patch(`/employee/update/${queryParams.type}/${queryParams.id}/${queryParams.year}/${queryParams.month}`, payload)
     };
@@ -63,6 +67,7 @@ export default (api) => {
 
 
     return {
+        bulkAttendance,
         getEmployeeList,
         checkoutAllEmployee,
         updateEmployeeAdvance,

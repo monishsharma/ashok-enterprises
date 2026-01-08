@@ -95,6 +95,19 @@ export const markAttendance = (id, payload) => () => {
         })
     })
 }
+export const bulkAttendance = (id, payload) => () => {
+    return new Promise((resolve, reject) => {
+        EmployeeService.bulkAttendance(id, payload)
+        .then((res) => {
+            resolve(res.data);
+        })
+        .catch((err) => {
+            reject(err);
+        })
+    })
+}
+
+
 
 export const updateEmployeePayment = (queryParams, payload) => () => {
     return new Promise((resolve, reject) => {

@@ -128,49 +128,110 @@ console.log(process.env.NODE_ENV)
     });
 
     router.patch('/:employeeId', async (req, res) => {
-  try {
-    const { employeeId } = req.params;
-    const updatedFields = req.body;
+        try {
+            const { employeeId } = req.params;
+            const updatedFields = req.body;
 
-    const result = await db.collection(collectionName).updateOne(
-      { _id: new ObjectId(employeeId) },
-      [
-        {
-          $set: {
-            attendance: {
-              $cond: {
-                if: {
-                  $in: [updatedFields.date, "$attendance.date"]
-                },
-                then: {
-                  $map: {
-                    input: "$attendance",
-                    as: "a",
-                    in: {
-                      $cond: [
-                        { $eq: ["$$a.date", updatedFields.date] },
-                        { $mergeObjects: ["$$a", updatedFields] },
-                        "$$a"
-                      ]
+            const result = await db.collection(collectionName).updateOne(
+            { _id: new ObjectId(employeeId) },
+            [
+                {
+                $set: {
+                    attendance: {
+                    $cond: {
+                        if: {
+                        $in: [updatedFields.date, "$attendance.date"]
+                        },
+                        then: {
+                        $map: {
+                            input: "$attendance",
+                            as: "a",
+                            in: {
+                            $cond: [
+                                { $eq: ["$$a.date", updatedFields.date] },
+                                { $mergeObjects: ["$$a", updatedFields] },
+                                "$$a"
+                            ]
+                            }
+                        }
+                        },
+                        else: {
+                        $concatArrays: ["$attendance", [updatedFields]]
+                        }
+                    }
+                    }
+                }
+                }
+            ]
+            );
+
+            res.status(200).send("success");
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: err.message });
+        }
+});
+
+router.post('/attendance/bulk', async (req, res) => {
+  try {
+    const records = req.body; // array of { employeeId, ...attendancePayload }
+
+    if (!Array.isArray(records) || records.length === 0) {
+      return res.status(400).json({ error: "No records provided" });
+    }
+
+    const operations = records.map(item => {
+      const { employeeId, date, ...attendanceData } = item;
+
+      return {
+        updateOne: {
+          filter: { _id: new ObjectId(employeeId) },
+          update: [
+            {
+              $set: {
+                attendance: {
+                  $cond: {
+                    if: { $in: [date, "$attendance.date"] },
+                    then: {
+                      $map: {
+                        input: "$attendance",
+                        as: "a",
+                        in: {
+                          $cond: [
+                            { $eq: ["$$a.date", date] },
+                            { $mergeObjects: ["$$a", { date, ...attendanceData }] },
+                            "$$a"
+                          ]
+                        }
+                      }
+                    },
+                    else: {
+                      $concatArrays: ["$attendance", [{ date, ...attendanceData }]]
                     }
                   }
-                },
-                else: {
-                  $concatArrays: ["$attendance", [updatedFields]]
                 }
               }
             }
-          }
+          ]
         }
-      ]
-    );
+      };
+    });
 
-    res.status(200).send("success");
+    await db
+      .collection(collectionName)
+      .bulkWrite(operations, { ordered: false });
+
+    res.status(200).json({
+      success: true,
+      processed: operations.length
+    });
+
   } catch (err) {
-    console.error(err);
+    console.error("Bulk attendance error:", err);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
     router.patch('/edit/:employeeId', async (req, res) => {

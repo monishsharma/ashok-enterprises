@@ -6,7 +6,7 @@ import Table from "../../shared/component/table";
 import { getMonth, getTodayDate } from "../../helpers/today-date";
 import styles from "./attendance.module.css";
 import {tableConstants} from "../../constants/tableConstant"
-import { employeeList, markAttendance, employeeDetail, checkoutAllEmployee, fetchBiometricData } from "../../store/employee/action";
+import { employeeList, markAttendance, employeeDetail, checkoutAllEmployee, fetchBiometricData, bulkAttendance } from "../../store/employee/action";
 import PageLoader from "../../shared/component/page-loader";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
@@ -20,6 +20,7 @@ import moment from 'moment'
 
 const Attendance = ({
   employeeData,
+  bulkAttendanceConnect,
   markAttendanceConnect,
   employeeListConnect,
   employeeDetailConnect,
@@ -210,156 +211,141 @@ const Attendance = ({
   }
 
 
-const fetchBiometricData = () => {
 
-  const SHIFT_END = "17:30";
-  const OT_CUTOFF = "19:30";
-  const MAX_OT_MIN = 120;      // 2 hours
-  const LUNCH_BREAK_MIN = 30;
+const SHIFT_END = "17:30";
+const OT_CUTOFF = "19:30";
+const MAX_OT_MIN = 120;      // 2 hours
+const LUNCH_BREAK_MIN = 30;
+
+const fetchBiometricData = async () => {
   setIsLoading(true);
 
   const fromDate = moment(dateValue).format("DD/MM/YYYY");
 
-  fetchBiometricDataConnect({ fromDate, toDate: fromDate })
-    .then(async ({ data }) => {
+  try {
+    const { data } = await fetchBiometricDataConnect({
+      fromDate,
+      toDate: fromDate,
+    });
 
-      for (const d of data) {
-        const employee = employeeData.find(
-          e => e.empCode === d.Empcode
-        );
-        if (!employee?._id) continue;
+    const bulkRecords = [];
 
-        /* =====================================================
-           1️⃣ ABSENT HANDLING (CRITICAL – FIXES 12:00 AM ISSUE)
-        ====================================================== */
-        if (d.Status === "A") {
-          const payload = {
-            date: dateValue,
-            year: new Date(dateValue).getFullYear(),
-            month: getMonth(dateValue),
-            isSunday: new Date(dateValue).getDay() === 0,
+    for (const d of data) {
+      const employee = employeeData.find(
+        e => e.empCode === d.Empcode
+      );
+      if (!employee?._id) continue;
 
-            status: false,
-            isAbsent: true,
-            isOverTime: false,
-
-            checkinTime: null,
-            checkoutTime: null,
-
-            totalWorkingHours: { hours: 0, min: 0 },
-            overTimeHours: { hours: 0, min: 0 },
-
-            remark: "Absent (from eTime)",
-          };
-
-          try {
-            await markAttendanceConnect(employee._id, payload);
-          } catch (err) {
-            console.error("Absent save failed:", err);
-          }
-
-          continue; // ⛔ skip all further calculations
-        }
-
-        /* =====================================================
-           2️⃣ TIME PARSING (ONLY FOR PRESENT USERS)
-        ====================================================== */
-
-        const checkin = moment(
-          `${d.DateString} ${d.INTime}`,
-          "DD/MM/YYYY HH:mm"
-        );
-
-        const actualCheckout = moment(
-          `${d.DateString} ${d.OUTTime}`,
-          "DD/MM/YYYY HH:mm"
-        );
-
-        const cutoffCheckout = moment(
-          `${d.DateString} ${OT_CUTOFF}`,
-          "DD/MM/YYYY HH:mm"
-        );
-
-        // Cap checkout at 19:30
-        const finalCheckout = actualCheckout.isAfter(cutoffCheckout)
-          ? cutoffCheckout
-          : actualCheckout;
-
-        /* =====================================================
-           3️⃣ TOTAL WORKING HOURS
-        ====================================================== */
-
-        let totalMinutes =
-          finalCheckout.diff(checkin, "minutes") - LUNCH_BREAK_MIN;
-
-        totalMinutes = Math.max(0, totalMinutes);
-
-        const totalWorkingHours = {
-          hours: Math.floor(totalMinutes / 60),
-          min: totalMinutes,
-        };
-
-        /* =====================================================
-           4️⃣ OT CALCULATION (17:30 → 19:30 ONLY)
-        ====================================================== */
-
-        const shiftEnd = moment(
-          `${d.DateString} ${SHIFT_END}`,
-          "DD/MM/YYYY HH:mm"
-        );
-
-        let otMinutes = finalCheckout.diff(shiftEnd, "minutes");
-        otMinutes = Math.max(0, Math.min(otMinutes, MAX_OT_MIN));
-
-        const overTimeHours = {
-          hours: Math.floor(otMinutes / 60),
-          min: otMinutes,
-        };
-
-        /* =====================================================
-           5️⃣ PAYLOAD (FINAL)
-        ====================================================== */
-
-        const payload = {
+      /* =====================================================
+         ABSENT USERS
+      ====================================================== */
+      if (d.Status === "A") {
+        bulkRecords.push({
+          employeeId: employee._id,
           date: dateValue,
           year: new Date(dateValue).getFullYear(),
           month: getMonth(dateValue),
           isSunday: new Date(dateValue).getDay() === 0,
 
-          status: true,
-          isAbsent: false,
-          isOverTime: otMinutes > 0,
+          status: false,
+          isAbsent: true,
+          isOverTime: false,
 
-          checkinTime: checkin.valueOf(),
-          checkoutTime: finalCheckout.valueOf(),
+          checkinTime: null,
+          checkoutTime: null,
 
-          totalWorkingHours,
-          overTimeHours,
+          totalWorkingHours: { hours: 0, min: 0 },
+          overTimeHours: { hours: 0, min: 0 },
 
-          remark: actualCheckout.isAfter(cutoffCheckout)
-            ? "OT capped at 19:30"
-            : d.Remark || "",
-        };
-
-        /* =====================================================
-           6️⃣ SAVE ATTENDANCE
-        ====================================================== */
-
-        try {
-          await markAttendanceConnect(employee._id, payload);
-        } catch (err) {
-          console.error("Attendance save failed:", err);
-        }
+          remark: "Absent (from eTime)",
+        });
+        continue;
       }
 
-      await employeeListHandler();
-      setIsLoading(false);
-    })
-    .catch(err => {
-      console.error(err);
-      setIsLoading(false);
-    });
+      /* =====================================================
+         PRESENT USERS
+      ====================================================== */
+
+      const checkin = moment(
+        `${d.DateString} ${d.INTime}`,
+        "DD/MM/YYYY HH:mm"
+      );
+
+      const actualCheckout = moment(
+        `${d.DateString} ${d.OUTTime}`,
+        "DD/MM/YYYY HH:mm"
+      );
+
+      const cutoffCheckout = moment(
+        `${d.DateString} ${OT_CUTOFF}`,
+        "DD/MM/YYYY HH:mm"
+      );
+
+      const finalCheckout = actualCheckout.isAfter(cutoffCheckout)
+        ? cutoffCheckout
+        : actualCheckout;
+
+      /* ---------- TOTAL WORK ---------- */
+      let totalMinutes =
+        finalCheckout.diff(checkin, "minutes") - LUNCH_BREAK_MIN;
+
+      totalMinutes = Math.max(0, totalMinutes);
+
+      /* ---------- OT ---------- */
+      const shiftEnd = moment(
+        `${d.DateString} ${SHIFT_END}`,
+        "DD/MM/YYYY HH:mm"
+      );
+
+      let otMinutes = finalCheckout.diff(shiftEnd, "minutes");
+      otMinutes = Math.max(0, Math.min(otMinutes, MAX_OT_MIN));
+
+      bulkRecords.push({
+        employeeId: employee._id,
+        date: dateValue,
+        year: new Date(dateValue).getFullYear(),
+        month: getMonth(dateValue),
+        isSunday: new Date(dateValue).getDay() === 0,
+
+        status: true,
+        isAbsent: false,
+        isOverTime: otMinutes > 0,
+
+        checkinTime: checkin.valueOf(),
+        checkoutTime: finalCheckout.valueOf(),
+
+        totalWorkingHours: {
+          hours: Math.floor(totalMinutes / 60),
+          min: totalMinutes,
+        },
+
+        overTimeHours: {
+          hours: Math.floor(otMinutes / 60),
+          min: otMinutes,
+        },
+
+        remark: actualCheckout.isAfter(cutoffCheckout)
+          ? "OT capped at 19:30"
+          : d.Remark || "",
+      });
+    }
+
+    /* =====================================================
+       BULK SAVE – SINGLE API CALL
+    ====================================================== */
+
+    if (bulkRecords.length > 0) {
+      await bulkAttendanceConnect(bulkRecords);
+    }
+
+    await employeeListHandler();
+  } catch (err) {
+    console.error("Bulk attendance sync failed:", err);
+  } finally {
+    setIsLoading(false);
+  }
 };
+
 
 if (isLoading) return <PageLoader/>
 
@@ -440,6 +426,7 @@ const mapStateToProps = ({
 const mapDispatchToProps = (dispatch) => bindActionCreators({
     employeeListConnect: employeeList,
     markAttendanceConnect: markAttendance,
+    bulkAttendanceConnect: bulkAttendance,
     employeeDetailConnect: employeeDetail,
     checkoutAllEmployeeConnect: checkoutAllEmployee,
     fetchBiometricDataConnect: fetchBiometricData
