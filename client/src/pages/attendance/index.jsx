@@ -310,7 +310,7 @@ const fetchBiometricData = async () => {
       let finalCheckout;
 
       if (actualCheckout.isBefore(shiftEnd)) {
-        // Early checkout → keep as-is
+        // Early checkout
         finalCheckout = actualCheckout;
       } else if (actualCheckout.isBefore(otStart)) {
         // 17:30–18:00 → no OT
@@ -323,9 +323,11 @@ const fetchBiometricData = async () => {
         finalCheckout = actualCheckout;
       }
 
-      /* ---------- TOTAL WORKING HOURS ---------- */
+      /* ---------- TOTAL WORKING HOURS (NO OT) ---------- */
+      const workingCheckout = moment.min(finalCheckout, shiftEnd);
+
       let totalMinutes =
-        finalCheckout.diff(finalCheckin, "minutes") - LUNCH_BREAK_MIN;
+        workingCheckout.diff(finalCheckin, "minutes") - LUNCH_BREAK_MIN;
 
       totalMinutes = Math.max(0, totalMinutes);
 
@@ -346,7 +348,7 @@ const fetchBiometricData = async () => {
         isOverTime: otMinutes > 0,
 
         checkinTime: finalCheckin.valueOf(),
-        checkoutTime: d.OUTTime === "--:--" ?  null : finalCheckout.valueOf(),
+        checkoutTime: d.OUTTime === "--:--" ? null : finalCheckout.valueOf(),
 
         totalWorkingHours: {
           hours: Math.floor(totalMinutes / 60),
@@ -382,6 +384,7 @@ const fetchBiometricData = async () => {
     setIsLoading(false);
   }
 };
+
 
 
 
