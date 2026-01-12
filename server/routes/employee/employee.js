@@ -562,7 +562,7 @@ router.post('/attendance/bulk', async (req, res) => {
                         return {
                                 ...d,
                                 formattedCheckinTime: d.checkinTime ? moment.tz(Number(d.checkinTime), "Asia/Kolkata").format("HH:mm"): "--:--",
-                                formattedCheckoutTime: d.checkoutTime? moment.tz(Number(d.checkinTime), "Asia/Kolkata").format("HH:mm"): "--:--",
+                                formattedCheckoutTime: d.checkoutTime? moment.tz(Number(d.checkoutTime), "Asia/Kolkata").format("HH:mm"): "--:--",
                                 dayName: weekday[new Date(d.date).getDay()],
                                 dayNumber: new Date(d.date).getDate(),
                                 workingHour: work,
