@@ -65,8 +65,22 @@ export default (api) => {
         return api.get(`/employee/sync/etimeoffice?fromDate=${fromDate}&toDate=${toDate}`)
     }
 
+    const getSalarySlip = ({ month, year }) => {
+        return api.get(
+            `/employee/generate-salary-slip-pdf`,
+            {
+            params: { month, year },
+            responseType: "blob",
+            headers: {
+                Accept: "application/pdf",
+            },
+            }
+        );
+    };
+
 
     return {
+        getSalarySlip,
         bulkAttendance,
         getEmployeeList,
         checkoutAllEmployee,

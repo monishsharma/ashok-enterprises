@@ -16,7 +16,7 @@ const SalayDetail = ({
     overTimeAmount,
     salaryPerDay,
     totalSalary,
-    advance
+    advance,
 }) => (
 
         <tr>
@@ -51,6 +51,7 @@ const SalayDetail = ({
 
 const SalaryCard = ({
     employeeData,
+    getSalarySlipConnect,
     employeeListConnect
 }) => {
     const componentRef = useRef();
@@ -66,7 +67,8 @@ const SalaryCard = ({
     const employeeListHandler = () => {
         setIsLoading(true);
         const qp = {
-          month:  month
+          month:  month,
+          year: year
         }
         employeeListConnect({sortByKey: "name", qp})
           .then(() => {
@@ -81,9 +83,49 @@ const SalaryCard = ({
     employeeListHandler()
     }, []);
 
+    const printHandler = async() => {
+
+        try {
+            //   setIsLoading(true);
+            const pdfResponse = await getSalarySlipConnect({month,year});
+
+            const contentDisposition = pdfResponse.headers["content-disposition"];
+            const match = contentDisposition?.match(/filename="?(.+)"?/);
+            const filename = match?.[1] || "salary_slip.pdf";
+
+            const blob = new Blob([pdfResponse.data], { type: "application/pdf" });
+            const fileURL = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = fileURL;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            //   setIsLoading(false);
+            // toast.update(toastId, {
+            //     render: "Download complete!",
+            //     type: "success",
+            //     autoClose: 2000,
+            //     progress: undefined,
+            // });
+        } catch (pdfErr) {
+            console.error("PDF generation error", pdfErr);
+            // Swal.fire({
+            //     icon: "error",
+            //     text: "Failed to generate PDF",
+            // });
+            setIsLoading(false);
+        }
+
+
+    }
+
     return (
         <React.Fragment>
             <h2 className="fw-bold mb-2">Detailed Salary</h2>
+            <Button onClick = {printHandler}>Print</Button>
             <ReactToPrint
                 trigger={() => <Button >Print this out!</Button>}
                 content={() => componentRef.current}
@@ -114,7 +156,7 @@ const SalaryCard = ({
                     employeeData.map((emp, index) => (
                             <SalayDetail
                                 key={index}
-                                advance={emp.advance[year] && emp.advance[year][month] && emp.advance[year][month] || 0}
+                                advance={emp.advance?.[year] && emp.advance[year][month] && emp.advance[year][month] || 0}
                                 name={emp.name}
                                 salaryPerDay={emp.salaryPerDay}
                                 esi={emp.esi}

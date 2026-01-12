@@ -4,13 +4,43 @@ import Employees from "./employeeSchema.js";
 import { ObjectId } from "mongodb";
 import { getTodayDate } from "../../helper/server-today-date.js";
 import { fetchEtimeAttendance } from "../../helper/eTimeOffice.js";
-import { toISODate, toMinutes, toTimestamp } from "../../helper/time.js";
-
-
+import ejs from "ejs";
+import path from "path";
+import { fileURLToPath } from "url";
+import moment from "moment"
+import { formatMinutes } from "../../helper/formatMinutes.js";
 
 const router = express.Router();
+const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const collectionName = process.env.NODE_ENV === "dev" ? "employeeDetails" : "employeeDetails"
+// const collectionName = process.env.NODE_ENV === "dev" ? "attendance" : "employeeDetails"
+// Puppeteer config
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+let browser;
+let isProduction = process.env.NODE_ENV === "prod";
+// const collectionName = isProduction ? "invoices" : "invoicesCopy";
 
-const collectionName = process.env.NODE_ENV === "dev" ? "attendance" : "employeeDetails"
+async function getBrowser() {
+  if (browser) return browser;
+
+  if (isProduction) {
+    const puppeteer = (await import("puppeteer-core")).default;
+    const chromium = (await import("@sparticuz/chromium")).default;
+
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
+  } else {
+    const puppeteer = (await import("puppeteer")).default;
+    browser = await puppeteer.launch();
+  }
+
+  return browser;
+}
+
 console.log(process.env.NODE_ENV)
 
 
@@ -460,6 +490,123 @@ router.post('/attendance/bulk', async (req, res) => {
             })
         })
     })
+
+    router.get("/generate-salary-slip-pdf", async (req, res) => {
+        const browser = await getBrowser();
+        const page = await browser.newPage();
+        const{month,year}=req.query;
+        let query = {};
+        let options = {};
+        const queryKeys = Object.keys(req.query);
+        if (queryKeys.length > 0) {
+            // Dynamically construct the filter conditions
+            const filterConditions = queryKeys.map(key => {
+            const value = req.query[key];
+            return {
+                $eq: [`$$item.${key}`, key === "year" ? parseInt(value) : value]
+            };
+            });
+
+            options = {
+                projection: {
+                    _id: 1,
+                    name: 1,
+                    salaryPerDay: 1,
+                    payment: 1,
+                    advance: 1,
+                    empCode: 1,
+                    esi: 1,
+                    extraAdvance: 1,
+                    attendance: {
+                        $filter: {
+                            input: "$attendance",
+                            as: "item",
+                            cond: {
+                                $and: filterConditions
+                            }
+                        }
+                    }
+                }
+            };
+        }
+        try {
+            let collection = db.collection(collectionName);
+            const results = await collection.find(query, options).toArray();
+            const employeesData = results
+            .map(emp =>
+                {
+                    const totalWorkingMinutes = emp.attendance.reduce((sum, day) => sum + (day.totalWorkingHours?.min || 0),0);
+                    const totalOTMinutes = emp.attendance.reduce((sum, day) => sum + (day.overTimeHours?.min || 0),0);
+                    const sundayPresentCount = emp.attendance.filter(day => {
+                        const isSunday = new Date(day.date).getDay() === 0;
+                        return isSunday && day.status === true;
+                    }).length;
+                    return ({
+                        month,
+                        year,
+                        empCode: emp.empCode,
+                        name: emp.name,
+                        sundayPresentCount,
+                        salaryPerDay: `₹ ${emp.salaryPerDay}`,
+                        attendance: emp.attendance,
+                        totalPresent: emp.attendance.filter(a => a.status).length,
+                        totalAbsent: emp.attendance.filter(a => !a.status).length,
+                        totalWork: formatMinutes(totalWorkingMinutes).formatted,
+                        totalOT: formatMinutes(totalOTMinutes).formatted,
+                        days: emp.attendance.map(d => {
+
+                            const work = formatMinutes(d.totalWorkingHours?.min || 0).formatted;
+                            const OT = formatMinutes(d.overTimeHours?.min || 0).formatted;
+
+
+                        return {
+                                ...d,
+                                formattedCheckinTime: d.checkinTime ? moment(parseInt(d.checkinTime)).format("HH:mm"): "--:--",
+                                formattedCheckoutTime: d.checkoutTime? moment(parseInt(d.checkoutTime)).format("HH:mm"): "--:--",
+                                dayName: weekday[new Date(d.date).getDay()],
+                                dayNumber: new Date(d.date).getDate(),
+                                workingHour: work,
+                                overtime: OT
+                            };
+                        }),
+                    })
+            })
+            .sort((a, b) =>
+                a.empCode.localeCompare(b.empCode, undefined, { numeric: true })
+            ).slice(1)
+            const html = await ejs.renderFile(
+                  path.join(__dirname, "../billing/invoice-config/templates/salarySlip.ejs"),
+                  {
+                    employeesData
+                  }
+                );
+            await page.setContent(html, { waitUntil: "networkidle0" });
+                const pdfBuffer = await page.pdf({
+                  format: "LEGAL",
+                  landscape: true,
+                  printBackground: true,
+                  scale: 1,
+                });
+            await page.close();
+            res.set({
+            "Content-Type": "application/pdf",
+            "Content-Disposition": `attachment; filename=SALARY_SLIP_${month}.pdf`,
+            "Content-Length": pdfBuffer.length,
+            });
+
+            res.send(Buffer.from(pdfBuffer));
+            // res.send(results).status(200);
+        } catch (err) {
+            console.error(err);
+            res.status(500).send("Error retrieving employee details");
+        }
+
+
+
+
+    })
+
+
 
 
 export default router;

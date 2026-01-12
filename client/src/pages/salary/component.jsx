@@ -14,6 +14,7 @@ import Advance from './advance';
 const Salary = ({
     employeeData,
     employeeListConnect,
+    getSalarySlipConnect,
     updateEmployeePaymentConnect
 }) => {
 
@@ -88,6 +89,42 @@ const Salary = ({
         </div>
        ));
 
+       const onClick = async() => {
+        try {
+              setIsLoading(true);
+            const pdfResponse = await getSalarySlipConnect({month: getMonth(dateValue),year: dateValue.getFullYear()});
+
+            const contentDisposition = pdfResponse.headers["content-disposition"];
+            const match = contentDisposition?.match(/filename="?(.+)"?/);
+            const filename = match?.[1] || "salary_slip.pdf";
+
+            const blob = new Blob([pdfResponse.data], { type: "application/pdf" });
+            const fileURL = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = fileURL;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+              setIsLoading(false);
+            // toast.update(toastId, {
+            //     render: "Download complete!",
+            //     type: "success",
+            //     autoClose: 2000,
+            //     progress: undefined,
+            // });
+        } catch (pdfErr) {
+            console.error("PDF generation error", pdfErr);
+            // Swal.fire({
+            //     icon: "error",
+            //     text: "Failed to generate PDF",
+            // });
+            setIsLoading(false);
+        }
+       }
+
     const toggleAdvance = () => setShowAdvance(!showAdvance);
 
   if (isLoading) return <PageLoader />;
@@ -125,7 +162,7 @@ const Salary = ({
                         </Col>
                         <Col sm={3}>
                           <div className="d-grid">
-                            <Button  onClick={() => navigate(`/salary/distribution/${getMonth(dateValue)}/${dateValue.getFullYear()}`)} variant='warning'>
+                            <Button  onClick={onClick} variant='warning'>
                               Detail
                             </Button>
                           </div>
@@ -168,10 +205,5 @@ const Salary = ({
     )
 }
 
-Salary.propTypes = {
-    employeeData: PropTypes.array,
-    employeeListConnect: PropTypes.func,
-    updateEmployeePaymentConnect: PropTypes.func
-}
 
 export default Salary;

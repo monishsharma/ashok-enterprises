@@ -156,3 +156,15 @@ export const fetchBiometricData = (payload) => () => {
         })
     })
 }
+
+export const getSalarySlip = ({month,year}) => () => {
+    return new Promise((resolve, reject) => {
+        EmployeeService.getSalarySlip({month,year})
+        .then((res) => {
+            resolve(res);
+        })
+        .catch((err) => {
+            reject(err);
+        })
+    })
+}

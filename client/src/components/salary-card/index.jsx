@@ -1,7 +1,7 @@
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import SalaryCard from "./component.jsx";
-import { employeeList } from "../../store/employee/action.js";
+import { employeeList, getSalarySlip } from "../../store/employee/action.js";
 
 const mapStateToProps = ({
     employee: {
@@ -10,7 +10,8 @@ const mapStateToProps = ({
 }) => ({employeeData});
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({
-    employeeListConnect: employeeList
+    employeeListConnect: employeeList,
+    getSalarySlipConnect: getSalarySlip
 }, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(SalaryCard);
