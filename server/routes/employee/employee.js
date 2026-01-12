@@ -7,8 +7,8 @@ import { fetchEtimeAttendance } from "../../helper/eTimeOffice.js";
 import ejs from "ejs";
 import path from "path";
 import { fileURLToPath } from "url";
-import moment from "moment"
 import { formatMinutes } from "../../helper/formatMinutes.js";
+import moment from "moment-timezone";
 
 const router = express.Router();
 const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -561,8 +561,8 @@ router.post('/attendance/bulk', async (req, res) => {
 
                         return {
                                 ...d,
-                                formattedCheckinTime: d.checkinTime ? moment(parseInt(d.checkinTime)).format("HH:mm"): "--:--",
-                                formattedCheckoutTime: d.checkoutTime? moment(parseInt(d.checkoutTime)).format("HH:mm"): "--:--",
+                                formattedCheckinTime: d.checkinTime ? moment.tz(Number(d.checkinTime), "Asia/Kolkata").format("HH:mm"): "--:--",
+                                formattedCheckoutTime: d.checkoutTime? moment.tz(Number(d.checkinTime), "Asia/Kolkata").format("HH:mm"): "--:--",
                                 dayName: weekday[new Date(d.date).getDay()],
                                 dayNumber: new Date(d.date).getDate(),
                                 workingHour: work,
