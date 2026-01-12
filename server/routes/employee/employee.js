@@ -9,6 +9,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { formatMinutes } from "../../helper/formatMinutes.js";
 import moment from "moment-timezone";
+import {getAdvancePAymentFromSalary, getTotalSalary, overTimePerDay, salaryPerDay } from "../../helper/employee-salary.js";
 
 const router = express.Router();
 const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -553,6 +554,7 @@ router.post('/attendance/bulk', async (req, res) => {
                         totalAbsent: emp.attendance.filter(a => !a.status).length,
                         totalWork: formatMinutes(totalWorkingMinutes).formatted,
                         totalOT: formatMinutes(totalOTMinutes).formatted,
+                        finalSalary: getTotalSalary(emp,month,year),
                         days: emp.attendance.map(d => {
 
                             const work = formatMinutes(d.totalWorkingHours?.min || 0).formatted;
@@ -566,7 +568,9 @@ router.post('/attendance/bulk', async (req, res) => {
                                 dayName: weekday[new Date(d.date).getDay()],
                                 dayNumber: new Date(d.date).getDate(),
                                 workingHour: work,
-                                overtime: OT
+                                overtime: OT,
+                                advance: getAdvancePAymentFromSalary(emp,month,year) || 0,
+                                salaryCountPerDay: `${parseInt(salaryPerDay(d, emp.salaryPerDay) + parseInt(overTimePerDay(d, emp.salaryPerDay)))}`
                             };
                         }),
                     })
@@ -598,7 +602,7 @@ router.post('/attendance/bulk', async (req, res) => {
             // res.send(results).status(200);
         } catch (err) {
             console.error(err);
-            res.status(500).send("Error retrieving employee details");
+            res.status(500).send(err);
         }
 
 
