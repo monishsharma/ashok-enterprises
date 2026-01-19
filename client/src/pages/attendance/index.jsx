@@ -355,11 +355,10 @@ const Attendance = ({
 
         /* ---------- TOTAL WORKING HOURS (NO OT) ---------- */
         const workingCheckout = moment.min(finalCheckout, shiftEnd);
-
-        let totalMinutes =
-          workingCheckout.diff(finalCheckin, "minutes") - LUNCH_BREAK_MIN;
-
-        totalMinutes = Math.max(0, totalMinutes);
+        let totalMinutes = workingCheckout.diff(finalCheckin, "minutes");
+        if (!isSunday) {
+          totalMinutes = Math.max(0, totalMinutes - LUNCH_BREAK_MIN);
+        }
 
         /* ---------- OVERTIME ---------- */
         let otMinutes = 0;
