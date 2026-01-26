@@ -247,6 +247,7 @@ const Attendance = ({
   const SUNDAY_SHIFT_START = "06:00";
   const SUNDAY_CHECKIN_GRACE = "06:10";
   const SUNDAY_SHIFT_END = "14:00";
+  const SPECIAL_SHFIT_END = "14:30";
 
   const fetchBiometricData = async () => {
     setIsLoading(true);
@@ -266,7 +267,6 @@ const Attendance = ({
         if (!employee?._id) continue;
 
         const isSunday = new Date(dateValue).getDay() === 0 || isSpecialShift;
-        if (isSunday) setIsSpecialShift(true);
         /* =====================================================
          ABSENT USERS
       ====================================================== */
@@ -277,7 +277,7 @@ const Attendance = ({
             date: dateValue,
             year: new Date(dateValue).getFullYear(),
             month: getMonth(dateValue),
-            isSunday,
+            isSunday: new Date(dateValue).getDay() === 0,
 
             status: false,
             isAbsent: true,
@@ -320,11 +320,16 @@ const Attendance = ({
           "DD/MM/YYYY HH:mm",
         );
 
+        const getShitftEnd = () => {
+          if (isSpecialShift) return SPECIAL_SHFIT_END;
+          return isSunday ? SUNDAY_SHIFT_END : SHIFT_END;
+        };
+
         const shiftEnd = moment(
-          `${d.DateString} ${isSunday ? SUNDAY_SHIFT_END : SHIFT_END}`,
+          `${d.DateString} ${getShitftEnd()}`,
           "DD/MM/YYYY HH:mm",
         );
-
+        console.log(shiftEnd.format("DD/MM/YYYY HH:mm"));
         /* ---------- CHECK-IN NORMALIZATION ---------- */
         const finalCheckin = actualCheckin.isBefore(graceEnd)
           ? shiftStart
