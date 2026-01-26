@@ -1,26 +1,24 @@
-import React, {useState, useEffect, forwardRef} from 'react'
-import PropTypes from 'prop-types'
-import Table from '../../shared/component/table'
-import { useNavigate } from 'react-router-dom';
-import { tableConstants } from './tableConstant';
-import PageLoader from '../../shared/component/page-loader';
-import { Badge, Button, Col, Row } from 'react-bootstrap';
-import DatePicker from 'react-datepicker';
-import { getMonth } from '../../helpers/today-date';
-import priceFormatter from '../../helpers/price-formatter';
-import { totalAdvance, totalSalary } from '../../helpers/employee-detal';
-import Advance from './advance';
+import React, { useState, useEffect, forwardRef } from "react";
+import PropTypes from "prop-types";
+import Table from "../../shared/component/table";
+import { useNavigate } from "react-router-dom";
+import { tableConstants } from "./tableConstant";
+import PageLoader from "../../shared/component/page-loader";
+import { Badge, Button, Col, Row } from "react-bootstrap";
+import DatePicker from "react-datepicker";
+import { getMonth } from "../../helpers/today-date";
+import priceFormatter from "../../helpers/price-formatter";
+import { totalAdvance, totalSalary } from "../../helpers/employee-detal";
+import Advance from "./advance";
 
 const Salary = ({
-    employeeData,
-    employeeListConnect,
-    getSalarySlipConnect,
-    updateEmployeePaymentConnect
+  employeeData,
+  employeeListConnect,
+  getSalarySlipConnect,
+  updateEmployeePaymentConnect,
 }) => {
-
-    const getDateValue = () => {
-
-      const today = new Date();
+  const getDateValue = () => {
+    const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth(); // January is 0, December is 11
     const day = today.getDate();
@@ -28,182 +26,196 @@ const Salary = ({
     let salaryMonth, salaryYear;
 
     if (day <= 10) {
-        // Before or on the 10th, return the previous month
-        if (month === 0) {
-            // If current month is January, go to December of the previous year
-            salaryMonth = 11; // December
-            salaryYear = year - 1;
-        } else {
-            salaryMonth = month - 1;
-            salaryYear = year;
-        }
-    } else {
-        // After the 10th, return the current month
-        salaryMonth = month;
+      // Before or on the 10th, return the previous month
+      if (month === 0) {
+        // If current month is January, go to December of the previous year
+        salaryMonth = 11; // December
+        salaryYear = year - 1;
+      } else {
+        salaryMonth = month - 1;
         salaryYear = year;
+      }
+    } else {
+      // After the 10th, return the current month
+      salaryMonth = month;
+      salaryYear = year;
     }
 
     // Return a Date object with the calculated month and year
     return new Date(salaryYear, salaryMonth);
-  }
+  };
 
   const [dateValue, setDateValue] = useState(new Date(getDateValue()));
-    const [showAdvance, setShowAdvance] = useState(false);
-    const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(false);
+  const [showAdvance, setShowAdvance] = useState(false);
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
-    const employeeListHandler = () => {
-        setIsLoading(true);
-        const qp = {
-          month:  getMonth(dateValue),
-          year: new Date(dateValue).getFullYear()
-        }
-        employeeListConnect({sortByKey: "name", qp})
-          .then(() => {
-            setIsLoading(false);
-          })
-          .catch(() => {
-            setIsLoading(false);
-          });
-      };
+  const employeeListHandler = () => {
+    setIsLoading(true);
+    const qp = {
+      month: getMonth(dateValue),
+      year: new Date(dateValue).getFullYear(),
+    };
+    employeeListConnect({ sortByKey: "empCode", qp })
+      .then(() => {
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setIsLoading(false);
+      });
+  };
 
-      useEffect(() => {
-        employeeListHandler()
-       }, [dateValue]);
+  useEffect(() => {
+    employeeListHandler();
+  }, [dateValue]);
 
-    const onClickTable = (list) => {
-        const {_id} = list;
-        navigate(`/salary/detail/${_id}/${getMonth(dateValue)}/${dateValue.getFullYear()}`)
+  const onClickTable = (list) => {
+    const { _id } = list;
+    navigate(
+      `/salary/detail/${_id}/${getMonth(dateValue)}/${dateValue.getFullYear()}`,
+    );
+  };
+
+  const handleDateChange = (selectedDate) => {
+    setDateValue(selectedDate);
+  };
+
+  // eslint-disable-next-line react/display-name, react/prop-types
+  const ExampleCustomInput = forwardRef(({ value, onClick }, ref) => (
+    <div className="d-grid">
+      <Button
+        variant="dark"
+        className="example-custom-input"
+        onClick={onClick}
+        ref={ref}
+      >
+        {value}
+      </Button>
+    </div>
+  ));
+
+  const onClick = async () => {
+    try {
+      setIsLoading(true);
+      const pdfResponse = await getSalarySlipConnect({
+        month: getMonth(dateValue),
+        year: dateValue.getFullYear(),
+      });
+
+      const contentDisposition = pdfResponse.headers["content-disposition"];
+      const match = contentDisposition?.match(/filename="?(.+)"?/);
+      const filename = match?.[1] || "salary_slip.pdf";
+
+      const blob = new Blob([pdfResponse.data], { type: "application/pdf" });
+      const fileURL = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = fileURL;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setIsLoading(false);
+      // toast.update(toastId, {
+      //     render: "Download complete!",
+      //     type: "success",
+      //     autoClose: 2000,
+      //     progress: undefined,
+      // });
+    } catch (pdfErr) {
+      console.error("PDF generation error", pdfErr);
+      // Swal.fire({
+      //     icon: "error",
+      //     text: "Failed to generate PDF",
+      // });
+      setIsLoading(false);
     }
+  };
 
-    const handleDateChange = (selectedDate) => {
-        setDateValue(selectedDate)
-    }
-
-    // eslint-disable-next-line react/display-name, react/prop-types
-    const ExampleCustomInput = forwardRef(({ value, onClick }, ref) => (
-        <div className="d-grid">
-          <Button variant="dark" className="example-custom-input" onClick={onClick} ref={ref}>
-           {value}
-         </Button>
-        </div>
-       ));
-
-       const onClick = async() => {
-        try {
-              setIsLoading(true);
-            const pdfResponse = await getSalarySlipConnect({month: getMonth(dateValue),year: dateValue.getFullYear()});
-
-            const contentDisposition = pdfResponse.headers["content-disposition"];
-            const match = contentDisposition?.match(/filename="?(.+)"?/);
-            const filename = match?.[1] || "salary_slip.pdf";
-
-            const blob = new Blob([pdfResponse.data], { type: "application/pdf" });
-            const fileURL = URL.createObjectURL(blob);
-
-            const link = document.createElement("a");
-            link.href = fileURL;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-              setIsLoading(false);
-            // toast.update(toastId, {
-            //     render: "Download complete!",
-            //     type: "success",
-            //     autoClose: 2000,
-            //     progress: undefined,
-            // });
-        } catch (pdfErr) {
-            console.error("PDF generation error", pdfErr);
-            // Swal.fire({
-            //     icon: "error",
-            //     text: "Failed to generate PDF",
-            // });
-            setIsLoading(false);
-        }
-       }
-
-    const toggleAdvance = () => setShowAdvance(!showAdvance);
+  const toggleAdvance = () => setShowAdvance(!showAdvance);
 
   if (isLoading) return <PageLoader />;
 
-
-    return (
-        <React.Fragment>
-          {
-            showAdvance &&
-              <Advance
-                dateValue={dateValue}
-                toggleAdvance={toggleAdvance}
-                employeeData={employeeData}
-                setIsLoading={setIsLoading}
-                isLoading={isLoading}
-                employeeListHandler={employeeListHandler}
-                updateEmployeePaymentConnect={updateEmployeePaymentConnect}
-              />
-
-          }
-          <div className='mt-4'>
-                <div>
-                <Row className='gy-2'>
-                  <Col sm={3}>
-                    <h2 className="fw-bold">Salary</h2>
-                  </Col>
-                  <Col sm={{ span:6, offset: 3}}>
-                      <Row className='gy-2'>
-                        <Col sm={3}>
-                          <div className="d-grid">
-                            <Button onClick={toggleAdvance}>
-                              Advance
-                            </Button>
-                          </div>
-                        </Col>
-                        <Col sm={3}>
-                          <div className="d-grid">
-                            <Button  onClick={onClick} variant='warning'>
-                              Detail
-                            </Button>
-                          </div>
-                        </Col>
-                        <Col sm={6}>
-                          <DatePicker
-                            selected={dateValue}
-                            showMonthYearPicker={true}
-                            dateFormat="MMM, yyyy"
-                            onChange={handleDateChange}
-                            withPortal
-                            customInput={<ExampleCustomInput />}
-                            // filterDate={isSelectableDate}
-                          />
-                        </Col>
-                      </Row>
-                  </Col>
-                </Row>
-            </div>
-          </div>
-
-
-          <div className="mt-4 ">
-            <Row className='gap-3'>
-              <Col  sm={3}>
-                <h5>Total Salary - <Badge bg='success' >{`₹ ${priceFormatter(totalSalary({detail: employeeData, month:  getMonth(dateValue), year:  new Date(dateValue).getFullYear()}))}`}</Badge></h5>
-              </Col>
-              <Col  sm={3}>
-                <h5>Total Advance - <Badge bg='warning'>{`₹ ${priceFormatter(totalAdvance({detail: employeeData, month:  getMonth(dateValue), year:  new Date(dateValue).getFullYear()}))}`}</Badge></h5>
-              </Col>
-            </Row>
-          </div>
-
-
-
-          <div className="pt-4 customTable">
-            <Table  canSearch={false} isClickable={true} onClick={onClickTable} hoverable={true} cols={tableConstants({dateValue})} data={employeeData} />
+  return (
+    <React.Fragment>
+      {showAdvance && (
+        <Advance
+          dateValue={dateValue}
+          toggleAdvance={toggleAdvance}
+          employeeData={employeeData}
+          setIsLoading={setIsLoading}
+          isLoading={isLoading}
+          employeeListHandler={employeeListHandler}
+          updateEmployeePaymentConnect={updateEmployeePaymentConnect}
+        />
+      )}
+      <div className="mt-4">
+        <div>
+          <Row className="gy-2">
+            <Col sm={3}>
+              <h2 className="fw-bold">Salary</h2>
+            </Col>
+            <Col sm={{ span: 6, offset: 3 }}>
+              <Row className="gy-2">
+                <Col sm={3}>
+                  <div className="d-grid">
+                    <Button onClick={toggleAdvance}>Advance</Button>
+                  </div>
+                </Col>
+                <Col sm={3}>
+                  <div className="d-grid">
+                    <Button onClick={onClick} variant="warning">
+                      Detail
+                    </Button>
+                  </div>
+                </Col>
+                <Col sm={6}>
+                  <DatePicker
+                    selected={dateValue}
+                    showMonthYearPicker={true}
+                    dateFormat="MMM, yyyy"
+                    onChange={handleDateChange}
+                    withPortal
+                    customInput={<ExampleCustomInput />}
+                    // filterDate={isSelectableDate}
+                  />
+                </Col>
+              </Row>
+            </Col>
+          </Row>
         </div>
-    </React.Fragment>
-    )
-}
+      </div>
 
+      <div className="mt-4 ">
+        <Row className="gap-3">
+          <Col sm={3}>
+            <h5>
+              Total Salary -{" "}
+              <Badge bg="success">{`₹ ${priceFormatter(totalSalary({ detail: employeeData, month: getMonth(dateValue), year: new Date(dateValue).getFullYear() }))}`}</Badge>
+            </h5>
+          </Col>
+          <Col sm={3}>
+            <h5>
+              Total Advance -{" "}
+              <Badge bg="warning">{`₹ ${priceFormatter(totalAdvance({ detail: employeeData, month: getMonth(dateValue), year: new Date(dateValue).getFullYear() }))}`}</Badge>
+            </h5>
+          </Col>
+        </Row>
+      </div>
+
+      <div className="pt-4 customTable">
+        <Table
+          canSearch={false}
+          isClickable={true}
+          onClick={onClickTable}
+          hoverable={true}
+          cols={tableConstants({ dateValue })}
+          data={employeeData}
+        />
+      </div>
+    </React.Fragment>
+  );
+};
 
 export default Salary;
