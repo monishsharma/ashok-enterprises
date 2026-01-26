@@ -47,8 +47,9 @@ const Attendance = ({
 
   const [showBulkAttendanceUploader, setShowBulkAttendanceUploader] =
     useState(false);
-  const [isCheckout, setIsCheckout] = useState(false);
-
+  const [isSpecialShift, setIsSpecialShift] = useState(
+    employeeData?.[0]?.attendance?.[0]?.isSpecialShift || false,
+  );
   // const hasEmptyCheckinTime = employeeData.filter(employee =>
   //     employee.attendance.some(attendance =>
   //       attendance.date === dateValue && attendance.checkinTime
@@ -58,7 +59,10 @@ const Attendance = ({
   const employeeListHandler = async () => {
     setIsLoading(true);
     employeeListConnect({ date: dateValue, sortByKey: "empCode" })
-      .then(() => {
+      .then((data) => {
+        if (data?.[0]?.attendance?.[0]) {
+          setIsSpecialShift(data[0].attendance[0].isSpecialShift || false);
+        }
         setIsLoading(false);
       })
       .catch(() => {
@@ -210,9 +214,9 @@ const Attendance = ({
         console.log(err);
       });
   };
-
   const handleDateChange = (date) => {
     const { sanitizedDate } = getTodayDate(date);
+    setIsSpecialShift(false);
     setDateValue(sanitizedDate);
   };
 
@@ -261,13 +265,13 @@ const Attendance = ({
         const employee = employeeData.find((e) => e.empCode === d.Empcode);
         if (!employee?._id) continue;
 
-        const isSunday = new Date(dateValue).getDay() === 0;
-
+        const isSunday = new Date(dateValue).getDay() === 0 || isSpecialShift;
         /* =====================================================
          ABSENT USERS
       ====================================================== */
         if (d.Status === "A") {
           bulkRecords.push({
+            isSpecialShift,
             employeeId: employee._id,
             date: dateValue,
             year: new Date(dateValue).getFullYear(),
@@ -370,6 +374,7 @@ const Attendance = ({
 
         /* ---------- PUSH BULK RECORD ---------- */
         bulkRecords.push({
+          isSpecialShift,
           employeeId: employee._id,
           date: dateValue,
           year: new Date(dateValue).getFullYear(),
@@ -457,6 +462,35 @@ const Attendance = ({
                 >
                   Fetch Data
                 </Button>
+                <div
+                  className="form-check"
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={isSpecialShift}
+                    onChange={(e) => setIsSpecialShift(e.target.checked)}
+                    id="flexCheckDefault"
+                  />
+                  <label
+                    className="form-check-label"
+                    htmlFor="flexCheckDefault"
+                    style={{
+                      marginLeft: "10px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    Special Shift
+                  </label>
+                </div>
                 {/* <TimePicker dateValue={dateValue} callBack={({punchedTime}) => allPresentHandler({punchedTime})} >
               <Button variant="success" style={{width: `100%`}}>
                 All Present
