@@ -266,6 +266,7 @@ const Attendance = ({
         if (!employee?._id) continue;
 
         const isSunday = new Date(dateValue).getDay() === 0 || isSpecialShift;
+        if (isSunday) setIsSpecialShift(true);
         /* =====================================================
          ABSENT USERS
       ====================================================== */
