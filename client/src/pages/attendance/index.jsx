@@ -366,7 +366,7 @@ const Attendance = ({
         /* ---------- TOTAL WORKING HOURS (NO OT) ---------- */
         const workingCheckout = moment.min(finalCheckout, shiftEnd);
         let totalMinutes = workingCheckout.diff(finalCheckin, "minutes");
-        if (!isSunday) {
+        if (!isSunday || isSpecialShift) {
           totalMinutes = Math.max(0, totalMinutes - LUNCH_BREAK_MIN);
         }
 
