@@ -586,10 +586,10 @@ router.get("/generate-salary-slip-pdf", async (req, res) => {
           totalWork: formatMinutes(totalWorkingMinutes).formatted,
           totalOT: formatMinutes(totalOTMinutes).formatted,
           finalSalary: getTotalSalary(emp, month, year),
+          advance: getAdvancePAymentFromSalary(emp, month, year) || 0,
           days: emp.attendance.map((d) => {
             const work = formatMinutes(d.totalWorkingHours?.min || 0).formatted;
             const OT = formatMinutes(d.overTimeHours?.min || 0).formatted;
-
             return {
               ...d,
               formattedCheckinTime: d.checkinTime
@@ -606,7 +606,6 @@ router.get("/generate-salary-slip-pdf", async (req, res) => {
               dayNumber: new Date(d.date).getDate(),
               workingHour: work,
               overtime: OT,
-              advance: getAdvancePAymentFromSalary(emp, month, year) || 0,
               salaryCountPerDay: `${Math.round(salaryPerDay(d, emp.salaryPerDay) + Math.round(overTimePerDay(d, emp.salaryPerDay))) + Math.round(addSundayCost(d))}`,
             };
           }),
