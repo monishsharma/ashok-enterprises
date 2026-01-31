@@ -18,13 +18,31 @@ import {
   getFileName,
 } from "../../../helper/csv-helper.js";
 import { get } from "http";
-import { calcualteCustomerTotals, calculateFYSales, calculateGrowth, calculateTonsGrowth, calculateTotalSales, calculateTotalTons, calculateYearlyGrowth, calculateYearlyPayment, getFYCustomerTotals, getFYItemBreakdown, getFYYearlyTotals, getItemBreakdown, getQuery, getYear, getYearlySales, getYearlyTons, monthlySalesQuery } from "../../../helper/growth-api-.js";
+import {
+  calcualteCustomerTotals,
+  calculateFYSales,
+  calculateGrowth,
+  calculateTonsGrowth,
+  calculateTotalSales,
+  calculateTotalTons,
+  calculateYearlyGrowth,
+  calculateYearlyPayment,
+  getFYCustomerTotals,
+  getFYItemBreakdown,
+  getFYYearlyTotals,
+  getItemBreakdown,
+  getQuery,
+  getYear,
+  getYearlySales,
+  getYearlyTons,
+  monthlySalesQuery,
+} from "../../../helper/growth-api-.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Puppeteer config
 let browser;
 let isProduction = process.env.NODE_ENV === "prod";
-const collectionName = isProduction ? "invoices" : "invoices";
+const collectionName = isProduction ? "invoices" : "invoicesCopy";
 // const collectionName = isProduction ? "invoices" : "invoicesCopy";
 
 async function getBrowser() {
@@ -95,93 +113,116 @@ router.get("/vendor/list", async (req, res) => {
 router.get("/get/invoice/report/:company", async (req, res) => {
   const company = req.params.company;
   const { month, year } = req.query;
-    let currentMonthInvoices, prevMonthInvoices;
-    let currentMonthSales, prevMonthSales;
+  let currentMonthInvoices, prevMonthInvoices;
+  let currentMonthSales, prevMonthSales;
 
-    try {
-      const invoiceCollection = db.collection(collectionName);
-      const currentMonthQuery = getQuery({month, year, previous: false, company});
-      const prevMonthQuery = getQuery({month, year, previous: true, company});
+  try {
+    const invoiceCollection = db.collection(collectionName);
+    const currentMonthQuery = getQuery({
+      month,
+      year,
+      previous: false,
+      company,
+    });
+    const prevMonthQuery = getQuery({ month, year, previous: true, company });
 
-      currentMonthInvoices = await invoiceCollection
-        .find(currentMonthQuery)
-        .sort({ "invoiceDetail.invoiceNO": -1 })
-        .toArray();
+    currentMonthInvoices = await invoiceCollection
+      .find(currentMonthQuery)
+      .sort({ "invoiceDetail.invoiceNO": -1 })
+      .toArray();
 
-      prevMonthInvoices = await invoiceCollection
-        .find(prevMonthQuery)
-        .sort({ "invoiceDetail.invoiceNO": -1 })
-        .toArray();
+    prevMonthInvoices = await invoiceCollection
+      .find(prevMonthQuery)
+      .sort({ "invoiceDetail.invoiceNO": -1 })
+      .toArray();
 
-      currentMonthSales = calculateTotalSales(currentMonthInvoices);
-      prevMonthSales = calculateTotalSales(prevMonthInvoices);
+    currentMonthSales = calculateTotalSales(currentMonthInvoices);
+    prevMonthSales = calculateTotalSales(prevMonthInvoices);
 
-      // CALCULATING MONTHLY SALES IN FINANCIAL YEAR //
-      const financialYearQuery = monthlySalesQuery({company, year});
+    // CALCULATING MONTHLY SALES IN FINANCIAL YEAR //
+    const financialYearQuery = monthlySalesQuery({ company, year });
 
-      const fyInvoices = await invoiceCollection
-        .find({ ...financialYearQuery })
-        .toArray();
+    const fyInvoices = await invoiceCollection
+      .find({ ...financialYearQuery })
+      .toArray();
 
+    // SALES MONTHLY TOTALS //
+    const monthlyTotals = calculateFYSales(fyInvoices);
 
-      // SALES MONTHLY TOTALS //
-      const monthlyTotals = calculateFYSales(fyInvoices);
+    // SALES YEARLY TOTALS FOR NEXT 5 YEARS //
+    const fyResult = await getFYYearlyTotals(invoiceCollection, company);
 
-      // SALES YEARLY TOTALS FOR NEXT 5 YEARS //
-      const fyResult = await getFYYearlyTotals(invoiceCollection, company);
+    // yearly tons //
+    const yearlyTons = await getYearlyTons({
+      invoiceCollection,
+      company,
+      year,
+    });
+    const yearlyTonsObj = await getYearlyTons({
+      invoiceCollection,
+      company,
+      needObj: true,
+      year,
+    });
 
-      // yearly tons //
-      const yearlyTons = await getYearlyTons({invoiceCollection, company, year});
-      const yearlyTonsObj = await getYearlyTons({invoiceCollection, company, needObj: true, year});
-
-      res.status(200).json({
+    res.status(200).json({
+      sales: {
+        monthly: currentMonthSales.total,
+        yearly: getYearlySales({ yearlyTotals: fyResult, year }),
+      },
+      tons: {
+        monthly: calculateTotalTons(currentMonthInvoices),
+        yearly: yearlyTons,
+      },
+      growth: {
         sales: {
-          monthly: currentMonthSales.total,
-          yearly: getYearlySales({yearlyTotals: fyResult, year}),
+          monthly: calculateGrowth(currentMonthSales, prevMonthSales),
+          yearly: calculateYearlyGrowth({ yearlyTotals: fyResult, year }),
         },
         tons: {
-          monthly: calculateTotalTons(currentMonthInvoices),
-          yearly: yearlyTons,
+          monthly: calculateTonsGrowth({
+            currentMonthInvoices,
+            prevMonthInvoices,
+          }),
+          yearly: calculateYearlyGrowth({ yearlyTotals: yearlyTonsObj, year }),
         },
-        growth: {
-          sales: {
-            monthly: calculateGrowth(currentMonthSales, prevMonthSales),
-            yearly: calculateYearlyGrowth({yearlyTotals: fyResult, year}),
-          },
-          tons: {
-            monthly: calculateTonsGrowth({currentMonthInvoices, prevMonthInvoices}),
-            yearly: calculateYearlyGrowth({yearlyTotals: yearlyTonsObj, year}),
-          }
+      },
+      payment: {
+        monthly: {
+          paid: currentMonthSales.paid,
+          unpaid: currentMonthSales.unpaid,
         },
-        payment:{
-          monthly: {
-            paid: currentMonthSales.paid,
-            unpaid: currentMonthSales.unpaid
-          },
-          yearly: {
-            paid: await calculateYearlyPayment({invoiceCollection, company, paid: true, year}),
-            unpaid: await calculateYearlyPayment({invoiceCollection, company, paid: false, year})
-          }
+        yearly: {
+          paid: await calculateYearlyPayment({
+            invoiceCollection,
+            company,
+            paid: true,
+            year,
+          }),
+          unpaid: await calculateYearlyPayment({
+            invoiceCollection,
+            company,
+            paid: false,
+            year,
+          }),
         },
-        itemBreakdown: {
-          monthly: getItemBreakdown(currentMonthInvoices),
-          yearly: await getFYItemBreakdown({invoiceCollection, company, year})
-        },
-        customerBreakdown:{
-          monthly: calcualteCustomerTotals(currentMonthInvoices),
-          yearly: await getFYCustomerTotals({invoiceCollection, company})
-        },
-        monthlyTotals,
-        fyResult: fyResult,
-      })
-
-    } catch (error) {
-      console.error("❌ Server Error:", error);
-      res.status(500).json({ error: "Server error" });
-    }
-
+      },
+      itemBreakdown: {
+        monthly: getItemBreakdown(currentMonthInvoices),
+        yearly: await getFYItemBreakdown({ invoiceCollection, company, year }),
+      },
+      customerBreakdown: {
+        monthly: calcualteCustomerTotals(currentMonthInvoices),
+        yearly: await getFYCustomerTotals({ invoiceCollection, company }),
+      },
+      monthlyTotals,
+      fyResult: fyResult,
+    });
+  } catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
 });
-
 
 router.get("/invoice/list/unpaid", async (req, res) => {
   const { month, year, company } = req.query;
@@ -205,14 +246,14 @@ router.get("/invoice/list/unpaid", async (req, res) => {
     if (month) {
       const m = parseInt(month);
 
-      const startDateMonth = new Date(yearForMonth, m - 1, 1);  // first day
-      const endDateMonth = new Date(yearForMonth, m, 1);        // next month start
+      const startDateMonth = new Date(yearForMonth, m - 1, 1); // first day
+      const endDateMonth = new Date(yearForMonth, m, 1); // next month start
 
       monthly = await invoiceCollection
         .find({
           company,
           paid: false,
-          invoiceDate: { $gte: startDateMonth, $lt: endDateMonth }
+          invoiceDate: { $gte: startDateMonth, $lt: endDateMonth },
         })
         .toArray();
     }
@@ -221,14 +262,14 @@ router.get("/invoice/list/unpaid", async (req, res) => {
     // ✅ 2. YEARLY UNPAID (financial year)
     // FY 2025 = 01-Apr-2025 → 31-Mar-2026
     // ----------------------------------------------------
-    const fyStart = new Date(selectedYear, 3, 1);  // Apr 1st
+    const fyStart = new Date(selectedYear, 3, 1); // Apr 1st
     const fyEnd = new Date(selectedYear + 1, 2, 31, 23, 59, 59); // Mar 31 next year
 
     yearly = await invoiceCollection
       .find({
         company,
         paid: false,
-        invoiceDate: { $gte: fyStart, $lte: fyEnd }
+        invoiceDate: { $gte: fyStart, $lte: fyEnd },
       })
       .toArray();
 
@@ -239,15 +280,13 @@ router.get("/invoice/list/unpaid", async (req, res) => {
       month: month || null,
       financialYear: `${selectedYear}-${selectedYear + 1}`,
       monthly,
-      yearly
+      yearly,
     });
-
   } catch (error) {
     console.error("❌ Server Error:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
-
 
 router.get("/invoice/list/:company", async (req, res) => {
   const company = req.params.company;
@@ -327,7 +366,7 @@ router.get("/vendor/:id", async (req, res) => {
   try {
     const result = await db.collection("vendors").findOne(
       { "vendors.id": vendorId }, // this assumes vendors.id is an ObjectId
-      { projection: { "vendors.$": 1 } }
+      { projection: { "vendors.$": 1 } },
     );
 
     res.json(result);
@@ -348,7 +387,7 @@ router.post("/update/vendor/list", async (req, res) => {
     const result = await vendorCollection.updateOne(
       {},
       { $set: { vendors: payload } },
-      { upsert: true }
+      { upsert: true },
     );
     res.status(200).json(result);
   } catch (error) {
@@ -391,7 +430,7 @@ router.post("/invoice", async (req, res) => {
           [`${company}.lastInvoiceNo`]: number,
           [`${company}.nextInvoiceNo`]: nextNumber,
         },
-      }
+      },
     );
 
     res.status(201).json({ message: "Invoice saved", id: data._id });
@@ -400,9 +439,6 @@ router.post("/invoice", async (req, res) => {
     res.status(500).send("Internal server error");
   }
 });
-
-
-
 
 /**
  * Convert an object into dot-notated keys for $set.
@@ -437,7 +473,7 @@ router.patch("/update/invoice/:id", async (req, res) => {
   }
   const id = new ObjectId(req.params.id);
   const payload = req.body || {};
-  const {company} = payload
+  const { company } = payload;
   if (payload._id) delete payload._id;
   // keep invoiceDate if you need it on invoice doc (optional)
   if (payload.invoiceDetail && payload.invoiceDetail.invoiceDate) {
@@ -466,22 +502,28 @@ router.patch("/update/invoice/:id", async (req, res) => {
     const refNo = String(
       (payload.invoiceDetail && payload.invoiceDetail.invoiceNO) ||
         (existing.invoiceDetail && existing.invoiceDetail.invoiceNO) ||
-        ""
+        "",
     );
 
     if (!refNo) {
       const updatedInvoice = await invoicesCol.findOne({ _id: id });
-      return res.status(200).json({ message: "Invoice saved (no refNo)", invoice: updatedInvoice });
+      return res
+        .status(200)
+        .json({ message: "Invoice saved (no refNo)", invoice: updatedInvoice });
     }
 
     // ---- IMPORTANT: use UTC-midnight for day buckets to avoid timezone drift ----
     const now = new Date();
-    const dayStartUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const dayStartUtc = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+    );
     const nextDayUtc = new Date(dayStartUtc);
     nextDayUtc.setUTCDate(dayStartUtc.getUTCDate() + 1);
     const dayStartUtcTs = dayStartUtc.getTime();
 
-    const paymentAmount = Number(payload?.paymentAmount ?? existing?.paymentAmount ?? 0);
+    const paymentAmount = Number(
+      payload?.paymentAmount ?? existing?.paymentAmount ?? 0,
+    );
     const invoiceAmountRaw =
       payload?.goodsDescription?.Total ??
       payload?.goodsDescription?.total ??
@@ -500,114 +542,155 @@ router.patch("/update/invoice/:id", async (req, res) => {
     };
 
     // Determine paid flag from payload or existing invoice
-    const paidFlag = typeof payload.paid !== "undefined" ? Boolean(payload.paid) : Boolean(existing.paid);
+    const paidFlag =
+      typeof payload.paid !== "undefined"
+        ? Boolean(payload.paid)
+        : Boolean(existing.paid);
 
     if (company === "ASHOK") {
       if (paidFlag) {
-      // SELECTIVE CLEANUP: remove previous individual entries from other UTC-day docs (keep bulk)
-      const docsWithIndividual = await paymentCol.find({
-        "updates.referenceNumber": refNo,
-        "updates.bulkUpload": { $in: [false, null] },
-      }).toArray();
+        // SELECTIVE CLEANUP: remove previous individual entries from other UTC-day docs (keep bulk)
+        const docsWithIndividual = await paymentCol
+          .find({
+            "updates.referenceNumber": refNo,
+            "updates.bulkUpload": { $in: [false, null] },
+          })
+          .toArray();
 
-      for (const doc of docsWithIndividual) {
-        const docDate = doc.date ? new Date(doc.date) : null;
-        const docDayStartUtcTs = docDate
-          ? Date.UTC(docDate.getUTCFullYear(), docDate.getUTCMonth(), docDate.getUTCDate())
-          : null;
+        for (const doc of docsWithIndividual) {
+          const docDate = doc.date ? new Date(doc.date) : null;
+          const docDayStartUtcTs = docDate
+            ? Date.UTC(
+                docDate.getUTCFullYear(),
+                docDate.getUTCMonth(),
+                docDate.getUTCDate(),
+              )
+            : null;
 
-        // remove only if it's not the same UTC day as today
-        if (docDayStartUtcTs !== null && docDayStartUtcTs !== dayStartUtcTs) {
+          // remove only if it's not the same UTC day as today
+          if (docDayStartUtcTs !== null && docDayStartUtcTs !== dayStartUtcTs) {
+            await paymentCol.updateOne(
+              { _id: doc._id },
+              {
+                $pull: {
+                  updates: { referenceNumber: refNo, bulkUpload: false },
+                },
+              },
+            );
+
+            // delete the doc if updates array became empty
+            const refreshed = await paymentCol.findOne({ _id: doc._id });
+            if (
+              !refreshed ||
+              !Array.isArray(refreshed.updates) ||
+              refreshed.updates.length === 0
+            ) {
+              await paymentCol.deleteOne({ _id: doc._id });
+            }
+          }
+        }
+
+        // FIND existing payment doc for the SAME UTC DAY using range
+        const todayDoc = await paymentCol.findOne({
+          date: { $gte: dayStartUtc, $lt: nextDayUtc },
+        });
+
+        if (!todayDoc) {
+          // create today's UTC-bucket and push the update (date set to UTC-midnight)
           await paymentCol.updateOne(
-            { _id: doc._id },
-            { $pull: { updates: { referenceNumber: refNo, bulkUpload: false } } }
+            { date: dayStartUtc },
+            {
+              $setOnInsert: {
+                date: dayStartUtc,
+                createdAt: new Date(),
+                bulkUpload: false,
+              },
+              $push: { updates: newUpdateObj },
+            },
+            { upsert: true },
+          );
+        } else {
+          // push/update inside the found doc (safe: won't change doc.date)
+          const existingEntry = (todayDoc.updates || []).find(
+            (u) => String(u.referenceNumber) === refNo,
           );
 
-          // delete the doc if updates array became empty
-          const refreshed = await paymentCol.findOne({ _id: doc._id });
-          if (!refreshed || !Array.isArray(refreshed.updates) || refreshed.updates.length === 0) {
-            await paymentCol.deleteOne({ _id: doc._id });
-          }
-        }
-      }
-
-      // FIND existing payment doc for the SAME UTC DAY using range
-      const todayDoc = await paymentCol.findOne({ date: { $gte: dayStartUtc, $lt: nextDayUtc } });
-
-      if (!todayDoc) {
-        // create today's UTC-bucket and push the update (date set to UTC-midnight)
-        await paymentCol.updateOne(
-          { date: dayStartUtc },
-          {
-            $setOnInsert: { date: dayStartUtc, createdAt: new Date(), bulkUpload: false },
-            $push: { updates: newUpdateObj },
-          },
-          { upsert: true }
-        );
-      } else {
-        // push/update inside the found doc (safe: won't change doc.date)
-        const existingEntry = (todayDoc.updates || []).find(u => String(u.referenceNumber) === refNo);
-
-        if (!existingEntry) {
-          await paymentCol.updateOne({ _id: todayDoc._id }, { $push: { updates: newUpdateObj } });
-        } else {
-          const amountsDiffer =
-            Number(existingEntry.paidAmount || 0) !== Number(newUpdateObj.paidAmount || 0) ||
-            String(existingEntry.invoiceAmount || "") !== String(newUpdateObj.invoiceAmount || "");
-
-          if (existingEntry.bulkUpload && amountsDiffer) {
-            // preserve bulk entry and append individual correction
-            await paymentCol.updateOne({ _id: todayDoc._id }, { $push: { updates: newUpdateObj } });
+          if (!existingEntry) {
+            await paymentCol.updateOne(
+              { _id: todayDoc._id },
+              { $push: { updates: newUpdateObj } },
+            );
           } else {
-            const identical =
-              !amountsDiffer && Boolean(existingEntry.bulkUpload) === Boolean(newUpdateObj.bulkUpload);
+            const amountsDiffer =
+              Number(existingEntry.paidAmount || 0) !==
+                Number(newUpdateObj.paidAmount || 0) ||
+              String(existingEntry.invoiceAmount || "") !==
+                String(newUpdateObj.invoiceAmount || "");
 
-            if (!identical) {
+            if (existingEntry.bulkUpload && amountsDiffer) {
+              // preserve bulk entry and append individual correction
               await paymentCol.updateOne(
-                { _id: todayDoc._id, "updates.referenceNumber": refNo },
-                {
-                  $set: {
-                    "updates.$[u].paidAmount": newUpdateObj.paidAmount,
-                    "updates.$[u].invoiceAmount": newUpdateObj.invoiceAmount,
-                    "updates.$[u].bulkUpload": newUpdateObj.bulkUpload,
-                    "updates.$[u].updatedAt": newUpdateObj.updatedAt,
-                    "updates.$[u].source": newUpdateObj.source,
-                  },
-                },
-                { arrayFilters: [{ "u.referenceNumber": refNo }] }
+                { _id: todayDoc._id },
+                { $push: { updates: newUpdateObj } },
               );
+            } else {
+              const identical =
+                !amountsDiffer &&
+                Boolean(existingEntry.bulkUpload) ===
+                  Boolean(newUpdateObj.bulkUpload);
+
+              if (!identical) {
+                await paymentCol.updateOne(
+                  { _id: todayDoc._id, "updates.referenceNumber": refNo },
+                  {
+                    $set: {
+                      "updates.$[u].paidAmount": newUpdateObj.paidAmount,
+                      "updates.$[u].invoiceAmount": newUpdateObj.invoiceAmount,
+                      "updates.$[u].bulkUpload": newUpdateObj.bulkUpload,
+                      "updates.$[u].updatedAt": newUpdateObj.updatedAt,
+                      "updates.$[u].source": newUpdateObj.source,
+                    },
+                  },
+                  { arrayFilters: [{ "u.referenceNumber": refNo }] },
+                );
+              }
+              // else identical -> nothing to do
             }
-            // else identical -> nothing to do
+          }
+        }
+      } else {
+        // UNPAID branch: operate only on today's UTC-day doc (range)
+        const todayDoc = await paymentCol.findOne({
+          date: { $gte: dayStartUtc, $lt: nextDayUtc },
+        });
+        if (todayDoc) {
+          const updates = Array.isArray(todayDoc.updates)
+            ? todayDoc.updates
+            : [];
+          if (
+            updates.length === 1 &&
+            String(updates[0].referenceNumber) === refNo
+          ) {
+            await paymentCol.deleteOne({ _id: todayDoc._id });
+          } else {
+            await paymentCol.updateOne(
+              { _id: todayDoc._id },
+              { $pull: { updates: { referenceNumber: refNo } } },
+            );
           }
         }
       }
-    } else {
-      // UNPAID branch: operate only on today's UTC-day doc (range)
-      const todayDoc = await paymentCol.findOne({ date: { $gte: dayStartUtc, $lt: nextDayUtc } });
-      if (todayDoc) {
-        const updates = Array.isArray(todayDoc.updates) ? todayDoc.updates : [];
-        if (updates.length === 1 && String(updates[0].referenceNumber) === refNo) {
-          await paymentCol.deleteOne({ _id: todayDoc._id });
-        } else {
-          await paymentCol.updateOne({ _id: todayDoc._id }, { $pull: { updates: { referenceNumber: refNo } } });
-        }
-      }
-    }
     }
 
     const updatedInvoice = await invoicesCol.findOne({ _id: id });
-    return res.status(200).json({ message: "Invoice saved", invoice: updatedInvoice });
+    return res
+      .status(200)
+      .json({ message: "Invoice saved", invoice: updatedInvoice });
   } catch (err) {
     console.error("❌ Server Error:", err);
     return res.status(500).json({ error: "Server error" });
   }
 });
-
-
-
-
-
-
 
 router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
   const browser = await getBrowser();
@@ -620,9 +703,10 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
       .collection(collectionName)
       .findOne({ _id: new ObjectId(id) });
     if (!data) return res.status(404).send("Invoice not found");
-    const img = data.company === "ASHOK" ? "ashoklogo.png" : "padma.png";
+    const companyType = data.company || "ASHOK";
+    const img = companyType === "ASHOK" ? "ashoklogo.png" : "padma.png";
     const bankDetail =
-      data.company === "PADMA"
+      companyType === "PADMA"
         ? `
         <ul style="margin: 0; text-align: left; padding-left: 20px; list-style-type: decimal; line-height: 1.5;">
         <li>HDFC Bank (Kanti Nagar Gwalior, MP, 474002)<br />A/C NO: 50200047766504 <br/> IFSC CODE: HDFC0009437</li>
@@ -642,11 +726,11 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
     const mimeType = "image/png"; // or jpg if it's jpeg
     const logoDataURI = `data:${mimeType};base64,${base64Image}`;
     const amountInWords = `Indian Rupees  ${convertAmountToWords(
-      data.goodsDescription.Total
+      data.goodsDescription.Total,
     )}`;
     const date = new Date(data.invoiceDetail.invoiceDate);
     const formattedDate = `${String(date.getDate()).padStart(2, "0")}-${String(
-      date.getMonth() + 1
+      date.getMonth() + 1,
     ).padStart(2, "0")}-${date.getFullYear()}`;
     const returnHeight = () => {
       if (data.company === "ASHOK") {
@@ -663,10 +747,13 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
         amountInWords,
         logoBase64: logoDataURI,
         bankDetail,
+        sealText:
+          companyType === "ASHOK" ? "ASHOK ENTERPRISES" : "PADMA ENGG WORKS",
         showLogo: req.params.downloadOriginal === "true",
         height: returnHeight(),
+        circleBottmPercent: companyType === "ASHOK" ? "23%" : "20%",
         isUniqueVendor: data.buyerDetail.customer == "Rajasthan Explosives",
-      }
+      },
     );
 
     await page.setContent(html, { waitUntil: "networkidle0" });
@@ -689,7 +776,7 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
     res.set({
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename=${sanitizeFilename(
-        invoiceNo
+        invoiceNo,
       )}.pdf`,
       "Content-Length": pdfBuffer.length,
     });
@@ -703,7 +790,7 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
 
 router.post("/generate-csv", async (req, res) => {
   const { month, year, company, GST, forUnpaid: unpaid } = req.query;
-  const unpaidInvoicesList = req.body
+  const unpaidInvoicesList = req.body;
   const forGST = GST === "true";
   const forUnpaid = unpaid === "true";
   if (!month || !year) {
@@ -742,7 +829,7 @@ router.post("/generate-csv", async (req, res) => {
       `attachment; filename=${company.toUpperCase()} ${getFileName({
         forGST,
         forUnpaid,
-      })} ${monthLabel} ${year}.csv`
+      })} ${monthLabel} ${year}.csv`,
     );
     res.setHeader("Content-Type", "text/csv");
 
@@ -754,7 +841,7 @@ router.post("/generate-csv", async (req, res) => {
       forGST,
       forUnpaid,
       data: forUnpaid ? unpaidInvoicesList : invoices,
-      company
+      company,
     });
 
     rows.forEach((row) => {
@@ -829,6 +916,7 @@ router.get("/search/invoice", async (req, res) => {
         { "invoiceDetail.invoiceNO": { $regex: searchTerm, $options: "i" } },
         // Search in customer name
         { "buyerDetail.customer": { $regex: searchTerm, $options: "i" } },
+        { "buyerDetail.customerName": { $regex: searchTerm, $options: "i" } },
         { "goodsDescription.po": { $regex: searchTerm, $options: "i" } },
         // Search in items array descriptions
         {
@@ -906,7 +994,7 @@ router.post("/update/payment", async (req, res) => {
     // Fast idempotency check; also put a UNIQUE INDEX on payment.fileHash
     const existingByHash = await paymentCollection.findOne(
       { fileHash },
-      { projection: { fileName: 1, _id: 0 } }
+      { projection: { fileName: 1, _id: 0 } },
     );
     if (existingByHash) {
       return res.status(409).json({
@@ -918,7 +1006,9 @@ router.post("/update/payment", async (req, res) => {
     // Parse once (consider streaming if files can be huge)
     const workbook = xlsx.read(buffer, { type: "buffer" });
     const sheetName = workbook.SheetNames[0];
-    const rows = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+    const rows = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], {
+      defval: "",
+    });
 
     // Filter & prepare keys
     const entries = [];
@@ -933,7 +1023,7 @@ router.post("/update/payment", async (req, res) => {
       return res.status(400).json({ error: "No invoice rows found in file." });
     }
 
-    const refNos = [...new Set(entries.map(e => e.refNo))];
+    const refNos = [...new Set(entries.map((e) => e.refNo))];
 
     // Fetch all invoices in one go
     const invoices = await invoiceCollection
@@ -947,12 +1037,14 @@ router.post("/update/payment", async (req, res) => {
             invoiceDate: 1,
             _id: 0,
           },
-        }
+        },
       )
       .toArray();
 
     // Build a map for quick lookup
-    const byNo = new Map(invoices.map(doc => [doc.invoiceDetail.invoiceNO, doc]));
+    const byNo = new Map(
+      invoices.map((doc) => [doc.invoiceDetail.invoiceNO, doc]),
+    );
 
     const bulkOps = [];
     const updates = [];
@@ -999,7 +1091,9 @@ router.post("/update/payment", async (req, res) => {
     }
 
     // Execute all updates at once
-    const bulkResult = await invoiceCollection.bulkWrite(bulkOps, { ordered: false });
+    const bulkResult = await invoiceCollection.bulkWrite(bulkOps, {
+      ordered: false,
+    });
 
     // Write the payment record (consider unique index: { fileHash: 1 }, unique: true)
     await paymentCollection.insertOne({
@@ -1044,8 +1138,8 @@ router.get("/payment-details", async (req, res) => {
       .toArray();
 
     const invoices = await invoiceCollection
-    .find(invoiceCollectionQuery)
-    .toArray();
+      .find(invoiceCollectionQuery)
+      .toArray();
 
     const totalInvoiceAmount = invoices.reduce((sum, inv) => {
       const amt = Number(inv.goodsDescription?.Total || 0);
@@ -1055,7 +1149,6 @@ router.get("/payment-details", async (req, res) => {
       const amt = Number(inv.paidAmount || 0);
       return sum + (Number.isFinite(amt) ? amt : 0);
     }, 0);
-
 
     // 🔑 Group by only the date (yyyy-mm-dd), not time
     const merged = Object.values(
@@ -1071,7 +1164,7 @@ router.get("/payment-details", async (req, res) => {
           acc[day].updates.push(...doc.updates);
         }
         return acc;
-      }, {})
+      }, {}),
     );
 
     // 🔑 Sort updates inside each day by invoice number (descending)

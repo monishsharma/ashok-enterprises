@@ -100,6 +100,47 @@
         width: 98%;
         object-fit: cover;
       }
+    .circle-wrapper {
+      width: 150px;
+      z-index: 19;
+      position: absolute;
+      bottom: <%= circleBottmPercent %>;
+      right: 10%;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+    }
+
+    .outer-circle {
+      fill: none;
+      stroke: #000;
+      stroke-width: 3;
+    }
+
+    .inner-circle {
+      fill: none;
+      stroke: #555;
+      stroke-width: 2;
+    }
+
+    .circle-text {
+      font-size: 30px;
+      letter-spacing: 5px;
+      fill: #000;
+      font-weight: bold;
+      dominant-baseline: middle;
+      font-family: Arial, sans-serif;
+    }
+    .center-text {
+      font-size: 35px;
+      fill: #000;
+      font-weight: bolder;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      font-family: Arial, sans-serif;
+    }
     </style>
   </head>
   <body>
@@ -354,9 +395,42 @@
                 <td colspan="3">
                   <%= data.invoiceDetail.name %><br /><br /><br /><br />
                   (ASHOK SHARMA)<br />
+                  <!-- <% if (showLogo === false || showLogo == 'false') { %> -->
+
+                <!-- <% } %> -->
+
                   AUTHORISED SIGNATORY
                 </td>
               </tr>
+              <div class="circle-wrapper">
+                    <svg viewBox="0 0 300 300">
+                      <!-- Outer Circle -->
+                      <circle cx="150" cy="150" r="140" class="outer-circle" />
+
+                      <!-- Inner Circle -->
+                      <circle cx="150" cy="150" r="80" class="inner-circle" />
+
+                      <!-- Text Path (MID BETWEEN BOTH CIRCLES) -->
+                      <defs>
+                        <path
+                          id="text-circle"
+                          d="
+                          M 150,150
+                          m -110,0
+                          a 110,110 0 1,1 220,0
+                          a 110,110 0 1,1 -220,0"
+                        />
+                      </defs>
+
+                      <!-- Curved Text -->
+                      <text class="circle-text">
+                        <textPath href="#text-circle" startOffset="0%" text-anchor="start">
+                          <%- sealText %>
+                        </textPath>
+                      </text>
+                      <text x="150" y="150" class="center-text">Gwalior</text>
+                    </svg>
+                  </div>
             </tbody>
           </table>
         </div>
