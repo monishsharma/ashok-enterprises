@@ -42,7 +42,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Puppeteer config
 let browser;
 let isProduction = process.env.NODE_ENV === "prod";
-const collectionName = isProduction ? "invoices" : "invoicesCopy";
+const collectionName = isProduction ? "invoices" : "invoices";
 // const collectionName = isProduction ? "invoices" : "invoicesCopy";
 
 async function getBrowser() {
@@ -695,7 +695,7 @@ router.patch("/update/invoice/:id", async (req, res) => {
 router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
   const browser = await getBrowser();
   const page = await browser.newPage();
-
+  const downloadOriginal = req.params.downloadOriginal === "true";
   const { id } = req.params;
 
   try {
@@ -739,6 +739,17 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
       }
       return "230px";
     };
+    const getSealLogoTopValue = () => {
+      if (data.company === "ASHOK") {
+        if (downloadOriginal) return "22.5%";
+        return "20%";
+      }
+      if (data.company === "PADMA") {
+        if (downloadOriginal) return "20%";
+        return "20%";
+      }
+    };
+    console.log(typeof downloadOriginal);
     const html = await ejs.renderFile(
       path.join(__dirname, "./templates/invoice.ejs"),
       {
@@ -751,7 +762,7 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
           companyType === "ASHOK" ? "ASHOK ENTERPRISES" : "PADMA ENGG WORKS",
         showLogo: req.params.downloadOriginal === "true",
         height: returnHeight(),
-        circleBottmPercent: companyType === "ASHOK" ? "23%" : "20%",
+        circleBottmPercent: getSealLogoTopValue(),
         isUniqueVendor: data.buyerDetail.customer == "Rajasthan Explosives",
       },
     );
