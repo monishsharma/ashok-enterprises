@@ -88,27 +88,31 @@ export const getOverTimeSalary = (rowData) => {
   if (rowData) {
     const costPerHour = Number(rowData.salaryPerDay) / 8 + 4;
     const TotalWorkInMin = totalWorkingHours(rowData, "overTimeHours");
+
     const TotalWorkInHour = Number(TotalWorkInMin) / 60;
     return Number(costPerHour * TotalWorkInHour);
   }
 };
 
 export const getSundayCost = (rowData, count = false) => {
-  if (rowData) {
-    const costPerSunday = 20;
-    const totalSunday =
-      rowData &&
-      rowData.attendance.filter((item) => item.isSunday && item.status);
-    if (count) {
-      return {
-        count: totalSunday.length,
-        amount: costPerSunday * totalSunday.length,
-      };
-    }
-    return Number(costPerSunday * totalSunday.length);
-  }
-};
+  if (!rowData?.attendance) return count ? { count: 0, amount: 0 } : 0;
 
+  const costPerSunday = 20;
+
+  const totalSunday = rowData.attendance.filter((day) => {
+    const isSunday = new Date(day.date).getDay() === 0;
+    return isSunday && day.status === true;
+  });
+
+  if (count) {
+    return {
+      count: totalSunday.length,
+      amount: totalSunday.length * costPerSunday,
+    };
+  }
+
+  return totalSunday.length * costPerSunday;
+};
 export const totalSalary = ({ detail, month, year }) => {
   let total = 0;
   detail.map((emp) => {
@@ -165,4 +169,26 @@ export const getTotalSalary = (rowData, month, year) => {
         deductESI(rowData)) -
       getAdvancePAymentFromSalary(rowData, month, year) || 0
   );
+};
+
+export const getTotalSalaryV2 = (rowData, month, year) => {
+  if (!rowData) return 0;
+
+  const PER_DAY = Number(rowData.salaryPerDay);
+  const HOURLY = PER_DAY / 8;
+  const OT_RATE = HOURLY + 4;
+
+  const normalMin = totalWorkingHours(rowData, "totalWorkingHours");
+  const otMin = totalWorkingHours(rowData, "overTimeHours");
+
+  const normalPay = (normalMin / 60) * HOURLY;
+  const otPay = (otMin / 60) * OT_RATE;
+
+  const sundayPay = getSundayCost(rowData);
+  const advance = getAdvancePAymentFromSalary(rowData, month, year);
+  const esi = deductESI(rowData);
+
+  const net = normalPay + otPay + sundayPay - advance - esi;
+
+  return Math.round(net);
 };

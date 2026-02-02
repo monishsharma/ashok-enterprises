@@ -13,6 +13,7 @@ import {
   addSundayCost,
   getAdvancePAymentFromSalary,
   getTotalSalary,
+  getTotalSalaryV2,
   overTimePerDay,
   salaryPerDay,
 } from "../../helper/employee-salary.js";
@@ -569,10 +570,19 @@ router.get("/generate-salary-slip-pdf", async (req, res) => {
           (sum, day) => sum + (day.overTimeHours?.min || 0),
           0,
         );
+        const minutesToHHMM = (totalMin) => {
+          const h = Math.floor(totalMin / 60);
+          const m = totalMin % 60;
+          return `${h}:${String(m).padStart(2, "0")}`;
+        };
+        const minutesToDecimalHours = (totalMin, decimals = 2) => {
+          return (totalMin / 60).toFixed(decimals);
+        };
         const sundayPresentCount = emp.attendance.filter((day) => {
           const isSunday = new Date(day.date).getDay() === 0;
           return isSunday && day.status === true;
         }).length;
+
         return {
           month,
           year,
@@ -583,13 +593,13 @@ router.get("/generate-salary-slip-pdf", async (req, res) => {
           attendance: emp.attendance,
           totalPresent: emp.attendance.filter((a) => a.status).length,
           totalAbsent: emp.attendance.filter((a) => !a.status).length,
-          totalWork: formatMinutes(totalWorkingMinutes).formatted,
-          totalOT: formatMinutes(totalOTMinutes).formatted,
-          finalSalary: getTotalSalary(emp, month, year),
+          totalWork: minutesToDecimalHours(totalWorkingMinutes),
+          totalOT: minutesToDecimalHours(totalOTMinutes),
+          finalSalary: getTotalSalaryV2(emp, month, year),
           advance: getAdvancePAymentFromSalary(emp, month, year) || 0,
           days: emp.attendance.map((d) => {
-            const work = formatMinutes(d.totalWorkingHours?.min || 0).formatted;
-            const OT = formatMinutes(d.overTimeHours?.min || 0).formatted;
+            const work = minutesToHHMM(d.totalWorkingHours?.min || 0);
+            const OT = minutesToHHMM(d.overTimeHours?.min || 0);
             return {
               ...d,
               formattedCheckinTime: d.checkinTime
@@ -606,7 +616,20 @@ router.get("/generate-salary-slip-pdf", async (req, res) => {
               dayNumber: new Date(d.date).getDate(),
               workingHour: work,
               overtime: OT,
-              salaryCountPerDay: `${Math.round(salaryPerDay(d, emp.salaryPerDay) + Math.round(overTimePerDay(d, emp.salaryPerDay))) + Math.round(addSundayCost(d))}`,
+              salaryCountPerDay: (() => {
+                const HOURLY = Number(emp.salaryPerDay) / 8;
+                const OT_RATE = HOURLY + 4;
+
+                const normalMin = d.totalWorkingHours?.min || 0;
+                const otMin = d.overTimeHours?.min || 0;
+
+                const normalPay = (normalMin / 60) * HOURLY;
+                const otPay = (otMin / 60) * OT_RATE;
+                const sundayPay = addSundayCost(d);
+
+                // 👇 Labor-friendly display (whole rupees only)
+                return `₹${parseInt(normalPay + otPay + sundayPay)}`;
+              })(),
             };
           }),
         };
