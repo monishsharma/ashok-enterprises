@@ -5,7 +5,7 @@ import Employee from "./routes/employee/employee.js";
 import Attendance from "./routes/attendance/attendance.js";
 import Billing from "./routes/billing/invoice-config/index.js";
 import PurchaseOrder from "./routes/purchase-order/index.js"
-// import Quotation from "./routes/quotation/index.js"
+import Quotation from "./routes/quotation/index.js"
 import ASN from "./routes/ASN/index.js"
 import { cron } from "./controller.js";
 import {fetchETimeOfficeDataCron} from "./eTimeOfficeCron.js"
@@ -34,7 +34,7 @@ const startServer = async () => {
   app.use("/billing", Billing);
   app.use("/purchase-order", PurchaseOrder)
   app.use("/ASN", ASN)
-  // app.use("/quotation", Quotation)
+  app.use("/quotation", Quotation)
 
   app.get("/health", (req, res) => {
     res.send("OK");

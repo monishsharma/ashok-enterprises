@@ -1,0 +1,302 @@
+<html>
+  <head></head>
+  <title></title>
+  <style>
+    @media print {
+      .no-break {
+        page-break-inside: avoid;
+      }
+    }
+    .wrapper {
+      /* padding-top: 233px; */
+      margin: 15px;
+      min-height: 240px; /* border: 2px solid black; */
+      border-collapse: collapse !important;
+    }
+    body {
+      font-family: "Roboto", sans-serif;
+    }
+    th {
+      font-size: 14px !important;
+    }
+    td {
+      font-size: 15px !important;
+    }
+    table,
+    th,
+    td {
+      border: 1px groove black;
+      border-collapse: collapse !important;
+    }
+    table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse !important;
+    }
+    .invoiceTable table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .invoiceTable thead,
+    .invoiceTable tbody,
+    .invoiceTable tr {
+      border: 1px solid black !important;
+      border-width: thin !important;
+    }
+    .tablecontainer table {
+      margin: 0 auto;
+    }
+    .smallCol {
+      width: 40px; /* adjust as needed */
+      max-width: 40px;
+      padding: 3px !important;
+    }
+    .invoiceTable th,
+    .invoiceTable td {
+      border: 1px solid black;
+      text-align: center;
+      margin: 0 !important;
+      padding: 5px !important;
+      height: 15px;
+       white-space: normal;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+    .invoiceTable td:empty::before {
+        content: "\00a0";
+    }
+    .invoiceTable td {
+      border-width: inherit !important;
+    }
+    .invoiceTable p {
+      text-align: left;
+      margin: 0;
+      line-height: 24px;
+    }
+    .invoice-page {
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .wrapper img {
+      display: block;
+      margin: 0 auto;
+      width: 100%;
+      height: 200px;
+    }
+    .logo-container {
+      min-height: 250px;
+      width: 100%;
+      display: flex;
+      border-top: 2px solid black;
+      border-left: 1px solid black;
+      border-right: 1px solid black;
+      justify-content: center;
+      align-items: center;
+    }
+    .logo-container img {
+      height: auto; /* margin: 10px; */
+      width: 98%;
+      object-fit: cover;
+    }
+    .quotation-desc {
+      text-align: left !important;
+      line-height: 1.5;
+    }
+    .terms-section ol {
+    padding-left: 20px;
+    margin: 0;
+  }
+
+  .terms-section li {
+    margin-bottom: 8px;   /* 👈 space between points */
+    line-height: 1.6;     /* 👈 line height inside point */
+  }
+  </style>
+  <body>
+    <body>
+      <div class="quotation-page">
+        <div class="wrapper">
+          <div class="logo-container" style="min-height: 180px">
+            <img src="<%= logoBase64 %>" />
+          </div>
+
+          <div class="tablecontainer">
+            <table class="header-table invoiceTable">
+                <tr>
+                    <th colspan="4" >
+                    MSME UAN NO - UDYAM MP-20-0045157
+                    </th>
+              </tr>
+              <colgroup>
+                <col style="width: 60px" />
+                <col style="width: auto" />
+                <col style="width: 180px" />
+                <col style="width: 180px" />
+              </colgroup>
+              <tbody>
+                <tr>
+                  <th
+                    rowspan="2"
+                    colspan="2"
+                    style="text-align: left; line-height: 1.5"
+                  >
+                    <h4 style="font-size: 18px; margin: 0">
+                      <%= data.buyerDetail.name.toUpperCase() %><br />
+                      <%= data.buyerDetail.address.toUpperCase() %> <br />
+                      <%= data.buyerDetail.city ?
+                      data.buyerDetail.city.toUpperCase() : '' %>
+                    </h4>
+                  </th>
+                  <th style="font-size: 12px; text-align: left">
+                    Quotation No:
+                  </th>
+                  <td style="font-size: 12px">
+                    <%= data.quotationDetail.quotationNo %>
+                  </td>
+                </tr>
+                <tr style="font-size: 12px">
+                  <th style="text-align: left">Quotation Date:</th>
+                  <td><%= formattedDate %></td>
+                </tr>
+                <tr>
+                  <th colspan="4">QUOTATION</th>
+                </tr>
+                <tr>
+                  <td colspan="4" class="quotation-desc">
+                    Dear Sir<br />
+                    WE THANK YOU VERY MUCH FOR YOUR VALUED ENQUIRY. <br />
+                    WE QUOTE TO YOU MOST COMPETITIVE RATES FOR THE SAME AS UNDER
+                    .
+                  </td>
+                </tr>
+                <tr>
+                    <%
+                        data.columns.map((col) => {
+                            %>
+                                <th>
+                                    <%= col.label.toUpperCase() %>
+                                </th>
+                            <%
+                        })
+                    %>
+
+                <%
+                    let renderedRows = 0;
+
+                    data.goodsDescription.items.forEach(function(item) {
+
+                    // 1️⃣ Split by newline first (MUI Enter support)
+                    const paragraphs = (item.description || '').split('\n');
+                    let lines = [];
+
+                    paragraphs.forEach(function(para) {
+
+                        const words = para.split(' ');
+                        let currentLine = '';
+
+                        words.forEach(function(word) {
+
+                        if ((currentLine + word).length > 55) {
+                            lines.push(currentLine.trim());
+                            currentLine = word + ' ';
+                        } else {
+                            currentLine += word + ' ';
+                        }
+
+                        });
+
+                        if (currentLine.trim()) {
+                        lines.push(currentLine.trim());
+                        }
+
+                        // If user added an empty line using Enter
+                        if (para.trim() === '') {
+                        lines.push('');
+                        }
+
+                    });
+
+                    // 2️⃣ Render table rows
+                    lines.forEach(function(line, index) {
+                        renderedRows++;
+                    %>
+
+                        <tr style="font-size:15px;">
+                        <% if (index === 0) { %>
+                            <td  style="height:35px;"><%= item.sno %></td>
+                            <td  style="height:35px; text-align:left;">
+                            <%= line || '&nbsp;' %>
+                            </td>
+                            <td  style="height:35px;"><%= parseFloat(item.rate).toFixed(2) %></td>
+                            <td  style="height:35px;"><%= item.drawingNo %></td>
+                        <% } else { %>
+                            <td  style="height:35px;"></td>
+                            <td  style="height:35px; text-align:left; " >
+                            <%= line || '&nbsp;' %>
+                            </td>
+                            <td  style="height:35px;"></td>
+                            <td  style="height:35px;"></td>
+                        <% } %>
+                        </tr>
+
+                    <%
+                    });
+
+                    });
+
+                    // 3️⃣ Fill remaining rows up to 10
+                    const remainingRows = 10 - renderedRows;
+
+                    for (let j = 0; j < remainingRows; j++) {
+                    %>
+
+                    <tr style="height:35px;">
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+
+                    <%
+                    }
+                %>
+
+
+
+
+
+
+
+                <tr style="height: 2px; font-size: 13px" class="terms-section">
+                  <td colspan="2" style="text-align: left">
+                    <br />
+                    <span style="font-weight: bold">Terms & Condition</span>
+                    <br />
+                    <br />
+                    <%- data.goodsDescription.terms %>
+                  </td>
+                  <td colspan="2" style="text-align: center">
+                    Ashok Enterprises<br /><br /><br /><br /><br /><br />
+                    (ASHOK SHARMA)<br /><br />
+                    AUTHORISED SIGNATORY
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="4">
+                    GOYAL COMPOUND, TANSEN ROAD INDUSTRIAL AREA GWALIOR (M.P.)
+                    <br />
+                    <br />
+                    Email: ashok_entp@rediffmail.com , padmaengg@rediffmail.com
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </body>
+  </body>
+</html>

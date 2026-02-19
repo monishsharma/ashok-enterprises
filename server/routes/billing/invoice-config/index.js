@@ -749,7 +749,6 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
         return "20%";
       }
     };
-    console.log(typeof downloadOriginal);
     const html = await ejs.renderFile(
       path.join(__dirname, "./templates/invoice.ejs"),
       {
