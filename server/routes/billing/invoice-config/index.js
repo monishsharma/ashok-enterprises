@@ -140,7 +140,7 @@ router.get("/get/invoice/report/:company", async (req, res) => {
     prevMonthSales = calculateTotalSales(prevMonthInvoices);
 
     // CALCULATING MONTHLY SALES IN FINANCIAL YEAR //
-    const financialYearQuery = monthlySalesQuery({ company, year });
+    const financialYearQuery = monthlySalesQuery({ company, year, month });
 
     const fyInvoices = await invoiceCollection
       .find({ ...financialYearQuery })
@@ -439,33 +439,6 @@ router.post("/invoice", async (req, res) => {
     res.status(500).send("Internal server error");
   }
 });
-
-/**
- * Convert an object into dot-notated keys for $set.
- * Example: { a: { b: 1 }, c: 2 } -> { "a.b": 1, "c": 2 }
- * Arrays are set as whole values (not expanded).
- */
-function buildDotSet(obj, prefix = "") {
-  const out = {};
-  for (const key of Object.keys(obj || {})) {
-    const val = obj[key];
-    const path = prefix ? `${prefix}.${key}` : key;
-
-    // If val is a plain object (not array, not date, not null), recurse
-    if (
-      val &&
-      typeof val === "object" &&
-      !Array.isArray(val) &&
-      !(val instanceof Date)
-    ) {
-      const nested = buildDotSet(val, path);
-      Object.assign(out, nested);
-    } else {
-      out[path] = val;
-    }
-  }
-  return out;
-}
 
 router.patch("/update/invoice/:id", async (req, res) => {
   if (!req.params.id || !ObjectId.isValid(req.params.id)) {
