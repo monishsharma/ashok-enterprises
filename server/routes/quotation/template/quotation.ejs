@@ -10,7 +10,7 @@
     .wrapper {
       /* padding-top: 233px; */
       margin: 15px;
-      min-height: 240px; /* border: 2px solid black; */
+      min-height: 240px;
       border-collapse: collapse !important;
     }
     body {
@@ -114,6 +114,60 @@
     margin-bottom: 8px;   /* 👈 space between points */
     line-height: 1.6;     /* 👈 line height inside point */
   }
+ .signature-box{
+  position: relative;
+  height: 150px;
+}
+
+.circle-wrapper{
+  position:absolute;
+  width:150px;
+  top:10px;
+  right:100px;
+  opacity:0.8;
+  pointer-events:none;
+}
+
+    svg {
+      width: 100%;
+      height: auto;
+    }
+
+    .outer-circle {
+      fill: none;
+      stroke: #000;
+      stroke-width: 5 !important;
+    }
+
+    .inner-circle {
+      fill: none;
+      stroke: #555;
+      stroke-width: 4 !important;
+    }
+
+    .circle-text {
+      font-size: 30px !important;
+      letter-spacing: 5px;
+      fill: #000;
+      font-weight: bolder !important;
+      dominant-baseline: middle;
+      font-family: Arial, sans-serif;
+    }
+    .center-text {
+      font-size: 35px;
+      fill: #000;
+      font-weight: bolder;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      font-family: Arial, sans-serif;
+    }
+    .circle-wrapper svg text {
+  font-weight: 600;
+  /* letter-spacing: 6px; */
+  fill: #000;
+}
+
+
   </style>
   <body>
     <body>
@@ -122,6 +176,7 @@
           <div class="logo-container" style="min-height: 180px">
             <img src="<%= logoBase64 %>" />
           </div>
+
 
           <div class="tablecontainer">
             <table class="header-table invoiceTable">
@@ -278,10 +333,43 @@
                     <br />
                     <%- data.goodsDescription.terms %>
                   </td>
-                  <td colspan="2" style="text-align: center">
+                  <!-- <td colspan="2" style="text-align: center">
                     Ashok Enterprises<br /><br /><br /><br /><br /><br />
                     (ASHOK SHARMA)<br /><br />
                     AUTHORISED SIGNATORY
+                  </td> -->
+                  <td colspan="2" class="signature-box">
+
+                  <div class="circle-wrapper">
+                  <svg viewBox="0 0 300 300">
+
+                  <circle cx="150" cy="150" r="140" stroke="black" stroke-width="3" fill="none"/>
+                  <circle cx="150" cy="150" r="80" stroke="#555" stroke-width="2" fill="none"/>
+
+                  <defs>
+                  <path id="text-circle"
+                  d="M150,150 m-110,0 a110,110 0 1,1 220,0 a110,110 0 1,1 -220,0"/>
+                  </defs>
+
+                  <text font-size="30" letter-spacing="5">
+                  <textPath href="#text-circle">
+                  ASHOK ENTERPRISES GWALIOR
+                  </textPath>
+                  </text>
+
+                  <text x="150" y="150" text-anchor="middle" font-size="35">
+                  Gwalior
+                  </text>
+
+                  </svg>
+                  </div>
+
+                  Ashok Enterprises<br><br><br><br>
+
+                  (ASHOK SHARMA)<br><br>
+
+                  AUTHORISED SIGNATORY
+
                   </td>
                 </tr>
                 <tr>
@@ -292,6 +380,7 @@
                     Email: ashok_entp@rediffmail.com , padmaengg@rediffmail.com
                   </td>
                 </tr>
+
               </tbody>
             </table>
           </div>
