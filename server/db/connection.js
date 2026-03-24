@@ -15,6 +15,10 @@ const connectToDB = async () => {
   try {
     await client.connect();
     await client.db("admin").command({ ping: 1 });
+    await db.collection("purchaseOrders").createIndex(
+      { company: 1, poNumber: 1 },
+      { unique: true }
+    );
     console.log("✅ Connected to MongoDB");
   } catch (err) {
     console.error("❌ MongoDB connection error:", err);

@@ -1,5 +1,7 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
+import { db } from "../db/connection.js";
+
 
 const clean = s => s.replace(/^0+/, '') || "0";
 
@@ -90,4 +92,201 @@ export const fetchPoDetail = async (detailUrl) => {
     items: allItems,
     createdAt: new Date(),
   };
+};
+
+
+export const detectVendor = ({ poNumber, shippingCity, vendors }) => {
+
+  const groupVendors = vendors.filter(v =>
+    v.poCode && poNumber.startsWith(v.poCode)
+  );
+
+  if (!groupVendors.length) return null;
+
+  const cityMatch = groupVendors.find(v =>
+    v.label.toUpperCase().includes(shippingCity)
+  );
+
+  return cityMatch || groupVendors[0];
+
+}
+
+
+// ===============================
+// 🟡 GET UNIQUE PO NUMBERS
+// ===============================
+export const getPoNumbers = (items) => {
+  return [...new Set(items.map(i => i.poNumber))];
+};
+
+// ===============================
+// 🟡 FETCH POs
+// ===============================
+export const getPOs = async (poNumbers) => {
+  return db.collection("purchaseOrders")
+    .find({ poNumber: { $in: poNumbers } })
+    .toArray();
+};
+
+
+// ===============================
+// 🧩 HELPERS
+// ===============================
+
+// Filter items per PO
+const filterItemsByPO = (items, poNumber) => items.filter(i => String(i.poNumber) === String(poNumber));
+
+// Find existing invoice
+const findExistingInvoice = (po, invoiceId) =>
+  (po.dispatchedInvoices || []).find(
+    inv => String(inv.invoiceId) === String(invoiceId)
+  );
+
+// Revert old dispatch
+const revertOldDispatch = (items, oldItems) => {
+  const updated = [...items];
+
+  for (const oldItem of oldItems) {
+    const index = updated.findIndex(
+      i => String(i.itemId) === String(oldItem.itemId)
+    );
+
+    if (index === -1) continue;
+
+    const prev = Number(updated[index].dispatchedQty || 0);
+    const revert = Number(oldItem.qty || 0);
+
+    updated[index].dispatchedQty = Math.max(prev - revert, 0);
+  }
+
+  return updated;
+};
+
+// Validate no over-dispatch
+const validateDispatch = (items, newItems) => {
+  for (const newItem of newItems) {
+    const item = items.find(
+      i => String(i.itemId) === String(newItem.itemId)
+    );
+
+    if (!item) continue;
+
+    const available =
+      Number(item.qty || 0) -
+      Number(item.dispatchedQty || 0);
+
+    if (Number(newItem.qty) > available) {
+      throw new Error(
+        `Over-dispatch for item ${newItem.itemId}. Available: ${available}, Trying: ${newItem.qty}`
+      );
+    }
+  }
+};
+
+// Apply new dispatch
+const applyNewDispatch = (items, newItems) => {
+  const updated = [...items];
+
+  for (const newItem of newItems) {
+    const index = updated.findIndex(
+      i => String(i.itemId) === String(newItem.itemId)
+    );
+
+    if (index === -1) continue;
+
+    updated[index].dispatchedQty =
+      Number(updated[index].dispatchedQty || 0) +
+      Number(newItem.qty || 0);
+  }
+
+  return updated;
+};
+
+// Recalculate pending
+const recalculatePending = (items) =>
+  items.map(item => ({
+    ...item,
+    pendingQty: Math.max(
+      Number(item.qty || 0) -
+      Number(item.dispatchedQty || 0),
+      0
+    )
+  }));
+
+// PO status
+const getPOStatus = (items) =>
+  items.every(i => i.pendingQty === 0)
+    ? "COMPLETED"
+    : "PENDING";
+
+// Build invoice entry
+const buildInvoiceEntry = (invoice, items) => ({
+  invoiceId: invoice._id,
+  invoiceNo: invoice.invoiceDetail?.invoiceNO,
+  invoiceDate: invoice.invoiceDetail?.invoiceDate,
+  items: items.map(i => ({
+    itemId: i.itemId,
+    poNumber: i.poNumber,
+    qty: i.qty
+  })),
+  qtyDispatch: items.reduce(
+    (sum, i) => sum + Number(i.qty || 0),
+    0
+  )
+});
+
+// DB update
+const updatePOInDB = async ({ poId, items, poStatus, invoiceId, entry }) => {
+  await db.collection("purchaseOrders").updateOne(
+    { _id: poId },
+    {
+      $set: {
+        items,
+        poStatus
+      },
+      $pull: {
+        dispatchedInvoices: { invoiceId }
+      }
+    }
+  );
+
+  await db.collection("purchaseOrders").updateOne(
+    { _id: poId },
+    {
+      $push: {
+        dispatchedInvoices: entry
+      }
+    }
+  );
+};
+
+// ===============================
+// 🔥 MAIN PROCESSOR (PER PO)
+// ===============================
+export const processPO = async ({ po, invoice, invoiceItems }) => {
+
+  const newItems = filterItemsByPO(invoiceItems, po.poNumber);
+  if (!newItems.length) return;
+
+  const existingInvoice = findExistingInvoice(po, invoice._id);
+  const oldItems = existingInvoice?.items || [];
+
+  let updatedItems = revertOldDispatch(po.items, oldItems);
+
+  validateDispatch(updatedItems, newItems);
+
+  updatedItems = applyNewDispatch(updatedItems, newItems);
+
+  updatedItems = recalculatePending(updatedItems);
+
+  const poStatus = getPOStatus(updatedItems);
+
+  const newInvoiceEntry = buildInvoiceEntry(invoice, newItems);
+  await updatePOInDB({
+    poId: po._id,
+    items: updatedItems,
+    poStatus,
+    invoiceId: invoice._id,
+    entry: newInvoiceEntry
+  });
 };
