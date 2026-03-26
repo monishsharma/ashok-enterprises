@@ -42,7 +42,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Puppeteer config
 let browser;
 let isProduction = process.env.NODE_ENV === "prod";
-const collectionName = isProduction ? "invoices" : "invoices";
+const collectionName = "invoices";
 // const collectionName = isProduction ? "invoices" : "invoicesCopy";
 
 async function getBrowser() {
@@ -83,7 +83,6 @@ router.get("/get-invoice-config", async (req, res) => {
   try {
     const billingCollection = db.collection("billing");
     const config = await billingCollection.findOne({});
-
     if (!config) {
       return res.status(404).json({ error: "Config not found" });
     }
@@ -860,6 +859,26 @@ router.post("/hsn-codes", async (req, res) => {
   }
 });
 
+router.patch("/hsn-codes/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { _id, ...updateData } = req.body;
+
+    const hsnCollection = db.collection("hsnCodes");
+
+    const result = await hsnCollection.findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: updateData },
+      { returnDocument: "after" }
+    );
+
+    res.status(200).json(result.value);
+  } catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 router.delete("/hsn-codes/:hsnId", async (req, res) => {
   try {
     const { hsnId } = req.params;
@@ -1114,7 +1133,7 @@ router.get("/payment-details", async (req, res) => {
 
   try {
     const paymentCollection = db.collection("payment");
-    const invoiceCollection = db.collection("invoices");
+    const invoiceCollection = db.collection(collectionName);
     const payments = await paymentCollection
       .find(query)
       .sort({ date: -1 })
@@ -1172,7 +1191,7 @@ router.get("/payment-details", async (req, res) => {
 });
 
 router.post("/duplicate/invoice/collection", async (req, res) => {
-  const collection = db.collection("invoices");
+  const collection = db.collection(collectionName);
   const newCollection = "invoicesCopy";
   await collection
     .aggregate([{ $match: {} }, { $out: newCollection }])

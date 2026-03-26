@@ -5,8 +5,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+   "dev": "cross-env NODE_ENV=development nodemon index.js",
+    "prod": "cross-env NODE_ENV=production node index.js"
   },
   "keywords": [],
   "author": "",
@@ -18,9 +18,11 @@
     "cheerio": "^1.1.2",
     "chrome-aws-lambda": "^10.1.0",
     "cors": "^2.8.5",
+    "cross-env": "^10.1.0",
     "crypto": "^1.0.1",
     "csv": "^6.3.10",
     "csv-parser": "^3.0.0",
+    "dotenv": "^17.3.1",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "fs-extra": "^11.3.0",
