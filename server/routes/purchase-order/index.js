@@ -37,6 +37,11 @@ router.get("/get-po-list", async (req, res) => {
       filters.poType = { $nin: ["FRAME", "ROLLER", "BAKELITE"] };
     }
 
+    if (filters.size) {
+      filters["items.size"] = filters.size;
+      delete filters.size; // clean extra field
+    }
+
     const purchaseOrderCollection = await db
       .collection("purchaseOrders")
       .find(filters)
@@ -169,6 +174,19 @@ router.patch("/update-po-on-invoice", async (req, res) => {
     res.status(500).json({
       message: error.message || "Error updating PO"
     });
+  }
+});
+
+router.delete("/delete/po/:poId", async (req, res) => {
+  try {
+    const { poId } = req.params;
+    const result = await db.collection("purchaseOrders").findOneAndDelete({
+      _id: new ObjectId(poId),
+    });
+     res.json({ message: "PO updated successfully" });
+  } catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
