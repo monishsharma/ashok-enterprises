@@ -142,8 +142,8 @@ router.get("/generate-quotation-pdf/:id", async (req, res) => {
     if (!data) return res.status(404).send("Quotation not found");
 
     const companyType = data.company || "ASHOK";
-    const img =
-      companyType === "ASHOK" ? "quotationAshok.png" : "quotationPadma.png";
+    const isCompanyAshok = companyType === "ASHOK";
+    const img = isCompanyAshok ? "quotationAshok.png" : "quotationPadma.png";
 
     const logoPath = path.join(__dirname, img);
     const imageBuffer = fs.readFileSync(logoPath);

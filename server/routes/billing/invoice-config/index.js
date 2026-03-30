@@ -1191,13 +1191,23 @@ router.get("/payment-details", async (req, res) => {
 });
 
 router.post("/duplicate/invoice/collection", async (req, res) => {
-  const collection = db.collection(collectionName);
-  const newCollection = "invoicesCopy";
-  await collection
-    .aggregate([{ $match: {} }, { $out: newCollection }])
-    .toArray();
+  try {
+    const sourceCollection = db.collection("invoices");
 
-  res.status(200).send(`Collection duplicated to ${newCollection}`);
+    await sourceCollection.aggregate([
+      { $match: {} },
+      {
+        $out: {
+          db: "AEDB_dev",
+          coll: "invoices"
+        }
+      }
+    ]).toArray();
+
+    res.status(200).send("✅ Collection copied to AEDB_dev.invoices");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("❌ Error copying collection");
+  }
 });
-
 export default router;
