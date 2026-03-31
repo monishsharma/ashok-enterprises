@@ -36,14 +36,24 @@ async function getBrowser() {
   return browser;
 }
 
-router.get("/get-quotation/:company", async (req, res) => {
-  const company = req.params.company;
-  let query = { company: company };
+router.get("/get-quotation", async (req, res) => {
+
+  let filters = { ...req.query };
+
+  if (filters.vendorId) {
+    filters["buyerDetail.customer"] = filters.vendorId;
+    delete filters.vendorId;
+  }
+
+  if (filters.id) {
+    filters._id = new ObjectId(filters.id);
+    delete filters.id;
+  }
 
   try {
     const quotationCollection = db.collection("quotation");
 
-    const quotationList = await quotationCollection.find(query).toArray();
+    const quotationList = await quotationCollection.find(filters).toArray();
 
     if (!quotationList || quotationList.length === 0) {
       return res.status(200).json({ error: "No quotation found" });
