@@ -50,6 +50,11 @@ router.get("/get-quotation", async (req, res) => {
     delete filters.id;
   }
 
+  if (filters.poType) {
+    filters["quotationDetail.quotationType"] = filters.poType;
+    delete filters.poType;
+  }
+
   try {
     const quotationCollection = db.collection("quotation");
 
