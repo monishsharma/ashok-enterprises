@@ -100,59 +100,54 @@
         width: 98%;
         object-fit: cover;
       }
-    .signature-box{
+    .signature-box {
   position: relative;
   height: 150px;
 }
 
-.circle-wrapper{
-  position:absolute;
-  width:150px;
-  top:10px;
-  left:50%;
-  right:auto;
+.circle-wrapper {
+  position: absolute;
+  width: 150px; /* ↓ reduced from 150 */
+  top: 10px;
+  left: 50%;
   transform: translateX(-50%);
-  opacity:0.8;
-  pointer-events:none;
+  opacity: 0.8;
+  pointer-events: none;
 }
 
-    svg {
-      width: 100%;
-      height: auto;
-    }
+.circle-wrapper svg {
+  width: 100%;
+  height: auto;
+}
 
-    .outer-circle {
-      fill: none;
-      stroke: #000;
-      stroke-width: 5 !important;
-    }
+.outer-circle {
+  fill: none;
+  stroke: #000;
+  stroke-width: 4;
+}
 
-    .inner-circle {
-      fill: none;
-      stroke: #555;
-      stroke-width: 4 !important;
-    }
+.inner-circle {
+  fill: none;
+  stroke: #555;
+  stroke-width: 3;
+}
 
-    .circle-text {
-      font-size: 30px !important;
-      letter-spacing: 5px;
-      fill: #000;
-      font-weight: bolder !important;
-      dominant-baseline: middle;
-      font-family: Arial, sans-serif;
-    }
-    .center-text {
-      font-size: 35px;
-      fill: #000;
-      font-weight: bolder;
-      text-anchor: middle;
-      dominant-baseline: middle;
-      font-family: Arial, sans-serif;
-    }
-    .circle-wrapper svg text {
-  font-weight: 600;
-  /* letter-spacing: 6px; */
+.circle-text {
+  font-size: 18px; /* ↓ reduced */
+  letter-spacing: 3px;
   fill: #000;
+  font-weight: 600;
+  dominant-baseline: middle;
+  font-family: Arial, sans-serif;
+}
+
+.center-text {
+  font-size: 20px; /* ↓ reduced */
+  fill: #000;
+  font-weight: bold;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  font-family: Arial, sans-serif;
 }
     </style>
   </head>
@@ -408,30 +403,33 @@
                 <td colspan="3" class="signature-box">
                   <div class="circle-wrapper">
                     <svg viewBox="0 0 300 300">
+
                       <!-- Outer Circle -->
-                      <circle cx="150" cy="150" r="140" class="outer-circle" />
+                      <circle cx="150" cy="150" r="90" class="outer-circle" />
 
                       <!-- Inner Circle -->
-                      <circle cx="150" cy="150" r="80" class="inner-circle" />
+                      <circle cx="150" cy="150" r="55" class="inner-circle" />
 
                       <!-- Text Path -->
                       <defs>
                         <path
-                          id="text-circle"
-                          d="
-                          M 150,150
-                          m -110,0
-                          a 110,110 0 1,1 220,0
-                          a 110,110 0 1,1 -220,0"
-                        />
+                    id="text-circle"
+                    d="
+                    M 150,150
+                    m -70,0
+                    a 70,70 0 1,1 140,0
+                    a 70,70 0 1,1 -140,0"
+                  />
                       </defs>
 
                       <!-- Curved Text -->
                       <text class="circle-text">
                         <textPath href="#text-circle" startOffset="0%" text-anchor="start">
-                          <%- sealText %>
+                        <%= sealText %>
                         </textPath>
                       </text>
+
+                      <!-- Center Text -->
                       <text x="150" y="150" class="center-text">Gwalior</text>
                     </svg>
                   </div>
