@@ -1190,24 +1190,30 @@ router.get("/payment-details", async (req, res) => {
   }
 });
 
-router.post("/duplicate/invoice/collection", async (req, res) => {
+router.post("/duplicate/full-db", async (req, res) => {
   try {
-    const sourceCollection = db.collection("invoices");
+    const collections = await db.listCollections().toArray();
 
-    await sourceCollection.aggregate([
-      { $match: {} },
-      {
-        $out: {
-          db: "AEDB_dev",
-          coll: "invoices"
+    for (const coll of collections) {
+      const sourceCollection = db.collection(coll.name);
+
+      await sourceCollection.aggregate([
+        { $match: {} },
+        {
+          $out: {
+            db: "AEDB_dev",
+            coll: coll.name
+          }
         }
-      }
-    ]).toArray();
+      ]).toArray();
+    }
 
-    res.status(200).send("✅ Collection copied to AEDB_dev.invoices");
+    res.status(200).send("✅ All collections copied successfully");
   } catch (err) {
     console.error(err);
-    res.status(500).send("❌ Error copying collection");
+    res.status(500).send("❌ Error copying database");
   }
 });
+
+
 export default router;

@@ -163,7 +163,7 @@ const revertOldDispatch = (items, oldItems) => {
 };
 
 // Validate no over-dispatch
-const validateDispatch = (items, newItems) => {
+const validateDispatch = (items, newItems, po) => {
   for (const newItem of newItems) {
     const item = items.find(
       i => String(i.itemId) === String(newItem.itemId)
@@ -175,7 +175,7 @@ const validateDispatch = (items, newItems) => {
       Number(item.qty || 0) -
       Number(item.dispatchedQty || 0);
 
-    if (Number(newItem.qty) > available) {
+    if (Number(newItem.qty) > available && po.poType !== "FRAME") {
       throw new Error(
         `Over-dispatch for item ${newItem.itemId}. Available: ${available}, Trying: ${newItem.qty}`
       );
@@ -214,10 +214,17 @@ const recalculatePending = (items) =>
   }));
 
 // PO status
-const getPOStatus = (items) =>
-  items.every(i => i.pendingQty === 0)
+const getPOStatus = (items,po) => {
+  if (po.poType === "FRAME") {
+    const allTouched = items.every(i => i.dispatchedQty > 0);
+
+    return allTouched ? "COMPLETED" : "PENDING";
+  } else {
+    return items.every(i => i.pendingQty === 0)
     ? "COMPLETED"
     : "PENDING";
+  }
+}
 
 // Build invoice entry
 const buildInvoiceEntry = (invoice, items) => ({
@@ -273,13 +280,13 @@ export const processPO = async ({ po, invoice, invoiceItems }) => {
 
   let updatedItems = revertOldDispatch(po.items, oldItems);
 
-  validateDispatch(updatedItems, newItems);
+  validateDispatch(updatedItems, newItems, po);
 
   updatedItems = applyNewDispatch(updatedItems, newItems);
 
   updatedItems = recalculatePending(updatedItems);
 
-  const poStatus = getPOStatus(updatedItems);
+  const poStatus = getPOStatus(updatedItems, po);
 
   const newInvoiceEntry = buildInvoiceEntry(invoice, newItems);
   await updatePOInDB({
