@@ -111,7 +111,7 @@ router.get("/vendor/list", async (req, res) => {
 
 router.get("/get/invoice/report/:company", async (req, res) => {
   const company = req.params.company;
-  const { month, year } = req.query;
+  const { month, year, type } = req.query;
   let currentMonthInvoices, prevMonthInvoices;
   let currentMonthSales, prevMonthSales;
 
@@ -120,10 +120,11 @@ router.get("/get/invoice/report/:company", async (req, res) => {
     const currentMonthQuery = getQuery({
       month,
       year,
+      type,
       previous: false,
       company,
     });
-    const prevMonthQuery = getQuery({ month, year, previous: true, company });
+    const prevMonthQuery = getQuery({ month, year, previous: true, company, type });
 
     currentMonthInvoices = await invoiceCollection
       .find(currentMonthQuery)
@@ -142,14 +143,13 @@ router.get("/get/invoice/report/:company", async (req, res) => {
     const financialYearQuery = monthlySalesQuery({ company, year, month });
 
     const fyInvoices = await invoiceCollection
-      .find({ ...financialYearQuery })
+      .find(financialYearQuery)
       .toArray();
-
     // SALES MONTHLY TOTALS //
     const monthlyTotals = calculateFYSales(fyInvoices);
-
     // SALES YEARLY TOTALS FOR NEXT 5 YEARS //
-    const fyResult = await getFYYearlyTotals(invoiceCollection, company);
+    const fyResult = await getFYYearlyTotals(invoiceCollection, company, year);
+    // const fyResult = monthlyTotals.reduce((total, item) => total + (parseFloat(item) || 0), 0);
 
     // yearly tons //
     const yearlyTons = await getYearlyTons({

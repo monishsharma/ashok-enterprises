@@ -1,23 +1,67 @@
-export const getQuery = ({ month, year, previous, company }) => {
-  const currentMonth = parseInt(month);
-  const currentYear = parseInt(year);
-  let queryMonth, queryYear, startDate, endDate;
-  let currentQuery = {};
+// export const getQuery = ({ month, year, previous, company }) => {
+//   const currentMonth = parseInt(month);
+//   const currentYear = parseInt(year);
+//   let queryMonth, queryYear, startDate, endDate;
+//   let currentQuery = {};
 
-  if (previous) {
-    queryMonth = currentMonth === 1 ? 12 : currentMonth - 1;
-    queryYear = currentMonth === 1 ? currentYear - 1 : currentYear;
-    startDate = new Date(queryYear, queryMonth - 1, 1);
-    endDate = new Date(queryYear, queryMonth, 1);
+//   if (previous) {
+//     queryMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+//     queryYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+//     startDate = new Date(queryYear, queryMonth - 1, 1);
+//     endDate = new Date(queryYear, queryMonth, 1);
 
-    currentQuery = { company, invoiceDate: { $gte: startDate, $lt: endDate } };
-  } else {
-    startDate = new Date(currentYear, currentMonth - 1, 1);
-    endDate = new Date(currentYear, currentMonth, 1);
-    currentQuery = { company, invoiceDate: { $gte: startDate, $lt: endDate } };
+//     currentQuery = { company, invoiceDate: { $gte: startDate, $lt: endDate } };
+//   } else {
+//     startDate = new Date(currentYear, currentMonth - 1, 1);
+//     endDate = new Date(currentYear, currentMonth, 1);
+//     currentQuery = { company, invoiceDate: { $gte: startDate, $lt: endDate } };
+//   }
+//     return currentQuery;
+// };
+
+export const getQuery = ({ type, month, year, company, previous }) => {
+  let startDate, endDate;
+
+  const m = parseInt(month, 10);
+  const y = parseInt(year, 10);
+
+  if (type === "MONTHLY") {
+    let queryMonth = m;
+    let queryYear = y;
+
+    if (previous) {
+      // 🔥 previous month logic
+      queryMonth = m === 1 ? 12 : m - 1;
+      queryYear = m === 1 ? y - 1 : y;
+    }
+
+    startDate = new Date(Date.UTC(queryYear, queryMonth - 1, 1));
+    endDate = new Date(Date.UTC(queryYear, queryMonth, 1));
   }
 
-  return currentQuery;
+  else if (type === "YEARLY") {
+    let fyYear = y;
+
+    if (previous) {
+      // 🔥 previous FY
+      fyYear = y - 1;
+    }
+
+    startDate = new Date(Date.UTC(fyYear, 3, 1));       // Apr
+    endDate = new Date(Date.UTC(fyYear + 1, 3, 1));     // Next Apr
+  }
+
+  else {
+    throw new Error("Invalid type");
+  }
+
+  return {
+    ...(company && { company }),
+    invoiceDate: {
+      $gte: startDate,
+      $lt: endDate
+    }
+  };
 };
 
 export const calculateTotalSales = (invoices) =>
@@ -111,7 +155,6 @@ export const calculateFYSales = (invoices) => {
     const fiscalMonthIndex = (actualMonth + 9) % 12;
     monthlyTotals[fiscalMonthIndex] += amount;
   });
-
   return monthlyTotals;
 };
 
@@ -217,8 +260,7 @@ const getInvoiceCollectionAgg = async ({
 }) => {
   // Query all invoices from this FY onward (5 years range)
   const startDate = new Date(`${fyStart}-04-01`);
-  const endDate = new Date(`${fyStart + 5}-03-31`);
-
+  const endDate = new Date(`${fyStart + 5}-04-01`);
   const result = await invoiceCollection
     .aggregate([
       {
@@ -263,14 +305,12 @@ const getInvoiceCollectionAgg = async ({
   return result;
 };
 
-export const getFYYearlyTotals = async (invoiceCollection, company) => {
+export const getFYYearlyTotals = async (invoiceCollection, company, year) => {
   const projection = {
     total: { $toDouble: "$goodsDescription.Total" },
   };
   const condition = [{}, {}, 0];
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth();
-  const fyStart = currentMonth >= 3 ? currentYear : currentYear - 1;
+  const fyStart = Number(year) - 1;
   const result = await getInvoiceCollectionAgg({
     invoiceCollection,
     company,
@@ -278,11 +318,10 @@ export const getFYYearlyTotals = async (invoiceCollection, company) => {
     condition,
     projection,
   });
-
   // Convert to object and fill missing FYs with 0
   const yearlyTotals = {};
   for (let i = 0; i < 5; i++) {
-    const yearLabel = `${fyStart + i}-${fyStart + i + 1}`;
+    const yearLabel = `${fyStart + i}-${String(fyStart + i + 1).slice(-2)}`;
     const found = result.find((r) => r._id === fyStart + i);
     yearlyTotals[yearLabel] = found ? parseInt(found.yearlyTotal) : 0;
   }
@@ -290,13 +329,12 @@ export const getFYYearlyTotals = async (invoiceCollection, company) => {
 };
 
 export const calculateYearlyGrowth = ({ yearlyTotals, year }) => {
-  const currentYear = parseInt(year);
-  const currentMonth = new Date().getMonth();
-  const fyStart = currentMonth >= 3 ? currentYear : currentYear - 1;
+  const fyStart = parseInt(year);
+  // const currentMonth = new Date().getMonth();
+  // const fyStart = currentMonth >= 3 ? currentYear : currentYear - 1;
   const years = Object.keys(yearlyTotals).sort(
     (a, b) => parseInt(a.split("-")[0]) - parseInt(b.split("-")[0]),
   );
-
   const selectedIndex = years.findIndex((y) => y.split("-")[0] == fyStart);
 
   const currYear = years[selectedIndex];
@@ -337,7 +375,7 @@ export const getItemBreakdown = (invoices) => {
 
 export const getYearlySales = ({ yearlyTotals, year }) => {
   const selectedYear = getYear(year);
-  const yearKey = `${selectedYear}-${selectedYear + 1}`;
+  const yearKey = `${selectedYear}-${String(selectedYear + 1).slice(-2)}`;
   return yearlyTotals[yearKey] || 0;
 };
 
@@ -366,9 +404,7 @@ export const getYearlyTons = async ({
     0,
   ];
 
-  const currentYear = getYear(year);
-  const currentMonth = new Date().getMonth();
-  const fyStart = currentMonth >= 3 ? currentYear : currentYear - 1;
+  const fyStart = Number(year) - 1;
 
   // Fetch aggregate data for next 5 FYs
   const result = await getInvoiceCollectionAgg({
@@ -378,15 +414,14 @@ export const getYearlyTons = async ({
     projection,
     condition,
   });
-
   if (!needObj) {
-    const found = result.find((r) => r._id === currentYear);
+    const found = result.find((r) => r._id == year);
+
     return found ? parseInt(found.yearlyQty) : 0;
   }
 
   // Convert Mongo result to { "2025-26": qty, ... } format
   const yearMap = {};
-
   for (let i = 0; i < 5; i++) {
     const fy = fyStart + i;
     const fyLabel = `${fy}-${String((fy + 1) % 100).padStart(2, "0")}`;
@@ -394,7 +429,6 @@ export const getYearlyTons = async ({
     const found = result.find((r) => r._id === fy);
     yearMap[fyLabel] = found ? parseInt(found.yearlyQty.toFixed(0)) : 0;
   }
-
   return yearMap;
 };
 
