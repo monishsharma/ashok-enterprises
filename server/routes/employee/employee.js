@@ -597,7 +597,7 @@ router.get("/generate-salary-slip-pdf", async (req, res) => {
           totalOT: minutesToDecimalHours(totalOTMinutes),
           finalSalary: getTotalSalaryV2(emp, month, year),
           advance: getAdvancePAymentFromSalary(emp, month, year) || 0,
-          days: emp.attendance.map((d) => {
+          days: emp.attendance.sort((a, b) => a.date.localeCompare(b.date)).map((d) => {
             const work = minutesToHHMM(d.totalWorkingHours?.min || 0);
             const OT = minutesToHHMM(d.overTimeHours?.min || 0);
             return {

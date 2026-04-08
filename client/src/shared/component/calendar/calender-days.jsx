@@ -57,7 +57,6 @@ const CalendarDays = (props) => {
   };
 
   const getStyle = (day) => {
-    console.log(day);
     const result = isPresent(day);
     if (result === "N/A") return "";
     if (result === "present") return "present";
