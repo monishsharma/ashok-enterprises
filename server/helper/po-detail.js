@@ -97,17 +97,11 @@ export const fetchPoDetail = async (detailUrl) => {
 
 export const detectVendor = ({ poNumber, shippingCity, vendors }) => {
 
-  const groupVendors = vendors.filter(v =>
-    v.poCode && poNumber.startsWith(v.poCode)
-  );
-
-  if (!groupVendors.length) return null;
-
   const cityMatch = vendors.find(v =>
     v.label.toUpperCase().includes(shippingCity)
   );
 
-  return cityMatch || groupVendors[0];
+  return cityMatch;
 
 }
 
