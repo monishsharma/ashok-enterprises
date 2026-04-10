@@ -103,7 +103,7 @@ export const detectVendor = ({ poNumber, shippingCity, vendors }) => {
 
   if (!groupVendors.length) return null;
 
-  const cityMatch = groupVendors.find(v =>
+  const cityMatch = vendors.find(v =>
     v.label.toUpperCase().includes(shippingCity)
   );
 
