@@ -7,12 +7,14 @@ import Attendance from "./routes/attendance/attendance.js";
 import Billing from "./routes/billing/invoice-config/index.js";
 import PurchaseOrder from "./routes/purchase-order/index.js"
 import Quotation from "./routes/quotation/index.js"
+import Transaction from "./routes/transaction/index.js"
 import ASN from "./routes/ASN/index.js"
 import { cron } from "./controller.js";
 import {fetchETimeOfficeDataCron} from "./eTimeOfficeCron.js"
 import path from "path";
 import { fileURLToPath } from "url";
 import { connectToDB } from "./db/connection.js";
+// import { verifyFirebaseToken } from "./middleware/auth.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -33,10 +35,13 @@ const startServer = async () => {
   app.use("/biometric/cron", fetchETimeOfficeDataCron)
   app.use("/employee", Employee);
   app.use("/attendance", Attendance);
+
+  // app.use(verifyFirebaseToken);
   app.use("/billing", Billing);
   app.use("/purchase-order", PurchaseOrder)
   app.use("/ASN", ASN)
   app.use("/quotation", Quotation)
+  app.use("/transaction", Transaction)
 
   app.get("/health", (req, res) => {
     res.send("OK");

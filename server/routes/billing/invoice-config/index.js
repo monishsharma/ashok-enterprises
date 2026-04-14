@@ -37,6 +37,8 @@ import {
   getYearlyTons,
   monthlySalesQuery,
 } from "../../../helper/growth-api-.js";
+import { groupItem } from "./constant.js";
+import { checkExistingInvoice, createLedger, createTransaction, updateInvoiceNumber } from "./services.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Puppeteer config
@@ -401,12 +403,9 @@ router.post("/invoice", async (req, res) => {
 
   try {
     // Check for duplicate invoice number
-    const existing = await db.collection(collectionName).findOne({
-      "invoiceDetail.invoiceNO": data.invoiceDetail.invoiceNO,
-      company: company,
-    });
+    const isInvoiceExist = await checkExistingInvoice({invoiceData: data, collectionName});
 
-    if (existing) {
+    if (isInvoiceExist) {
       return res.status(400).json({
         error: "Invoice number already exists.",
       });
@@ -419,18 +418,17 @@ router.post("/invoice", async (req, res) => {
 
     await db.collection(collectionName).insertOne(data);
 
-    const [prefix, year, number] = data.invoiceDetail.invoiceNO.split("-"); // AE-25-26-02
-    const nextNumber = (parseInt(number, 10) + 1).toString().padStart(2, "0");
+    // update Invoice Number
 
-    await db.collection("billing").updateOne(
-      {}, // assuming only one document
-      {
-        $set: {
-          [`${company}.lastInvoiceNo`]: number,
-          [`${company}.nextInvoiceNo`]: nextNumber,
-        },
-      },
-    );
+    await updateInvoiceNumber({invoiceData: data});
+
+    // create ledger entry if customer doesn't exist
+
+    const ledger = await createLedger({invoiceData: data});
+
+    // CREATE TRANSACTION
+
+    await createTransaction({invoiceData: data,ledgerId: ledger._id});
 
     res.status(201).json({ message: "Invoice saved", id: data._id });
   } catch (error) {
@@ -721,6 +719,13 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
         return "20%";
       }
     };
+    // if (companyType === "PADMA") {
+    //     const { finalItems } = groupItem({ selectedItem: data.goodsDescription.items, selectedCompany: data.company});
+    //     data.goodsDescription.items = finalItems;
+    // }
+    // data.goodsDescription.poDisplay = poDisplay;
+    // data.goodsDescription.poArray = poArray;
+
     const html = await ejs.renderFile(
       path.join(__dirname, "./templates/invoice.ejs"),
       {

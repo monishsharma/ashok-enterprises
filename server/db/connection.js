@@ -1,7 +1,6 @@
 // db/connection.js
 import { MongoClient, ServerApiVersion } from "mongodb";
 
-
 const client = new MongoClient(process.env.MONGO_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
