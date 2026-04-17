@@ -2,16 +2,23 @@ import Axios from "axios";
 import * as cheerio from "cheerio";
 import {CG_COOKIE} from "./app-constant.js"
 import moment from "moment";
+import https from "https";
+import constants from "constants";
 
 const formatDate = (dateStr) => moment(dateStr, "YYYY-MM-DD").format("DD MMM YYYY");
 
+
+
+const agent = new https.Agent({
+  secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
+});
 
 export const getAsnDetail = async ({poNumber, invoiceDetail}) => {
 
     const url = `https://itapps.cgglobal.com/CGSCM/PEN/Delivery/LIST_ASN?Type=C&param=S&PO=${poNumber}&dtFrom=&dtto=&Mat=&stts=0&VC=&_=` + Date.now();
 
     const { data } = await Axios.get(url, {
-
+     httpsAgent: agent,
         headers: {
         "Cookie": CG_COOKIE, // your CG portal cookie
         "User-Agent": "Mozilla/5.0",
@@ -76,7 +83,7 @@ export const getAsnNumber = async(editLink) => {
     const url = `https://itapps.cgglobal.com${editLink}`;
 
      const { data } = await Axios.get(url, {
-
+        httpsAgent: agent,
         headers: {
         "Cookie": CG_COOKIE, // your CG portal cookie
         "User-Agent": "Mozilla/5.0",
@@ -95,6 +102,7 @@ export const saveASN = async({ payload }) => {
     try {
 
         const { data } = await Axios.post(url, payload, {
+            httpsAgent: agent,
             headers: {
             "Cookie": CG_COOKIE, // your CG portal cookie
             "User-Agent": "Mozilla/5.0",
@@ -134,6 +142,7 @@ export const fetchItemsForDispatch = async({poNumber, asnNumber, invoiceDetail})
             MatCode: ""
         }
         const { data } = await Axios.post(url, payload, {
+            httpsAgent: agent,
             headers: {
                 "Cookie": CG_COOKIE, // your CG portal cookie
                 "User-Agent": "Mozilla/5.0",
@@ -190,6 +199,7 @@ export const fetchItemsForDispatch = async({poNumber, asnNumber, invoiceDetail})
 
         try {
             const { data } = await Axios.post(url, payload, {
+                httpsAgent: agent,
                 headers: {
                     Cookie: CG_COOKIE,
                     "User-Agent": "Mozilla/5.0",
