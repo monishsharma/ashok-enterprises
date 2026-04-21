@@ -1,9 +1,15 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 import { db } from "../db/connection.js";
-
+import https from "https";
+import constants from "constants";
 
 const clean = s => s.replace(/^0+/, '') || "0";
+
+const agent = new https.Agent({
+  secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
+});
+
 
 const headers = {
   Cookie: 'CKCgPen=DisplayName=ASHOK ENTERPRISES&UserID=0010000943&RoleID=VEND&EmailID=ashok_entp@rediffmail.com&dtFinyear=4/1/2025 12:00:00 AM&FinYear=2025-2026&UserType=N&Division=',
@@ -11,7 +17,7 @@ const headers = {
 };
 
 async function fetchPage(url) {
-  const { data } = await axios.get(url, { headers });
+  const { data } = await axios.get(url, { httpAgent: agent,  headers });
   return cheerio.load(data);
 }
 
