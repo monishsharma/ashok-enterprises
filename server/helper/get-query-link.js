@@ -1,11 +1,17 @@
 import Axios from "axios";
 import * as cheerio from "cheerio";
+import https from "https";
+import constants from "constants";
 
+const agent = new https.Agent({
+  secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
+});
 
 export const getPOQueryLink = async (poNumber) => {
   const url = `https://itapps.cgglobal.com/CGSCM/PEN/Delivery/LIST_ASN?Type=C&param=S&PO=${poNumber}&dtFrom=&dtto=&Mat=&stts=0&VC=&_=` + Date.now();
 
   const { data } = await Axios.get(url, {
+    httpsAgent: agent,
     headers: {
       "Cookie": 'CKCgPen=DisplayName=ASHOK ENTERPRISES&UserID=0010000943&RoleID=VEND&EmailID=ashok_entp@rediffmail.com&dtFinyear=4/1/2025 12:00:00 AM&FinYear=2025-2026&UserType=N&Division=', // your CG portal cookie
       "User-Agent": "Mozilla/5.0",

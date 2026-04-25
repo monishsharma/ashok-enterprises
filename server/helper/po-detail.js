@@ -17,7 +17,7 @@ const headers = {
 };
 
 async function fetchPage(url) {
-  const { data } = await axios.get(url, { httpAgent: agent,  headers });
+  const { data } = await axios.get(url, { httpsAgent: agent,  headers });
   return cheerio.load(data);
 }
 
