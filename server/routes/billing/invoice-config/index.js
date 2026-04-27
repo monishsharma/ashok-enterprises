@@ -397,6 +397,32 @@ router.post("/update/vendor/list", async (req, res) => {
   }
 });
 
+router.patch("/update/vendor/:id", async (req, res) => {
+  const vendorId = new ObjectId(req.params.id);
+  const payload = req.body;
+  payload.plantRows = payload.plantRows.map(branch => {
+    const branchId = new ObjectId();
+      if (!branch.id) {
+        branch.id = branchId;
+      } else {
+        branch.id = new ObjectId(branch.id);
+      }
+      return branch;
+  });
+  try {
+    const vendorCollection = db.collection("vendors");
+    const result = await vendorCollection.updateOne(
+      { "vendors.id": vendorId },
+      { $set: { "vendors.$": { ...payload, id: vendorId } } },
+    );
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+
+});
+
 router.post("/invoice", async (req, res) => {
   const data = req.body;
   const company = data.invoiceDetail.company || "ASHOK";
@@ -1194,31 +1220,23 @@ router.get("/payment-details", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
-router.post("/duplicate/full-db", async (req, res) => {
+router.post("/duplicate/invoices", async (req, res) => {
   try {
-    const collections = await db.listCollections().toArray();
-
-    for (const coll of collections) {
-      const sourceCollection = db.collection(coll.name);
-
-      await sourceCollection.aggregate([
-        { $match: {} },
-        {
-          $out: {
-            db: "AEDB_dev",
-            coll: coll.name
-          }
+    await db.collection("invoices").aggregate([
+      { $match: {} },
+      {
+        $merge: {
+          into: { db: "AEDB_dev", coll: "invoices" },
+          whenMatched: "replace",   // or "keepExisting"
+          whenNotMatched: "insert"
         }
-      ]).toArray();
-    }
+      }
+    ]).toArray();
 
-    res.status(200).send("✅ All collections copied successfully");
+    res.status(200).send("✅ Invoices merged successfully");
   } catch (err) {
     console.error(err);
-    res.status(500).send("❌ Error copying database");
+    res.status(500).send("❌ Error copying invoices");
   }
 });
-
-
 export default router;
