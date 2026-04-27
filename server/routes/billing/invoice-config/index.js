@@ -39,6 +39,7 @@ import {
 } from "../../../helper/growth-api-.js";
 import { groupItem } from "./constant.js";
 import { checkExistingInvoice, createLedger, createTransaction, updateInvoiceNumber } from "./services.js";
+import { injectId } from "../../../helper/vendor.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Puppeteer config
@@ -378,11 +379,9 @@ router.get("/vendor/:id", async (req, res) => {
 });
 
 router.post("/update/vendor/list", async (req, res) => {
-  const payload = req.body.map((v) => {
-    v.id = new ObjectId(v.id);
-    return v;
-  });
-
+  const payload = req.body;
+  payload.id = new ObjectId();
+  injectId(payload);
   try {
     const vendorCollection = db.collection("vendors");
     const result = await vendorCollection.updateOne(
@@ -400,15 +399,7 @@ router.post("/update/vendor/list", async (req, res) => {
 router.patch("/update/vendor/:id", async (req, res) => {
   const vendorId = new ObjectId(req.params.id);
   const payload = req.body;
-  payload.plantRows = payload.plantRows.map(branch => {
-    const branchId = new ObjectId();
-      if (!branch.id) {
-        branch.id = branchId;
-      } else {
-        branch.id = new ObjectId(branch.id);
-      }
-      return branch;
-  });
+  injectId(payload);
   try {
     const vendorCollection = db.collection("vendors");
     const result = await vendorCollection.updateOne(
