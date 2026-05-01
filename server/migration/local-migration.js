@@ -1,99 +1,81 @@
-import "./config/env.js";
-import { connectToDB, db } from "./db/connection.js";
+import "../config/env.js";
+import { connectToDB, db } from "../db/connection.js";
 import { ObjectId } from "mongodb";
-console.log(process.env.MONGO_URI)
 
-const collectionName = "invoices"; // your collection
+const BATCH_SIZE = 1000;
 
 const migrate = async () => {
-     await connectToDB();
- const start = new Date("2026-04-01");
-const end = new Date("2027-03-31");
+  await connectToDB();
 
-const invoices = await db.collection(collectionName).find({
-  invoiceDate: {
-    $gte: start,
-    $lte: end
-  }
-}).toArray();
+  const oldCollection = db.collection("vendors");
+  const newCollection = db.collection("customers");
 
-  console.log(`Found ${invoices.length} invoices`);
+  const cursor = oldCollection.find({});
 
-  for (const invoice of invoices) {
-    // 🔁 Skip if transaction already exists (IMPORTANT)
-    const company = invoice.company;
+  let bulkOps = [];
+  let total = 0;
+  let skipped = 0;
 
-    const existingTxn = await db.collection("transactions").findOne({
-      referenceId: invoice._id,
-      company
-    });
+  while (await cursor.hasNext()) {
+    const doc = await cursor.next();
 
-    if (existingTxn) {
-      console.log(`Skipping invoice ${invoice.invoiceDetail.invoiceNO}`);
-      continue;
-    }
+    if (!Array.isArray(doc.vendors)) continue;
 
-    // ✅ Ensure ledger
-    const customerId = invoice.buyerDetail.customer;
-    const name = invoice.buyerDetail.label || invoice.buyerDetail.customerName;
-    const groupId = invoice.buyerDetail.groupId || null;
+    for (const vendor of doc.vendors) {
+      try {
+        let originalId = null;
 
-    let ledger = await db.collection("ledger").findOne({ customerId, company });
+        // ✅ Extract original ID safely
+        if (vendor._id && ObjectId.isValid(vendor._id)) {
+          originalId = new ObjectId(vendor._id);
+        } else if (vendor.id && ObjectId.isValid(vendor.id)) {
+          originalId = new ObjectId(vendor.id);
+        }
 
-    if (!ledger) {
-      const newLedger = {
-        _id: new ObjectId(),
-        customerId,
-        name,
-        company,
-        groupId,
-        type: "asset",
-        createdAt: new Date()
-      };
+        if (!originalId) {
+          skipped++;
+          continue;
+        }
 
-      await db.collection("ledger").insertOne(newLedger);
-      ledger = newLedger;
-    }
+        // ✅ Create clean object (avoid mutating source)
+        const cleanVendor = {
+          ...vendor,
+          _id: originalId,
+        };
 
-    // ✅ Prepare transaction
-    const total = Number(invoice.goodsDescription.Total);
-    const taxable = Number(invoice.goodsDescription.taxableValue);
-    const cgst = Number(invoice.goodsDescription.CGST || 0);
-    const sgst = Number(invoice.goodsDescription.SGST || 0);
-    const igst = Number(invoice.goodsDescription.IGST || 0);
+        delete cleanVendor.id;
 
-    const isInterState = invoice.buyerDetail.isInterState;
+        bulkOps.push({
+          insertOne: {
+            document: cleanVendor,
+          },
+        });
 
-    const entries = [
-      { ledgerId: ledger._id, type: "debit", amount: total },
-      { ledgerName: "Sales", type: "credit", amount: taxable }
-    ];
+        total++;
 
-    if (isInterState) {
-      if (igst > 0) {
-        entries.push({ ledgerName: "IGST Output", type: "credit", amount: igst });
+        // ✅ Execute in batches
+        if (bulkOps.length >= BATCH_SIZE) {
+          await newCollection.bulkWrite(bulkOps, { ordered: false });
+          bulkOps = [];
+        }
+
+      } catch (err) {
+        console.error("❌ Error processing vendor:", err);
+        skipped++;
       }
-    } else {
-      if (cgst > 0) entries.push({ ledgerName: "CGST Output", type: "credit", amount: cgst });
-      if (sgst > 0) entries.push({ ledgerName: "SGST Output", type: "credit", amount: sgst });
     }
-
-    // ✅ Insert transaction
-    await db.collection("transactions").insertOne({
-      _id: new ObjectId(),
-      date: new Date(invoice.invoiceDate),
-      referenceType: "invoice",
-      referenceId: invoice._id,
-      company,
-      narration: `Invoice ${invoice.invoiceDetail.invoiceNO}`,
-      entries,
-      createdAt: new Date()
-    });
-
-    console.log(`Migrated invoice ${invoice.invoiceDetail.invoiceNO}`);
   }
 
-  console.log("Migration completed ✅");
+  // final batch
+  if (bulkOps.length > 0) {
+    await newCollection.bulkWrite(bulkOps, { ordered: false });
+  }
+
+  console.log("✅ Migration completed");
+  console.log("Inserted:", total);
+  console.log("Skipped:", skipped);
 };
 
-migrate();
+migrate().catch(err => {
+  console.error("❌ Migration failed:", err);
+});

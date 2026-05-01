@@ -13,38 +13,15 @@ export const calculateDispatch = ({ poItems, invoices, company }) => {
         let match = false;
 
         // NEW invoices
-        if (i.poItemId) {
-          match = i.poItemId === item.itemId;
+        if (i.itemId) {
+          match = i.itemId == item.itemId;
         }
 
         // OLD invoices fallback
-        else {
-
-          if (company === "ASHOK") {
-
-            if (Number(i.sno) === item.itemNo || Number(i.sno) === item.itemNo * 10) {
-              match = true;
-            }
-
-          } else {
-
-            if (Number(i.rate) === item.rate && dispatchedQty < item.qty) {
-              match = true;
-            }
-
-          }
-
-        }
-
         if (match) {
-          if (company === "ASHOK") {
-            dispatchedQty = Number(i.qty || 0)
-          } else {
-
-            dispatchedQty += Number(i.qty || 0);
-
-          }
+          dispatchedQty += Number(i.qty || 0);
         }
+
 
       }
 

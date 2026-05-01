@@ -10,7 +10,7 @@
 //     {"company": "ASHOK"},
 //     {
 //         $set: {
-//         "buyerDetail.branch": "69e89001ca79710da73751f9"
+//         "buyerDetail.branch": "69f086310d14c6ff9efc4411"
 //         }
 //     }
 //     );
@@ -43,27 +43,27 @@ function resolveVendorAndBranch(invoice, allVendors) {
     let plant = vendor.plantRows.find(
       (p) => normalize(p.label) === name
     );
-    if (plant) return { vendorId: vendor.id, branchId: plant.id, customerName: plant.label };
+    if (plant) return { vendorId: vendor._id, branchId: plant.id, customerName: plant.label };
 
     plant = vendor.plantRows.find(
       (p) =>
         normalize(p.label).includes(name) ||
         name.includes(normalize(p.label))
     );
-    if (plant) return { vendorId: vendor.id, branchId: plant.id, customerName: plant.label };
+    if (plant) return { vendorId: vendor._id, branchId: plant.id, customerName: plant.label };
 
     plant = vendor.plantRows.find(
       (p) =>
         normalize(p.address).includes(address) ||
         address.includes(normalize(p.address))
     );
-    if (plant) return { vendorId: vendor.id, branchId: plant.id, customerName: plant.label };
+    if (plant) return { vendorId: vendor._id, branchId: plant.id, customerName: plant.label };
 
     // vendor fallback
     if (normalize(vendor.label) === name) {
       if (vendor.plantRows.length > 0) {
         return {
-          vendorId: vendor.id,
+          vendorId: vendor._id,
           branchId: vendor.plantRows[0].id,
             customerName: vendor.plantRows[0].label
         };
@@ -78,8 +78,7 @@ async function migrateAllInvoices() {
   try {
     await connectToDB();
 
-    const root = await db.collection("vendors").findOne({});
-    const allVendors = root.vendors;
+    const allVendors = await db.collection("customers").find({}).toArray();
 
     const invoices = await db
       .collection("invoices")

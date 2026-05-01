@@ -99,8 +99,8 @@ router.get("/get-invoice-config", async (req, res) => {
 
 router.get("/vendor/list", async (req, res) => {
   try {
-    const vendorCollection = db.collection("vendors");
-    const vendorList = await vendorCollection.findOne({});
+    const vendorCollection = db.collection("customers");
+    const vendorList = await vendorCollection.find({}).toArray();
     if (!vendorList) {
       return res.status(404).json({ error: "vendor not found" });
     }
@@ -363,13 +363,16 @@ router.get("/invoice/:id", async (req, res) => {
 });
 
 router.get("/vendor/:id", async (req, res) => {
-  const vendorId = new ObjectId(req.params.id); // assuming id is ObjectId
-
   try {
-    const result = await db.collection("vendors").findOne(
-      { "vendors.id": vendorId }, // this assumes vendors.id is an ObjectId
-      { projection: { "vendors.$": 1 } },
-    );
+    const vendorId = new ObjectId(req.params.id);
+
+    const result = await db.collection("customers").findOne({
+      _id: vendorId,
+    });
+
+    if (!result) {
+      return res.status(404).json({ error: "Vendor not found" });
+    }
 
     res.json(result);
   } catch (err) {
@@ -380,15 +383,10 @@ router.get("/vendor/:id", async (req, res) => {
 
 router.post("/update/vendor/list", async (req, res) => {
   const payload = req.body;
-  payload.id = new ObjectId();
   injectId(payload);
   try {
-    const vendorCollection = db.collection("vendors");
-    const result = await vendorCollection.updateOne(
-      {},
-      { $set: { vendors: payload } },
-      { upsert: true },
-    );
+    const vendorCollection = db.collection("customers");
+    const result = await vendorCollection.insertOne(payload);
     res.status(200).json(result);
   } catch (error) {
     console.error("❌ Server Error:", error);
@@ -396,22 +394,34 @@ router.post("/update/vendor/list", async (req, res) => {
   }
 });
 
+
 router.patch("/update/vendor/:id", async (req, res) => {
-  const vendorId = new ObjectId(req.params.id);
-  const payload = req.body;
-  injectId(payload);
   try {
-    const vendorCollection = db.collection("vendors");
+    const { id } = req.params;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid vendor ID" });
+    }
+
+    const vendorId = new ObjectId(id);
+    const payload = req.body;
+    injectId(payload);
+    const vendorCollection = db.collection("customers");
+
     const result = await vendorCollection.updateOne(
-      { "vendors.id": vendorId },
-      { $set: { "vendors.$": { ...payload, id: vendorId } } },
+      { _id: vendorId },
+      { $set: payload }
     );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: "Vendor not found" });
+    }
+
     res.status(200).json(result);
   } catch (error) {
     console.error("❌ Server Error:", error);
     res.status(500).json({ error: "Server error" });
   }
-
 });
 
 router.post("/invoice", async (req, res) => {
@@ -1213,11 +1223,11 @@ router.get("/payment-details", async (req, res) => {
 });
 router.post("/duplicate/invoices", async (req, res) => {
   try {
-    await db.collection("invoices").aggregate([
+    await db.collection("customers").aggregate([
       { $match: {} },
       {
         $merge: {
-          into: { db: "AEDB_dev", coll: "invoices" },
+          into: { db: "AEDB", coll: "customers" },
           whenMatched: "replace",   // or "keepExisting"
           whenNotMatched: "insert"
         }
