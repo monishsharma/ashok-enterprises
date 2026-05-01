@@ -33,6 +33,11 @@ router.get("/get-po-list", async (req, res) => {
       filters.vendorId = new ObjectId(filters.vendorId);
     }
 
+    if (filters.branchId) {
+      filters["vendorDetail.branchId"] = new ObjectId(filters.branchId);
+      delete filters.branchId;
+    }
+
     if (filters.poType === "OTHERS") {
       filters.poType = { $nin: ["FRAME", "ROLLER", "BAKELITE"] };
     }
@@ -88,13 +93,13 @@ router.post("/post-po-detail", async (req, res) => {
   try {
 
     const poData = req.body;
-    const { company, poNumber, items, shippingCity } = poData;
+    const { supplierName, poNumber, items, purchaserGSTIN, shippingCity } = poData;
 
-    const vendorsCollection = await db.collection("vendors").findOne({});
-    const vendorPO = detectVendor({poNumber, shippingCity, vendors: vendorsCollection.vendors});
+    const vendorsCollection = await db.collection("customers").find({}).toArray();
+    const vendorPO = detectVendor({ purchaserGSTIN, vendors: vendorsCollection, shippingCity });
     let samePOInvoices = await db.collection("invoices")
       .find({
-        company,
+        company: supplierName,
         "goodsDescription.po": { $in: [poNumber] }
       }).toArray();
 
@@ -103,11 +108,11 @@ router.post("/post-po-detail", async (req, res) => {
     const dispatchDetails = calculateDispatch({
       invoices: samePOInvoices,
       poItems: items,
-      company
+      company: supplierName
     });
 
     poData.items = dispatchDetails;
-    poData.vendorId = vendorPO?.id || "";
+    poData.vendorDetail  = vendorPO || {};
     poData.poStatus = "PENDING"
 
     // store invoice summary
@@ -126,7 +131,7 @@ router.post("/post-po-detail", async (req, res) => {
 
     res.json({
       message: "PO processed successfully",
-      data: poData
+      data: poData,
     });
 
   } catch (error) {

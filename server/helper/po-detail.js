@@ -101,13 +101,26 @@ export const fetchPoDetail = async (detailUrl) => {
 };
 
 
-export const detectVendor = ({ poNumber, shippingCity, vendors }) => {
+export const detectVendor = ({ purchaserGSTIN, vendors, shippingCity }) => {
+  // iwant  to find gstin and it is stored inside vendor array and in plantroes array
+  const vendor = vendors.map(v => {
+    const plantRows = v.plantRows || [];
+    let city = shippingCity;
+    if (shippingCity === "BENGALURU") city = "Banglore"
+    const match = plantRows.find(p => String(p.GSTIN) == String(purchaserGSTIN) && p.label.toLowerCase().includes(city.toLowerCase()));
+    if (match) {
+      return {
+        vendorId: v._id,
+        vendorName: v.name,
+        vendorGSTIN: v.GSTIN,
+        branchId: match.id,
+        branchLabel: match.label
+      };
+    }
+    return null;
+  }).filter(Boolean)[0];
 
-  const cityMatch = vendors.find(v =>
-    v.label.toUpperCase().includes(shippingCity)
-  );
-
-  return cityMatch;
+  return vendor;
 
 }
 

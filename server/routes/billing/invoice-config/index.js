@@ -39,6 +39,7 @@ import {
 } from "../../../helper/growth-api-.js";
 import { groupItem } from "./constant.js";
 import { checkExistingInvoice, createLedger, createTransaction, updateInvoiceNumber } from "./services.js";
+import { injectId } from "../../../helper/vendor.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Puppeteer config
@@ -98,8 +99,8 @@ router.get("/get-invoice-config", async (req, res) => {
 
 router.get("/vendor/list", async (req, res) => {
   try {
-    const vendorCollection = db.collection("vendors");
-    const vendorList = await vendorCollection.findOne({});
+    const vendorCollection = db.collection("customers");
+    const vendorList = await vendorCollection.find({}).toArray();
     if (!vendorList) {
       return res.status(404).json({ error: "vendor not found" });
     }
@@ -362,13 +363,16 @@ router.get("/invoice/:id", async (req, res) => {
 });
 
 router.get("/vendor/:id", async (req, res) => {
-  const vendorId = new ObjectId(req.params.id); // assuming id is ObjectId
-
   try {
-    const result = await db.collection("vendors").findOne(
-      { "vendors.id": vendorId }, // this assumes vendors.id is an ObjectId
-      { projection: { "vendors.$": 1 } },
-    );
+    const vendorId = new ObjectId(req.params.id);
+
+    const result = await db.collection("customers").findOne({
+      _id: vendorId,
+    });
+
+    if (!result) {
+      return res.status(404).json({ error: "Vendor not found" });
+    }
 
     res.json(result);
   } catch (err) {
@@ -378,18 +382,41 @@ router.get("/vendor/:id", async (req, res) => {
 });
 
 router.post("/update/vendor/list", async (req, res) => {
-  const payload = req.body.map((v) => {
-    v.id = new ObjectId(v.id);
-    return v;
-  });
-
+  const payload = req.body;
+  injectId(payload);
   try {
-    const vendorCollection = db.collection("vendors");
+    const vendorCollection = db.collection("customers");
+    const result = await vendorCollection.insertOne(payload);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+router.patch("/update/vendor/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid vendor ID" });
+    }
+
+    const vendorId = new ObjectId(id);
+    const payload = req.body;
+    injectId(payload);
+    const vendorCollection = db.collection("customers");
+
     const result = await vendorCollection.updateOne(
-      {},
-      { $set: { vendors: payload } },
-      { upsert: true },
+      { _id: vendorId },
+      { $set: payload }
     );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: "Vendor not found" });
+    }
+
     res.status(200).json(result);
   } catch (error) {
     console.error("❌ Server Error:", error);
@@ -1194,31 +1221,23 @@ router.get("/payment-details", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
-router.post("/duplicate/full-db", async (req, res) => {
+router.post("/duplicate/invoices", async (req, res) => {
   try {
-    const collections = await db.listCollections().toArray();
-
-    for (const coll of collections) {
-      const sourceCollection = db.collection(coll.name);
-
-      await sourceCollection.aggregate([
-        { $match: {} },
-        {
-          $out: {
-            db: "AEDB_dev",
-            coll: coll.name
-          }
+    await db.collection("customers").aggregate([
+      { $match: {} },
+      {
+        $merge: {
+          into: { db: "AEDB", coll: "customers" },
+          whenMatched: "replace",   // or "keepExisting"
+          whenNotMatched: "insert"
         }
-      ]).toArray();
-    }
+      }
+    ]).toArray();
 
-    res.status(200).send("✅ All collections copied successfully");
+    res.status(200).send("✅ Invoices merged successfully");
   } catch (err) {
     console.error(err);
-    res.status(500).send("❌ Error copying database");
+    res.status(500).send("❌ Error copying invoices");
   }
 });
-
-
 export default router;
