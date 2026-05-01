@@ -30,7 +30,8 @@ router.get("/get-po-list", async (req, res) => {
     let filters = { ...req.query };
 
     if (filters.vendorId) {
-      filters.vendorId = new ObjectId(filters.vendorId);
+      filters["vendorDetail.vendorId"] = new ObjectId(filters.vendorId);
+      delete filters.vendorId;
     }
 
     if (filters.branchId) {
