@@ -177,13 +177,19 @@ export const calcualteCustomerTotals = (invoices) => {
   };
 
   invoices.forEach((inv) => {
+    let rawCustomer =
+      inv?.buyerDetail?.customerName ??
+      inv?.buyerDetail?.customer ??
+      "";
+
     let customer =
-      (inv.buyerDetail.customerName || inv.buyerDetail.customer)?.trim() ||
-      "Unknown";
-    const amount = parseFloat(inv.goodsDescription.Total || 0);
+      typeof rawCustomer === "string"
+        ? rawCustomer
+        : rawCustomer?.toString?.() || "";
+    const amount = parseFloat(inv?.goodsDescription?.Total || 0);
 
     // Normalize to lowercase for matching
-    const normalized = customer.toLowerCase();
+    const normalized = customer ? customer.toLowerCase() : "";
 
     // Replace with group name if found
     const groupName = groupMap[normalized] || customer;
@@ -199,10 +205,6 @@ export const calcualteCustomerTotals = (invoices) => {
 };
 
 export const getYear = (year) => {
-  const currentYear = parseInt(year);
-  const currentMonth = new Date().getMonth();
-  const fyStart = currentMonth >= 3 ? currentYear : currentYear - 1;
-  return fyStart;
 };
 
 export const getFYCustomerTotals = async ({ invoiceCollection, company }) => {
@@ -374,8 +376,10 @@ export const getItemBreakdown = (invoices) => {
 };
 
 export const getYearlySales = ({ yearlyTotals, year }) => {
-  const selectedYear = getYear(year);
+  console.log(yearlyTotals, year)
+  const selectedYear = Number(year);
   const yearKey = `${selectedYear}-${String(selectedYear + 1).slice(-2)}`;
+
   return yearlyTotals[yearKey] || 0;
 };
 

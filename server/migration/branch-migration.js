@@ -1,121 +1,96 @@
-// import "../config/env.js";
-// import { connectToDB, db } from "../db/connection.js";
-
-
-// async function migratePO() {
-//   try {
-//     await connectToDB();
-
-//     const result = await db.collection("invoices").updateMany(
-//     {"company": "ASHOK"},
-//     {
-//         $set: {
-//         "buyerDetail.branch": "69f086310d14c6ff9efc4411"
-//         }
-//     }
-//     );
-
-//     console.log("Updated:", result.modifiedCount);
-//     process.exit(0);
-
-//   } catch (err) {
-//     console.error("❌ Migration failed:", err);
-//     process.exit(1);
-//   }
-// }
-
-// migratePO();
-
 import "../config/env.js";
 import { connectToDB, db } from "../db/connection.js";
 
-function normalize(str = "") {
-  return str.toLowerCase().replace(/\s+/g, "").replace(/[^a-z]/g, "");
+const DRY_RUN = false;
+
+// ✅ get Telawane vendor
+function getTelawaneVendor(vendors) {
+  return vendors.find(v =>
+    v.name.toLowerCase().includes("telawane")
+  );
 }
 
-function resolveVendorAndBranch(invoice, allVendors) {
-  const name = normalize(invoice?.buyerDetail?.customerName);
-  const address = normalize(invoice?.buyerDetail?.address);
+// ✅ resolve plant from address
+function resolveTelawanePlant(address, vendor) {
+  const addr = (address || "").toLowerCase();
 
-  for (const vendor of allVendors) {
-    if (!vendor.plantRows) continue;
-
-    let plant = vendor.plantRows.find(
-      (p) => normalize(p.label) === name
+  if (addr.includes("ambernath")) {
+    return vendor.plantRows.find(p =>
+      p.label.toLowerCase().includes("ambernath")
     );
-    if (plant) return { vendorId: vendor._id, branchId: plant.id, customerName: plant.label };
+  }
 
-    plant = vendor.plantRows.find(
-      (p) =>
-        normalize(p.label).includes(name) ||
-        name.includes(normalize(p.label))
+  if (addr.includes("taloja")) {
+    return vendor.plantRows.find(p =>
+      p.label.toLowerCase().includes("taloja")
     );
-    if (plant) return { vendorId: vendor._id, branchId: plant.id, customerName: plant.label };
+  }
 
-    plant = vendor.plantRows.find(
-      (p) =>
-        normalize(p.address).includes(address) ||
-        address.includes(normalize(p.address))
+  if (addr.includes("rabale")) {
+    return vendor.plantRows.find(p =>
+      p.label.toLowerCase().includes("rabale")
     );
-    if (plant) return { vendorId: vendor._id, branchId: plant.id, customerName: plant.label };
-
-    // vendor fallback
-    if (normalize(vendor.label) === name) {
-      if (vendor.plantRows.length > 0) {
-        return {
-          vendorId: vendor._id,
-          branchId: vendor.plantRows[0].id,
-            customerName: vendor.plantRows[0].label
-        };
-      }
-    }
   }
 
   return null;
 }
 
-async function migrateAllInvoices() {
+async function fixOnlyTelawane() {
   try {
     await connectToDB();
 
-    const allVendors = await db.collection("customers").find({}).toArray();
+    const vendors = await db.collection("customers").find({}).toArray();
+    const telawane = getTelawaneVendor(vendors);
 
-    const invoices = await db
-      .collection("invoices")
-      .find({ company: "PADMA" })
-      .toArray();
+    if (!telawane) {
+      console.log("❌ Telawane vendor not found");
+      process.exit(1);
+    }
 
-    console.log(`📦 Total invoices: ${invoices.length}`);
+    // 🔥 ONLY Telawane invoices
+    const invoices = await db.collection("invoices").find({
+      company: "PADMA",
+      "buyerDetail.GSTIN": "27AACCT0358D1ZM"
+    }).toArray();
+
+    console.log(`📦 Telawane invoices: ${invoices.length}`);
 
     let success = 0;
     let failed = 0;
 
     for (const invoice of invoices) {
-      const result = resolveVendorAndBranch(invoice, allVendors);
+      const invoiceNo = invoice?.invoiceDetail?.invoiceNO;
+      const address = invoice?.buyerDetail?.address;
 
-      if (!result) {
-        console.log("❌ FAILED:", {
-          id: invoice._id,
-          name: invoice?.buyerDetail?.customerName
-        });
+      const plant = resolveTelawanePlant(address, telawane);
+
+      if (!plant) {
+        console.log(`❌ FAILED: ${invoiceNo}`, { address });
         failed++;
         continue;
       }
 
-      await db.collection("invoices").updateOne(
-        { _id: invoice._id },
-        {
-          $set: {
-            "buyerDetail.customer": result.vendorId,
-            "buyerDetail.branch": result.branchId
+      console.log(`✅ MATCH: ${invoiceNo}`, {
+        plant: plant.label,
+        branchId: plant.id,
+        name: plant.label
+      });
+
+        await db.collection("invoices").updateOne(
+          { _id: invoice._id },
+          {
+            $set: {
+              "buyerDetail.customer": telawane._id,
+              "buyerDetail.branch": plant.id,
+              "buyerDetail.customerName": plant.label
+            }
           }
-        }
-      );
+        );
 
       success++;
     }
 
-    console.log("\n✅ DONE");
+    console.log("\n📊 RESULT");
     console.log("✔️ Success:", success);
     console.log("❌ Failed:", failed);
 
@@ -126,4 +101,4 @@ async function migrateAllInvoices() {
   }
 }
 
-migrateAllInvoices();
+fixOnlyTelawane();
