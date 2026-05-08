@@ -1,5 +1,5 @@
 /* =========== Google Fonts ============ */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
 /* =============== Globals ============== */
 * {
@@ -10,7 +10,7 @@
 }
 
 :root {
-  --blue: #0C0C0C;
+  --blue: #0c0c0c;
   --white: #fff;
   --gray: #f5f5f5;
   --black1: #222;
@@ -23,8 +23,8 @@ body {
   background-color: var(--blue) !important;
 }
 
-
-ol, ul {
+ol,
+ul {
   list-style: none;
   outline: none;
   padding-left: 0 !important;
@@ -40,13 +40,13 @@ ol, ul {
   font-weight: bold !important;
 }
 
-thead, tbody {
+thead,
+tbody {
   text-align: center !important;
   /* vertical-align: baseline !important; */
 }
 .customTable td {
   padding: 15px !important;
-
 }
 tr {
   align-items: center !important;
@@ -58,7 +58,7 @@ td {
 .pauwelstable td {
   padding: 5px !important;
 }
-.table-bordered>:not(caption)>*>*  {
+.table-bordered > :not(caption) > * > * {
   border-width: 0 !important;
 }
 .customBtn {
@@ -74,7 +74,7 @@ input::-webkit-inner-spin-button {
 }
 
 /* Firefox */
-input[type=number] {
+input[type="number"] {
   -moz-appearance: textfield !important;
 }
 
@@ -89,10 +89,15 @@ input[type=number] {
   text-transform: capitalize;
   margin-bottom: 0 !important;
 }
-h1,h2,h3,h4,h5 {
+h1,
+h2,
+h3,
+h4,
+h5 {
   margin: 0 !important;
 }
-.timepicker-ui-wrapper, .timepicker-ui-wrapper.mobile {
+.timepicker-ui-wrapper,
+.timepicker-ui-wrapper.mobile {
   height: auto !important;
 }
 
@@ -120,7 +125,6 @@ h1,h2,h3,h4,h5 {
   }
 }
 
-
 @media (max-width: 1200px) {
   .cardBox {
     grid-template-columns: repeat(3, 1fr) !important;
@@ -131,17 +135,16 @@ h1,h2,h3,h4,h5 {
   .cardBox {
     grid-template-columns: repeat(2, 1fr) !important;
   }
-
 }
 
 @media (max-width: 660px) {
   .actionBtn {
     flex-direction: column;
   }
-  .searchInput{
+  .searchInput {
     width: 5rem !important;
   }
-  .actionBtn >div:nth-child(2){
+  .actionBtn > div:nth-child(2) {
     margin-top: 10px;
   }
   .scrollableDiv {
@@ -174,34 +177,34 @@ h1,h2,h3,h4,h5 {
   }
 }
 
-.absentCheckbox input[type=checkbox] {
+.absentCheckbox input[type="checkbox"] {
   outline: 2px solid #c00 !important;
   accent-color: red;
 }
 
-.absentCheckbox > .form-check-input:checked  {
+.absentCheckbox > .form-check-input:checked {
   background-color: #c00 !important;
-    border-color: #c00 !important;
+  border-color: #c00 !important;
 }
 
-.elistCheckbox input[type=checkbox] {
+.elistCheckbox input[type="checkbox"] {
   outline: 2px solid #198754 !important;
   accent-color: #198754;
 }
 
-.elistCheckbox > .form-check-input:checked  {
+.elistCheckbox > .form-check-input:checked {
   background-color: #198754 !important;
-    border-color: #198754 !important;
+  border-color: #198754 !important;
 }
 
-.warningElistCheckbox input[type=checkbox] {
+.warningElistCheckbox input[type="checkbox"] {
   outline: 2px solid #ffc107 !important;
   accent-color: #ffc107;
 }
 
-.warningElistCheckbox > .form-check-input:checked  {
+.warningElistCheckbox > .form-check-input:checked {
   background-color: #ffc107 !important;
-    border-color: #ffc107 !important;
+  border-color: #ffc107 !important;
 }
 
 .elistCheckbox label {
@@ -220,18 +223,14 @@ h1,h2,h3,h4,h5 {
 
 .bsb-timeline-1 .timeline:after {
   background-color: silver !important;
-
 }
 
 .nav-link {
   color: black !important;
 }
-.nav-link.active{
+.nav-link.active {
   color: white !important;
 }
-
-
-
 
 /* scrollbar */
 ::-webkit-scrollbar {
@@ -252,23 +251,21 @@ h1,h2,h3,h4,h5 {
   -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
 }
 
-
- .modal-body {
+.modal-body {
   max-height: 70vh !important;
   overflow-y: scroll !important;
-
 }
 
 ::-webkit-scrollbar-thumb:window-inactive {
   background: rgba(255, 255, 255, 0.3);
 }
 
-
-.detailTable table, .detailTable th, .detailTable td {
+.detailTable table,
+.detailTable th,
+.detailTable td {
   border: 1px solid black;
   border-collapse: collapse;
 }
-
 
 .delete {
   display: flex;
@@ -278,7 +275,6 @@ h1,h2,h3,h4,h5 {
   color: red; /* Optional: change color for better visibility */
   font-size: 1.5em; /* Adjust size if needed */
 }
-
 
 .axis-container {
   position: relative;
@@ -317,7 +313,6 @@ h1,h2,h3,h4,h5 {
   bottom: 20px;
   left: 0px;
   font-size: 12px;
-
 }
 .z-axis {
   position: absolute;
@@ -332,10 +327,12 @@ h1,h2,h3,h4,h5 {
   top: 55px;
   left: 100px;
   font-size: 12px;
-
 }
 
-.pauwelstable thead,  .pauwelstable td, .pauwelstable tbody, .pauwelstable th {
+.pauwelstable thead,
+.pauwelstable td,
+.pauwelstable tbody,
+.pauwelstable th {
   border: 1px solid black !important;
 }
 
@@ -349,4 +346,29 @@ h1,h2,h3,h4,h5 {
   .printable {
     display: block !important;
   }
+}
+
+.custom-checkbox {
+  display: flex;
+  align-items: center;
+  padding: 0 100px;
+  gap: 6px; /* less distance between checkbox and label */
+}
+
+.custom-checkbox .form-check-input {
+  border: 2px solid #000 !important;
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+  /* margin-left: 35px !important; */
+  /* margin-top: 10px !important; */
+}
+
+.custom-checkbox .form-check-input:checked {
+  background-color: #000 !important;
+  border-color: #000 !important;
+}
+
+.custom-checkbox .form-check-label {
+  margin-left: 0 !important;
 }

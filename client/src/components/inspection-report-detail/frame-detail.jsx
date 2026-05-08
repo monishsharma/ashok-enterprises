@@ -10,19 +10,19 @@ const FrameDetail = ({
 
 
   function modifyFirstPart(str) {
-    if (!str) return "_"; // Handle undefined, null, or empty cases
+    if (!str) return ""; // Handle undefined, null, or empty cases
 
     const parts = str.includes("X") ? str.split("X") : [str]; // Handle both cases
     let firstNum = parseInt(parts[0]); // Convert first part to a number
 
-    if (isNaN(firstNum)) return "Invalid input"; // Handle non-numeric input
+    if (isNaN(firstNum)) return ""; // Handle non-numeric input
 
     const change = [0, -1, -2, 1, 2]; // Possible changes
     const randomChange = change[Math.floor(Math.random() * change.length)];
 
     firstNum += randomChange; // Modify only the first part
 
-    return parts.length > 1 ? `${firstNum}x${parts[1]}` : `${firstNum}`; // Reconstruct accordingly
+    return parts.length > 1 ? `${firstNum}x${parts[1]}${abbr}` : `${firstNum}${abbr}`; // Reconstruct accordingly
 }
 
 
@@ -73,10 +73,11 @@ const FrameDetail = ({
             <td
               style={{
                 width: "68px",
+                height: "30px",
                 borderBottom: "2px solid black",
               }}
             >
-              {`${modifyFirstPart(value)}${abbr}`}
+              {`${modifyFirstPart(value)}`}
             </td>
             <td
               style={{
@@ -85,7 +86,7 @@ const FrameDetail = ({
                 borderLeft: "2px solid black",
               }}
             >
-              {`${modifyFirstPart(value)}${abbr}`}
+              {`${modifyFirstPart(value)}`}
             </td>
             <td
               style={{
@@ -94,7 +95,7 @@ const FrameDetail = ({
                 borderLeft: "2px solid black",
               }}
             >
-              {`${modifyFirstPart(value)}${abbr}`}
+              {`${modifyFirstPart(value)}`}
             </td>
             <td
               style={{
@@ -103,7 +104,7 @@ const FrameDetail = ({
                 borderLeft: "2px solid black",
               }}
             >
-              {`${modifyFirstPart(value)}${abbr}`}
+              {`${modifyFirstPart(value)}`}
             </td>
           </tr>
         </tbody>

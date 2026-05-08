@@ -4,6 +4,8 @@ import TopPauwels from "../../shared/component/top-pauwels";
 import BottomPauwels from "../../shared/component/bottom-pauwels";
 import ReactToPrint from 'react-to-print';
 
+const checkboxes = ["Ordered", "Received", "InProgress", "Dispatched"]
+
 const Pauwels = () => {
   const formRef = useRef(null);
   const componentRef = useRef();
@@ -164,6 +166,7 @@ const Pauwels = () => {
       <div className="pt-4">{pauwelsData()}</div>
         { <div   ref={componentRef}>
           <div style={{marginTop: "100px", marginBottom: "50px"}}>
+
             <table className="pauwelstable" style={{width: "100%", margin: "20px"}}>
               <thead>
                 <th>Size</th>
@@ -171,7 +174,6 @@ const Pauwels = () => {
                 <th>Drawing</th>
               </thead>
               <tbody>
-
                 <React.Fragment>
                     {
                         details.map((item, index) => {
@@ -190,6 +192,21 @@ const Pauwels = () => {
 
                             return (
                                 <React.Fragment key={index}>
+                                  <tr>
+                                    <td colSpan={4}>
+                                     <div className="d-flex w-100 pl-4">
+                                        {checkboxes.map((label, index) => (
+                                          <Form.Check
+                                            key={index}
+                                            type="checkbox"
+                                            id={`default-${index}`}
+                                            label={label}
+                                            className="w-100 fs-4 custom-checkbox"
+                                          />
+                                        ))}
+                                      </div>
+                                    </td>
+                                  </tr>
                                     <tr >
                                         <td colSpan={4}><h3>W/O - {item.workOrderNo}</h3></td>
                                     </tr>

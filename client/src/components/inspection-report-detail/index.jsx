@@ -33,6 +33,12 @@ const InspectionDetail = ({
         }
     }
 
+    const checkValue = (value) => {
+      if (value) return `${value}MM`;
+      return "";
+    }
+
+    const checkObjValue = () => !!(Object.keys(LVT).length);
 
   return (
     <React.Fragment>
@@ -79,7 +85,7 @@ const InspectionDetail = ({
               <tr>
                 <td style={{ border: "2px solid black" }}>4.1</td>
                 <td style={{ border: "2px solid black" }}>Frame Length</td>
-                <td style={{ border: "2px solid black" }}>{`${LVT.A}MM`}</td>
+                <td style={{ border: "2px solid black" }}>{checkValue(LVT.A)}</td>
                 <td>
                   <FrameDetail csvData={csvData} value={LVT.A} abbr="MM"/>
                 </td>
@@ -89,13 +95,13 @@ const InspectionDetail = ({
                 <td style={{ border: "2px solid black" }}>Tie rod location</td>
                 <td style={{ border: "2px solid black" }}>
                     {
-                        `${parseInt(LVT.A) - 70}X${LVT.P}`
+                        checkObjValue() ? `${parseInt(LVT.A) - 70}X${checkValue(LVT.P)}` : ""
                     }
                 </td>
                 <td>
                   <FrameDetail
                     csvData={csvData}
-                    value={`${(parseInt(LVT.A)) - 70}X${LVT.P}`}
+                    value={`${(parseInt(LVT.A)) - 70}X${checkValue(LVT.P)}`}
                     style={{ borderBottom: "2px solid black", width: "100%" }}
                   />
                 </td>
@@ -106,7 +112,7 @@ const InspectionDetail = ({
                   Core bolt location
                 </td>
                 <td style={{ border: "2px solid black" }}>
-                    {`${(parseInt(LVT.B)+parseInt(LVT.C))*2}X${LVT.P}`}
+                    {checkObjValue() ? `${(parseInt(LVT.B)+parseInt(LVT.C))*2}X${LVT.P}` : ""}
                 </td>
                 <td>
                   <FrameDetail
@@ -121,7 +127,7 @@ const InspectionDetail = ({
                 <td style={{ border: "2px solid black" }}>
                   Cutout width x depth
                 </td>
-                <td style={{ border: "2px solid black" }}>{`${LVT.J}X30`}</td>
+                <td style={{ border: "2px solid black" }}>{checkObjValue() ? `${LVT.J}X30` : ""}</td>
                 <td>
                   <FrameDetail
                     csvData={csvData}
@@ -150,26 +156,26 @@ const InspectionDetail = ({
                 </td>
                 <td style={{ border: "2px solid black" }}>
                 {
-                    getTieRodValue()
+                    checkObjValue() ? getTieRodValue() : ""
                 }
                 </td>
-                <td>{getTieRodValue(true)}</td>
+                <td>{checkObjValue() ? getTieRodValue(true) : ""}</td>
               </tr>
               <tr>
                 <td style={{ border: "2px solid black" }}>6</td>
                 <td style={{ border: "2px solid black" }}>
                   Base feet length x width x thick
                 </td>
-                <td style={{ border: "2px solid black" }}>{`${BASEFEET.A}X75X40`}</td>
-                <td style={{ border: "2px solid black" }}>{`${modifyNumber(BASEFEET.A)}X75X40`}</td>
+                <td style={{ border: "2px solid black" }}>{checkObjValue() ? `${BASEFEET.A}X75X40` : ""}</td>
+                <td style={{ border: "2px solid black" }}>{ checkObjValue() ? `${modifyNumber(BASEFEET.A)}X75X40` : ""}</td>
               </tr>
               <tr>
                 <td style={{ border: "2px solid black" }}>7</td>
                 <td style={{ border: "2px solid black" }}>
                   Bottom Pin Hole Distance
                 </td>
-                <td style={{ border: "2px solid black" }}>{`${BASEFEET.B}x${LVT.P}`}</td>
-                <td style={{ border: "2px solid black" }}>{`${modifyNumber(BASEFEET.B)}x${LVT.P}`}</td>
+                <td style={{ border: "2px solid black" }}>{checkObjValue() ? `${BASEFEET.B}x${LVT.P}`: ""}</td>
+                <td style={{ border: "2px solid black" }}>{checkObjValue() ? `${modifyNumber(BASEFEET.B)}x${LVT.P}` : ""}</td>
               </tr>
               <tr>
                 <td style={{ border: "2px solid black" }}>8</td>
@@ -177,27 +183,31 @@ const InspectionDetail = ({
                   Locating flat x length x hole
                 </td>
                 <td style={{ border: "2px solid black" }}>
-                    {`${LP.A}X${LP.B}X${LP.D}`}
+                    {checkObjValue() ? `${LP.A}X${LP.B}X${LP.D}`: ""}
                 </td>
-                <td style={{ border: "2px solid black" }}>{`${modifyNumber(LP.A)}X${LP.B}X${LP.D}`}</td>
+                <td style={{ border: "2px solid black" }}>{checkObjValue() ? `${modifyNumber(LP.A)}X${LP.B}X${LP.D}` : ""}</td>
               </tr>
               <tr>
                 <td style={{ border: "2px solid black" }}>9</td>
                 <td style={{ border: "2px solid black" }}>Switch Bracket</td>
                 <td style={{ border: "2px solid black" }}>
                     {
+                      checkObjValue() ?
                         switchBracket.A !== "0" ?
                         `${switchBracket.A}/${switchBracket.B}/${switchBracket.C}/${switchBracket.D}`
                         :
                         "N/R"
+                        : ""
                     }
                 </td>
                 <td style={{ border: "2px solid black" }}>
                     {
-                        switchBracket.A !== "0" ?
+                        checkObjValue() ? switchBracket.A !== "0" ?
                         `${switchBracket.A}/${switchBracket.B}/${switchBracket.C}/${switchBracket.D}`
                         :
                         "N/R"
+                        :
+                        ""
                     }
                 </td>
               </tr>

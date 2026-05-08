@@ -123,9 +123,9 @@ const InspectionReport = () => {
     };
   };
 
-  const getDisabledState = () => {
-    return !(supplier && consumer && workOrder && csvData);
-  };
+  // const getDisabledState = () => {
+  //   return !(supplier && consumer && workOrder && csvData);
+  // };
 
   return (
     <div className="mt-4">
@@ -201,7 +201,7 @@ const InspectionReport = () => {
       <div className="col-2 mt-2 d-grid">
         <ReactToPrint
           trigger={() => (
-            <Button disabled={getDisabledState()} variant="success">
+            <Button variant="success">
               Print Report
             </Button>
           )}

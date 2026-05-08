@@ -79,7 +79,7 @@ const FrameList = ({workOrder, csvData}) => {
                         <tr key={index}>
                             <td style={{ border: "2px solid black" }}>{index+1}</td>
                             <td style={{ border: "2px solid black",textAlign: "left"  }}>&nbsp;&nbsp;&nbsp;{item.name}</td>
-                            <td style={{ border: "2px solid black" }}>{item.key.QTY ? item.key.QTY : 0} NOS</td>
+                            <td style={{ border: "2px solid black" }}>{item.key.QTY ? `${item.key.QTY} NOS` : ""} </td>
                         </tr>
                     )
                 })
@@ -87,7 +87,9 @@ const FrameList = ({workOrder, csvData}) => {
             <tr>
                 <td></td>
                 <td style={{ border: "2px solid black", textAlign: "left", fontSize: "20px" }}>&nbsp;&nbsp;&nbsp;Total NOS</td>
-                <td style={{ border: "2px solid black" }}>{totalQty} NOS</td>
+                <td style={{ border: "2px solid black" }}>
+                    {totalQty > 0 ? `${totalQty} NOS` : ""}
+                </td>
             </tr>
         </tbody>
     </table>
