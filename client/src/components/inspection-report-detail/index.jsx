@@ -95,13 +95,13 @@ const InspectionDetail = ({
                 <td style={{ border: "2px solid black" }}>Tie rod location</td>
                 <td style={{ border: "2px solid black" }}>
                     {
-                        checkObjValue() ? `${parseInt(LVT.A) - 70}X${checkValue(LVT.P)}` : ""
+                        checkObjValue() ? `${parseInt(LVT.A) - 70}X${LVT.P}` : ""
                     }
                 </td>
                 <td>
                   <FrameDetail
                     csvData={csvData}
-                    value={`${(parseInt(LVT.A)) - 70}X${checkValue(LVT.P)}`}
+                    value={`${(parseInt(LVT.A)) - 70}X${LVT.P}`}
                     style={{ borderBottom: "2px solid black", width: "100%" }}
                   />
                 </td>
