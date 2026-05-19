@@ -376,7 +376,6 @@ export const getItemBreakdown = (invoices) => {
 };
 
 export const getYearlySales = ({ yearlyTotals, year }) => {
-  console.log(yearlyTotals, year)
   const selectedYear = Number(year);
   const yearKey = `${selectedYear}-${String(selectedYear + 1).slice(-2)}`;
 

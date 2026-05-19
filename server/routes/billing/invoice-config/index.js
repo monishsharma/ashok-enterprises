@@ -236,8 +236,8 @@ router.get("/invoice/list/unpaid", async (req, res) => {
   try {
     const invoiceCollection = db.collection(collectionName);
 
-    const selectedYear = getYear(year);
-    const yearForMonth = parseInt(year);
+    const selectedYear = Number(year);
+    const yearForMonth = Number(year);
 
     let monthly = [];
     let yearly = [];
