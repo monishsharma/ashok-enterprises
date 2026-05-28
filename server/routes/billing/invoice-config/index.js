@@ -880,6 +880,62 @@ router.get("/hsn-codes", async (req, res) => {
   }
 });
 
+router.get("/bakelite-rates", async (req, res) => {
+  try {
+    const bakeliteRateCollection = db.collection("bakeliteRates");
+    const bakeliteRates = await bakeliteRateCollection.find({}).toArray();
+    res.status(200).json(bakeliteRates);
+  } catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+router.post("/bakelite-rates", async (req, res) => {
+  try {
+    const bakeliteRateCollection = db.collection("bakeliteRates");
+    let result = await bakeliteRateCollection.insertOne(req.body);
+    res.status(201).send(result);
+  } catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+router.patch("/bakelite-rates/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { _id, ...updateData } = req.body;
+
+    const bakeliteRateCollection = db.collection("bakeliteRates");
+
+    const result = await bakeliteRateCollection.findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: updateData },
+      { returnDocument: "after" }
+    );
+
+    res.status(200).json(result.value);
+  } catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+router.delete("/bakelite-rates/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await db.collection("bakeliteRates").findOneAndDelete({
+      _id: new ObjectId(id),
+    });
+    res.status(201).send(result);
+  } catch (error) {
+    console.error("❌ Server Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 router.post("/hsn-codes", async (req, res) => {
   try {
     const hsnCollection = db.collection("hsnCodes");
@@ -911,11 +967,11 @@ router.patch("/hsn-codes/:id", async (req, res) => {
   }
 });
 
-router.delete("/hsn-codes/:hsnId", async (req, res) => {
+router.delete("/hsn-codes/:id", async (req, res) => {
   try {
-    const { hsnId } = req.params;
+    const { id } = req.params;
     const result = await db.collection("hsnCodes").findOneAndDelete({
-      _id: new ObjectId(hsnId),
+      _id: new ObjectId(id),
     });
     res.status(201).send(result);
   } catch (error) {
