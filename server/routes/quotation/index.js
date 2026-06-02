@@ -6,6 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import { getNextNumber } from "../../helper/get-next-number..js";
+import { sealTemplate } from "../../helper/sealTemplate.js";
 
 const router = express.Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -177,13 +178,17 @@ router.get("/generate-quotation-pdf/:id", async (req, res) => {
     //   }
     //   return "230px";
     // };
-
+    const sealHtml = sealTemplate({
+          sealText: companyType === "ASHOK" ? "ASHOK ENTERPRISES" : "PADMA ENGG WORKS",
+          city: "GWALIOR"
+        });
     const html = await ejs.renderFile(
       path.join(__dirname, "./template/quotation.ejs"),
       {
         data,
         formattedDate,
         logoBase64: logoDataURI,
+        sealHtml,
         sealText:
           companyType === "ASHOK" ? "ASHOK ENTERPRISES" : "PADMA ENGG WORKS",
         height: "250px",

@@ -100,55 +100,55 @@
         width: 98%;
         object-fit: cover;
       }
-    .signature-box {
-  position: relative;
-  height: 150px;
-}
+      .signature-box {
+        position: relative;
+        height: 150px;
+      }
 
-.circle-wrapper {
-  position: absolute;
-  width: 150px; /* ↓ reduced from 150 */
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0.8;
-  pointer-events: none;
-}
+  .circle-wrapper {
+    position: absolute;
+    width: 150px; /* ↓ reduced from 150 */
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.8;
+    pointer-events: none;
+  }
 
-.circle-wrapper svg {
-  width: 100%;
-  height: auto;
-}
+  .circle-wrapper svg {
+    width: 100%;
+    height: auto;
+  }
 
-.outer-circle {
-  fill: none;
-  stroke: #000;
-  stroke-width: 4;
-}
+  .outer-circle {
+    fill: none;
+    stroke: #000;
+    stroke-width: 4;
+  }
 
-.inner-circle {
-  fill: none;
-  stroke: #555;
-  stroke-width: 3;
-}
+  .inner-circle {
+    fill: none;
+    stroke: #555;
+    stroke-width: 3;
+  }
 
-.circle-text {
-  font-size: 18px; /* ↓ reduced */
-  letter-spacing: 3px;
-  fill: #000;
-  font-weight: 600;
-  dominant-baseline: middle;
-  font-family: Arial, sans-serif;
-}
+  .circle-text {
+    font-size: 18px; /* ↓ reduced */
+    letter-spacing: 3px;
+    fill: #000;
+    font-weight: 600;
+    dominant-baseline: middle;
+    font-family: Arial, sans-serif;
+  }
 
-.center-text {
-  font-size: 20px; /* ↓ reduced */
-  fill: #000;
-  font-weight: bold;
-  text-anchor: middle;
-  dominant-baseline: middle;
-  font-family: Arial, sans-serif;
-}
+  .center-text {
+    font-size: 20px; /* ↓ reduced */
+    fill: #000;
+    font-weight: bold;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    font-family: Arial, sans-serif;
+  }
     </style>
   </head>
   <body>
@@ -401,38 +401,7 @@
                   <%- bankDetail %>
                 </td>
                 <td colspan="3" class="signature-box">
-                  <div class="circle-wrapper">
-                    <svg viewBox="0 0 300 300">
-
-                      <!-- Outer Circle -->
-                      <circle cx="150" cy="150" r="90" class="outer-circle" />
-
-                      <!-- Inner Circle -->
-                      <circle cx="150" cy="150" r="55" class="inner-circle" />
-
-                      <!-- Text Path -->
-                      <defs>
-                        <path
-                    id="text-circle"
-                    d="
-                    M 150,150
-                    m -70,0
-                    a 70,70 0 1,1 140,0
-                    a 70,70 0 1,1 -140,0"
-                  />
-                      </defs>
-
-                      <!-- Curved Text -->
-                      <text class="circle-text">
-                        <textPath href="#text-circle" startOffset="0%" text-anchor="start">
-                        <%= sealText %>
-                        </textPath>
-                      </text>
-
-                      <!-- Center Text -->
-                      <text x="150" y="150" class="center-text">Gwalior</text>
-                    </svg>
-                  </div>
+                 <%- sealHtml %>
                   <%= data.invoiceDetail.name %><br /><br /><br /><br />
                   (ASHOK SHARMA)<br />
                   <!-- <% if (showLogo === false || showLogo == 'false') { %> -->

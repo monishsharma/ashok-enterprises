@@ -40,6 +40,8 @@ import {
 import { groupItem } from "./constant.js";
 import { checkExistingInvoice, createLedger, createTransaction, updateInvoiceNumber } from "./services.js";
 import { injectId } from "../../../helper/vendor.js";
+import { sealTemplate } from "../../../helper/sealTemplate.js";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Puppeteer config
@@ -695,6 +697,7 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
   const downloadOriginal = req.params.downloadOriginal === "true";
   const { id } = req.params;
 
+
   try {
     const data = await db
       .collection(collectionName)
@@ -746,6 +749,11 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
         return "20%";
       }
     };
+
+    const sealHtml = sealTemplate({
+      sealText: companyType === "ASHOK" ? "ASHOK ENTERPRISES" : "PADMA ENGG WORKS",
+      city: "GWALIOR"
+    });
     // if (companyType === "PADMA") {
     //     const { finalItems } = groupItem({ selectedItem: data.goodsDescription.items, selectedCompany: data.company});
     //     data.goodsDescription.items = finalItems;
@@ -761,11 +769,10 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
         amountInWords,
         logoBase64: logoDataURI,
         bankDetail,
-        sealText:
-          companyType === "ASHOK" ? "ASHOK ENTERPRISES" : "PADMA ENGG WORKS",
+        sealHtml,
+        sealText: companyType === "ASHOK" ? "ASHOK ENTERPRISES" : "PADMA ENGG WORKS",
         showLogo: req.params.downloadOriginal === "true",
         height: returnHeight(),
-        circleBottmPercent: getSealLogoTopValue(),
         isUniqueVendor: data.buyerDetail.customer == "Rajasthan Explosives",
       },
     );
@@ -1054,9 +1061,19 @@ router.get("/search/invoice", async (req, res) => {
     ]);
 
     const sortedInvoices = invoices.sort((a, b) => {
-      const aNum = parseInt(a.invoiceDetail.invoiceNO.split("-").pop()) || 0;
-      const bNum = parseInt(b.invoiceDetail.invoiceNO.split("-").pop()) || 0;
-      return bNum - aNum; // descending order
+      const aInv = a.invoiceDetail.invoiceNO;
+      const bInv = b.invoiceDetail.invoiceNO;
+
+      const aExact = aInv.endsWith(searchTerm);
+      const bExact = bInv.endsWith(searchTerm);
+
+      if (aExact && !bExact) return -1;
+      if (!aExact && bExact) return 1;
+
+      const aNum = parseInt(aInv.split("-").pop()) || 0;
+      const bNum = parseInt(bInv.split("-").pop()) || 0;
+
+      return bNum - aNum;
     });
 
     res.status(200).json({

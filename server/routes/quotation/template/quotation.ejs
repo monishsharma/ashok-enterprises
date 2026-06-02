@@ -114,59 +114,55 @@
     margin-bottom: 8px;   /* 👈 space between points */
     line-height: 1.6;     /* 👈 line height inside point */
   }
- .signature-box{
-  position: relative;
-  height: 150px;
-}
+ .signature-box {
+        position: relative;
+        height: 150px;
+      }
 
-.circle-wrapper{
-  position:absolute;
-  width:150px;
-  top:10px;
-  right:100px;
-  opacity:0.8;
-  pointer-events:none;
-}
+  .circle-wrapper {
+    position: absolute;
+    width: 150px; /* ↓ reduced from 150 */
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.8;
+    pointer-events: none;
+  }
 
-    svg {
-      width: 100%;
-      height: auto;
-    }
+  .circle-wrapper svg {
+    width: 100%;
+    height: auto;
+  }
 
-    .outer-circle {
-      fill: none;
-      stroke: #000;
-      stroke-width: 5 !important;
-    }
+  .outer-circle {
+    fill: none;
+    stroke: #000;
+    stroke-width: 4;
+  }
 
-    .inner-circle {
-      fill: none;
-      stroke: #555;
-      stroke-width: 4 !important;
-    }
+  .inner-circle {
+    fill: none;
+    stroke: #555;
+    stroke-width: 3;
+  }
 
-    .circle-text {
-      font-size: 30px !important;
-      letter-spacing: 5px;
-      fill: #000;
-      font-weight: bolder !important;
-      dominant-baseline: middle;
-      font-family: Arial, sans-serif;
-    }
-    .center-text {
-      font-size: 35px;
-      fill: #000;
-      font-weight: bolder;
-      text-anchor: middle;
-      dominant-baseline: middle;
-      font-family: Arial, sans-serif;
-    }
-    .circle-wrapper svg text {
-  font-weight: 600;
-  /* letter-spacing: 6px; */
-  fill: #000;
-}
+  .circle-text {
+    font-size: 18px; /* ↓ reduced */
+    letter-spacing: 3px;
+    fill: #000;
+    font-weight: 600;
+    dominant-baseline: middle;
+    font-family: Arial, sans-serif;
+  }
 
+  .center-text {
+    font-size: 20px; /* ↓ reduced */
+    fill: #000;
+    font-weight: bold;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    font-family: Arial, sans-serif;
+  }
 
   </style>
   <body>
@@ -340,29 +336,7 @@
                   </td> -->
                   <td colspan="2" class="signature-box">
 
-                  <div class="circle-wrapper">
-                  <svg viewBox="0 0 300 300">
-
-                  <circle cx="150" cy="150" r="140" stroke="black" stroke-width="3" fill="none"/>
-                  <circle cx="150" cy="150" r="80" stroke="#555" stroke-width="2" fill="none"/>
-
-                  <defs>
-                  <path id="text-circle"
-                  d="M150,150 m-110,0 a110,110 0 1,1 220,0 a110,110 0 1,1 -220,0"/>
-                  </defs>
-
-                  <text font-size="30" letter-spacing="5">
-                  <textPath href="#text-circle">
-                  <%- sealText %> GWALIOR
-                  </textPath>
-                  </text>
-
-                  <text x="150" y="150" text-anchor="middle" font-size="35">
-                  Gwalior
-                  </text>
-
-                  </svg>
-                  </div>
+                  <%- sealHtml %>
 
                   <%- sealText %><br><br><br><br>
 
