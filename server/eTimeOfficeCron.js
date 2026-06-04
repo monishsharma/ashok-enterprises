@@ -67,12 +67,12 @@ export const fetchETimeOfficeDataCron = async() => {
 
         console.log(`Attendance fetched successfully from biometric synced=${synced} total=${biometricData.length}`);
 
-        res.json({
-            success: true,
-            synced,
-            skipped,
-            total: biometricData.length,
-        });
+        // res.json({
+        //     success: true,
+        //     synced,
+        //     skipped,
+        //     total: biometricData.length,
+        // });
 
 
     } catch(err) {
