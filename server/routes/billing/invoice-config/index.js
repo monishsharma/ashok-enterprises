@@ -773,7 +773,7 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
         sealText: companyType === "ASHOK" ? "ASHOK ENTERPRISES" : "PADMA ENGG WORKS",
         showLogo: req.params.downloadOriginal === "true",
         height: returnHeight(),
-        isUniqueVendor: data.buyerDetail.customer == "Rajasthan Explosives",
+        isUniqueVendor: data.buyerDetail.customer == "67ff5f24083de5839961ea7b",
       },
     );
 
