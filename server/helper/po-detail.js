@@ -106,13 +106,13 @@ export const detectVendor = ({ purchaserGSTIN, vendors, shippingCity }) => {
   const vendor = vendors.map(v => {
     const plantRows = v.plantRows || [];
     let city = shippingCity;
-    if (shippingCity === "BENGALURU") city = "Banglore"
+    if (shippingCity === "BENGALURU") city = "Banglore";
     const match = plantRows.find(p => String(p.GSTIN) == String(purchaserGSTIN) && p.label.toLowerCase().includes(city.toLowerCase()));
     if (match) {
       return {
         vendorId: v._id,
         vendorName: v.name,
-        vendorGSTIN: v.GSTIN,
+        vendorGSTIN: match.GSTIN,
         branchId: match.id,
         branchLabel: match.label
       };
