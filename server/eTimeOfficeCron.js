@@ -1,3 +1,4 @@
+import { db } from "./db/connection.js";
 import {fetchEtimeAttendance} from "./helper/eTimeOffice.js";
 // import { toISODate, toTimestamp, toMinutes } from "./helper/time";
 import {toMinutes, toISODate, toTimestamp} from "./helper/time.js"
