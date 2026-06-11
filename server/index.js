@@ -32,7 +32,7 @@ const startServer = async () => {
   app.use(express.static(path.join(__dirname, 'public')));
 
   app.use("/cron", cron);
-  app.use("/biometric/cron", fetchETimeOfficeDataCron)
+  //app.use("/biometric/cron", fetchETimeOfficeDataCron)
   app.use("/employee", Employee);
   app.use("/attendance", Attendance);
 
