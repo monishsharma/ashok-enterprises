@@ -8,6 +8,9 @@
     "dev": "cross-env NODE_ENV=development nodemon index.js",
     "prod": "cross-env NODE_ENV=production node index.js"
   },
+  "engines": {
+    "node": "20.x"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
