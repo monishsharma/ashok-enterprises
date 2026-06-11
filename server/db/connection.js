@@ -1,7 +1,12 @@
 // db/connection.js
 import { MongoClient, ServerApiVersion } from "mongodb";
+import dns from "node:dns/promises"; // Or use require() for CommonJS
+if (process.env.NODE_ENV !== "production") {
+  dns.setServers(["1.1.1.1", "8.8.8.8"]);
+}
 
 const client = new MongoClient(process.env.MONGO_URI, {
+  family: 4,
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
