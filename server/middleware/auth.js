@@ -1,6 +1,12 @@
 import { getAuth } from "../config/firebaseAdmin.js";
 
 const verifyToken = async (req, res, next) => {
+
+    if (req.method === "OPTIONS") {
+    return next();
+  }
+
+
   try {
     const authHeader = req.headers.authorization;
 
