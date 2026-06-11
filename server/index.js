@@ -14,7 +14,7 @@ import {fetchETimeOfficeDataCron} from "./eTimeOfficeCron.js"
 import path from "path";
 import { fileURLToPath } from "url";
 import { connectToDB } from "./db/connection.js";
-// import { verifyFirebaseToken } from "./middleware/auth.js";
+import verifyToken from "./middleware/auth.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,7 +36,7 @@ const startServer = async () => {
   app.use("/employee", Employee);
   app.use("/attendance", Attendance);
 
-  // app.use(verifyFirebaseToken);
+  app.use(verifyToken);
   app.use("/billing", Billing);
   app.use("/purchase-order", PurchaseOrder)
   app.use("/ASN", ASN)
