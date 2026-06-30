@@ -7,7 +7,7 @@ import constants from "constants";
 const clean = s => s.replace(/^0+/, '') || "0";
 
 const agent = new https.Agent({
-  secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
+  // secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
 });
 
 
@@ -257,6 +257,19 @@ const buildInvoiceEntry = (invoice, items) => ({
 
 // DB update
 const updatePOInDB = async ({ poId, items, poStatus, invoiceId, entry }) => {
+
+  const pullResult = await db.collection("purchaseOrders").updateOne(
+  { _id: poId },
+  {
+    $set: { items, poStatus },
+    $pull: {
+      dispatchedInvoices: { invoiceId }
+    }
+  }
+);
+
+console.log("PULL RESULT", pullResult);
+
   await db.collection("purchaseOrders").updateOne(
     { _id: poId },
     {
@@ -301,7 +314,10 @@ export const processPO = async ({ po, invoice, invoiceItems }) => {
 
   const poStatus = getPOStatus(updatedItems, po);
 
+
   const newInvoiceEntry = buildInvoiceEntry(invoice, newItems);
+
+
   await updatePOInDB({
     poId: po._id,
     items: updatedItems,
