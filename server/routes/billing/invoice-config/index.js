@@ -734,7 +734,7 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
     ).padStart(2, "0")}-${date.getFullYear()}`;
     const returnHeight = () => {
       if (data.company === "ASHOK") {
-        if (req.params.downloadOriginal) return "190px";
+        if (req.params.downloadOriginal) return "220px";
         return "250px";
       }
       return "230px";
