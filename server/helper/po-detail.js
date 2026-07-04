@@ -7,7 +7,8 @@ import constants from "constants";
 const clean = s => s.replace(/^0+/, '') || "0";
 
 const agent = new https.Agent({
-  secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
+  // secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
+  rejectUnauthorized: false,
 });
 
 

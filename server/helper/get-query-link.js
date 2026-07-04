@@ -4,7 +4,8 @@ import https from "https";
 import constants from "constants";
 
 const agent = new https.Agent({
-  secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
+  // secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
+  rejectUnauthorized: false,
 });
 
 export const getPOQueryLink = async (poNumber) => {

@@ -9,9 +9,10 @@ const formatDate = (dateStr) => moment(dateStr, "YYYY-MM-DD").format("DD MMM YYY
 
 
 
-const agent = new https.Agent({
-  secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
-});
+    const agent = new https.Agent({
+    // secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT,
+    rejectUnauthorized: false,
+    });
 
 export const getAsnDetail = async ({poNumber, invoiceDetail}) => {
 
