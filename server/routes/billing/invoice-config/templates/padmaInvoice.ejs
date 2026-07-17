@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+    <title><%= data.invoiceDetail.invoiceNO %></title>
+    <style>
+      @media print {
+        .no-break {
+          page-break-inside: avoid;
+        }
+      }
+      .wrapper {
+        /* padding-top: 233px; */
+        margin: 15px;
+        min-height: 240px;
+        /* border: 2px  solid black; */
+        border-collapse: collapse !important;
+      }
+      body {
+        font-family: "Roboto", sans-serif;
+      }
+      th{
+        font-size: 14px !important;
+      }
+      td {
+        font-size: 14px !important;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid black;
+        border-collapse: collapse !important;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse !important;
+      }
+      .invoiceTable table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .invoiceTable thead,
+      .invoiceTable tbody,
+      .invoiceTable tr {
+        border: 1px solid black !important;
+        border-width: thin !important;
+      }
+
+      .tablecontainer table {
+        margin: 0 auto;
+      }
+      .invoiceTable th,
+      .invoiceTable td {
+        border: 1px solid black;
+        text-align: center;
+        word-wrap: break-word;
+        margin: 0 !important;
+        padding: 5px !important;
+        height: 15px;
+      }
+      .invoiceTable td {
+        border-width: inherit !important;
+      }
+      .invoiceTable p {
+        text-align: left;
+        margin: 0;
+        line-height: 24px;
+      }
+      .invoice-page {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .wrapper img {
+        display: block;
+       margin: 0 auto;
+        width: 100%;
+       height: 200px;
+      }
+      .logo-container {
+        min-height: <%= height %>;
+        width: 100%;
+        display: flex;
+        border-top: 2px solid black;
+        border-left: 1px solid black;
+        border-right: 1px solid black;
+        justify-content: center;
+        align-items: center;
+      }
+      .logo-container img {
+        height: auto;
+        /* margin: 10px; */
+        width: 98%;
+        object-fit: cover;
+      }
+      .signature-box {
+        position: relative;
+        height: 150px;
+      }
+
+  .circle-wrapper {
+    position: absolute;
+    width: 150px; /* ↓ reduced from 150 */
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.8;
+    pointer-events: none;
+  }
+
+  .circle-wrapper svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .outer-circle {
+    fill: none;
+    stroke: #000;
+    stroke-width: 4;
+  }
+
+  .inner-circle {
+    fill: none;
+    stroke: #555;
+    stroke-width: 3;
+  }
+
+  .circle-text {
+    font-size: 18px; /* ↓ reduced */
+    letter-spacing: 3px;
+    fill: #000;
+    font-weight: 600;
+    dominant-baseline: middle;
+    font-family: Arial, sans-serif;
+  }
+
+  .center-text {
+    font-size: 20px; /* ↓ reduced */
+    fill: #000;
+    font-weight: bold;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    font-family: Arial, sans-serif;
+  }
+    </style>
+  </head>
+  <body>
+    <div class="invoice-page">
+      <div class="wrapper">
+        <div class="logo-container" style="min-height: <%= height %>;">
+          <% if (showLogo === false || showLogo == 'false') { %>
+            <img src="<%= logoBase64 %>" />
+          <% } %>
+        </div>
+        <div class="tablecontainer">
+          <table class="header-table invoiceTable">
+            <thead>
+              <tr>
+                <th colspan="2">GSTIN</th>
+                <th>PAN</th>
+                <th>State & Code</th>
+                <th colspan="2">Invoice No</th>
+                <td colspan="2">
+                  <%= data.invoiceDetail.invoiceNO %>
+                </td>
+              </tr>
+            </thead>
+            <tbody class="no-break">
+              <tr>
+                <td colspan="2"><%= data.invoiceDetail.GSTIN %></td>
+                <td><%= data.invoiceDetail.PAN %></td>
+                <td>MP & 23</td>
+                <th colspan="2">Invoice Date</th>
+                <td colspan="2">
+                  <%= formattedDate %>
+                </td>
+              </tr>
+              <tr>
+                <th colspan="8" style="border-top: none; border-bottom: none">
+                  MSME UAN NO - UDYAM MP-20-0045157
+                </th>
+              </tr>
+              <tr>
+                <th colspan="4" rowspan="4" style="text-align: left; line-height: 1.5;">
+                  <h4 style="font-size: 18px; margin: 0;">
+                    <%= data.buyerDetail.name.toUpperCase() %><br />
+                    <%= data.buyerDetail.address.toUpperCase() %> <br />
+                    <%= data.buyerDetail.city ? data.buyerDetail.city.toUpperCase() : '' %>
+                  </h4>
+                </th>
+                <th colspan="2" style="font-size: 12px; text-align: left;">BUYER GSTIN</th>
+                <td colspan="2" style="font-size: 12px"><%= data.buyerDetail.GSTIN %></td>
+              </tr>
+              <tr style="font-size: 12px">
+                <th style="text-align: left;" colspan="2">BUYER STATE</th>
+                <td colspan="2">
+                  <%= data.buyerDetail.state %>
+                </td>
+              </tr>
+              <tr style="font-size: 12px">
+                <th style="text-align: left;" colspan="2">HSN CODE</th>
+                <td colspan="2">
+                  <%= data.goodsDescription.HSN %>
+                </td>
+              </tr>
+              <tr style="font-size: 12px">
+
+                <% if (data.buyerDetail.isInterState) { %>
+                  <th style="text-align: left;" colspan="2">State Code</th>
+                <% } else { %>
+                  <th style="text-align: left;" colspan="2">Eway bill No</th>
+                <% } %>
+
+                <% if (data.buyerDetail.isInterState) { %>
+                  <td colspan="2"><%= data.buyerDetail.GSTIN.slice(0, 2) %></td>
+                <% } else { %>
+                  <td colspan="2"><%= data.shippingDetail.eway %></td>
+                <% } %>
+
+              </tr>
+              <tr style="font-size: 12px">
+                <th>Code</th>
+                <th>Material Code</th>
+                <th>Purchase Order No</th>
+                <th>Serial No</th>
+                <% if (isUniqueVendor) { %>
+                  <th  colspan="2">Challan No</th>
+                <% } else { %>
+                  <th  colspan="2">Transporter Name</th>
+                <% } %>
+
+                <% if (data.buyerDetail.isInterState) { %>
+                  <th colspan="2">Eway Bill No</th>
+                <% } else { %>
+                  <th colspan="2">ASN Number</th>
+                <% } %>
+              </tr>
+              <tr style="font-size: 12px">
+                <td><%= data.buyerDetail.vendorCode %></td>
+                <td><%= data.buyerDetail.materialCode %></td>
+                <td><%= data.goodsDescription.poDisplay || data.goodsDescription.po %></td>
+                <td><%= data.goodsDescription.serial %></td>
+                <td colspan="2"><%= data.shippingDetail.vehicleNo %></td>
+                <% if (data.buyerDetail.isInterState) { %>
+                  <td colspan="2"><%= data.shippingDetail.eway %></td>
+                <% } else { %>
+                  <td colspan="2"><%= data.shippingDetail.asn %></td>
+                <% } %>
+              </tr>
+            </tbody>
+
+            <!-- Item table header -->
+            <thead>
+              <tr style="font-size: 12px">
+                <th>S.No</th>
+                <th colspan="2" >Description of Goods</th>
+                <th>W.O / DRG</th>
+                <th style="min-width: 70px;"><%= data.goodsDescription.type %></th>
+                <th colspan="1">Rate/Unit</th>
+                <th colspan="2">VALUE</th>
+              </tr>
+            </thead>
+            <tbody class="no-break">
+              <%
+                let totalRenderedRows = 0;
+                data.goodsDescription.items.forEach(function(item) {
+                  const descChunks = item.description.match(/.{1,45}(\s|$)/g) || [''];
+                  totalRenderedRows += descChunks.length;
+
+                  descChunks.forEach(function(chunk, index) {
+              %>
+                <tr style="font-size: 13px">
+                  <% if (index === 0) { %>
+                    <td><%= item.sno %></td>
+                    <td colspan="2" style="text-align: left;"><%= chunk.trim() %></td>
+                    <td><%= item.wo %></td>
+                    <td><%= parseFloat(item.qty).toFixed(2) %></td>
+                    <td><%= parseFloat(item.rate).toFixed(2) %></td>
+                    <td colspan="2" style="text-align: right;">
+                      <%= parseFloat(item.value).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>
+                    </td>
+                  <% } else { %>
+                    <td></td>
+                    <td style="text-align: left;" colspan="2"><%= chunk.trim() %></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td colspan="2"></td>
+                  <% } %>
+                </tr>
+              <%
+                  });
+                });
+
+                const remainingRows = 10 - totalRenderedRows;
+                for (let j = 0; j < remainingRows; j++) {
+              %>
+                <tr>
+                  <td></td>
+                  <td colspan="2"></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td colspan="2"></td>
+                </tr>
+              <% } %>
+
+              <!-- Totals & Summary Rows -->
+              <tr>
+                <td colspan="3"></td>
+                <td>Total</td>
+                <td colspan="1">
+                  <%
+                    let totalQty = 0;
+                    data.goodsDescription.items.forEach(function(item) {
+                      totalQty += parseFloat(item.qty);
+                    });
+                  %>
+                  <%= totalQty.toFixed(2) %>
+                </td>
+                <td colspan="1"></td>
+                <td colspan="1" style="text-align: right;">
+                  <%
+                      let totalValue = 0;
+                      data.goodsDescription.items.forEach(function(item) {
+                        totalValue += parseFloat(item.value);
+                      });
+                    %>
+                    <%= parseFloat(totalValue).toFixed(2) %>
+                </td>
+              </tr>
+              <tr>
+                <td style="text-align: left;" colspan="3">Rs: - <%= data.goodsDescription.Total %></td>
+                <td colspan="3">Freight</td>
+                <td style="text-align: right;">
+                  <%= parseFloat(data.goodsDescription.freight || 0).toFixed(2) %>
+                </td>
+              </tr>
+              <tr>
+                <th style="text-align: left; padding: 10px;" rowspan="4" colspan="4">
+                  Invoice value (in words): - <br />
+                  <h4 style="font-size: 18px;">
+                    <%= amountInWords %>
+                  </h4>
+                </th>
+                <th style="font-size: 12px" colspan="2">Assessable value</th>
+                <td style="text-align: right;">
+                    <%= parseFloat(data.goodsDescription.taxableValue).toFixed(2) %>
+                  </td>
+
+              </tr>
+
+              <% if (data.buyerDetail.isInterState) {
+                const igst = parseFloat(data.goodsDescription.CGST) + parseFloat(data.goodsDescription.SGST);
+                const tx = parseFloat(data.goodsDescription.taxableValue).toFixed(2) + parseFloat(data.goodsDescription.freight).toFixed(2)
+              %>
+                <tr style="font-size: 12px" >
+                  <th  colspan="2">G Total</th>
+                  <td style="text-align: right;"><%= parseFloat(data.goodsDescription.taxableValue).toFixed(2) %></td>
+                </tr>
+                <tr style="font-size: 12px">
+                  <th colspan="2">IGS TAX 18%</th>
+                  <td style="text-align: right;"><%= igst.toFixed(2) %></td>
+                </tr>
+              <% } else { %>
+                <tr style="font-size: 12px">
+                  <th colspan="2">SGS TAX 9%</th>
+                  <td style="text-align: right;"><%= data.goodsDescription.SGST %></td>
+                </tr>
+                <tr style="font-size: 12px">
+                  <th colspan="2">CGS TAX 9%</th>
+                  <td style="text-align: right;"><%= data.goodsDescription.CGST %></td>
+                </tr>
+              <% } %>
+
+              <tr style="font-size: 12px">
+                <th colspan="2">ROUND OFF</th>
+                <td style="text-align: right;"><%= data.goodsDescription.roundOff %></td>
+              </tr>
+              <tr style="font-size: 13px">
+                <th style="text-align: left;" colspan="4">Payment terms:- <%= data.invoiceDetail.paymentTerms %></th>
+                <th rowspan="2" colspan="2">GRAND TOTAL</th>
+                <td rowspan="2" style="font-weight: bold; text-align: right;">
+                  Rs <%= parseFloat(data.goodsDescription.Total).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>
+                </td>
+              </tr>
+              <tr>
+                <td style="text-align: left;" colspan="4">Terms & Condition of Sales</td>
+              </tr>
+              <tr style="height: 2px; font-size: 13px;">
+                <td colspan="4" style="text-align: left;" >
+                  Tin: <%= data.invoiceDetail.tin %>
+                  <p>Our Bank:</p>
+                  <%- bankDetail %>
+                </td>
+                <td colspan="3" class="signature-box">
+                 <%- sealHtml %>
+                  <%= data.invoiceDetail.name %><br /><br /><br /><br />
+                  (ASHOK SHARMA)<br />
+                  <!-- <% if (showLogo === false || showLogo == 'false') { %> -->
+
+                <!-- <% } %> -->
+
+                  AUTHORISED SIGNATORY
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

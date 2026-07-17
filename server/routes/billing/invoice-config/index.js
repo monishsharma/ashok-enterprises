@@ -761,8 +761,10 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
     // data.goodsDescription.poDisplay = poDisplay;
     // data.goodsDescription.poArray = poArray;
 
+    const fileDir = companyType === "ASHOK" ? "./templates/ashokInvoice.ejs" : "./templates/padmaInvoice.ejs";
+
     const html = await ejs.renderFile(
-      path.join(__dirname, "./templates/invoice.ejs"),
+      path.join(__dirname, fileDir),
       {
         data,
         formattedDate,
