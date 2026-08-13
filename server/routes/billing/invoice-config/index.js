@@ -704,7 +704,7 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
       .findOne({ _id: new ObjectId(id) });
     if (!data) return res.status(404).send("Invoice not found");
     const companyType = data.company || "ASHOK";
-    const img = companyType === "ASHOK" ? "ashoklogo.png" : "padma.png";
+    const img = companyType === "ASHOK" ? "ashok.png" : "padma1.png";
     const bankDetail =
       companyType === "PADMA"
         ? `
