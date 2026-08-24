@@ -896,10 +896,12 @@ router.get("/generate-gst-report", async (req, res) => {
   endDate.setMonth(endDate.getMonth() + 1);
   try {
 
-    const invoices = await db.collection(collectionName)  .find({
+    const invoices = await db.collection(collectionName).find({
       company: company,
       invoiceDate: { $gte: startDate, $lt: endDate },
     }).toArray();
+
+    const appConfig = await db.collection("config").findOne({})
 
     const workbook = new ExcelJS.Workbook();
 
@@ -908,11 +910,13 @@ router.get("/generate-gst-report", async (req, res) => {
       workbook,
       invoices,
       company,
+      appConfig
     });
 
     addHsnSheet({
       workbook,
       invoices,
+      appConfig
     });
 
 

@@ -173,10 +173,11 @@ export const addB2BSheet = ({
 export const addHsnSheet = ({
     workbook,
     invoices,
+    appConfig
 }) => {
     const sheet = workbook.addWorksheet("hsn(b2b)");
 
-    const hsnRows = getHSNRows(invoices);
+    const hsnRows = getHSNRows(invoices, appConfig);
 
     const summary = getHsnSummary(hsnRows);
 

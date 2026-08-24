@@ -186,8 +186,19 @@ export const getHsnHeaders = () => {
   ]
 };
 
-export const getHSNRows = (invoices) => {
+export const getHSNRows = (invoices, appConfig) => {
   const hsnMap = {};
+  let uqcMap = {
+    SQFT: "SQF-SQUARE FEET"
+  };
+  const {data: {uqc = {}} = {}} = appConfig || {};
+  uqc.values.map((val) => {
+    uqcMap = {
+      ...uqcMap,
+      [val.uqc]: `${val.uqc}-${val.desc}`
+    }
+  })
+
 
   invoices.forEach((invoice) => {
     const goods = invoice.goodsDescription || {};
@@ -198,13 +209,6 @@ export const getHSNRows = (invoices) => {
 
     if (!hsn) return;
 
-    const uqcMap = {
-      NOS: "NOS-NUMBERS",
-      KGS: "KGS-KILOGRAMS",
-      KG: "KGS-KILOGRAMS",
-      SQF: "SQUARE FEET",
-      SQFT: "SQUARE FEET",
-    };
 
     const uqc = uqcMap[type.toUpperCase()] || type;
 

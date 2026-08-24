@@ -287,6 +287,71 @@ router.post("/post-config-value", async (req, res) => {
 });
 
 
+router.delete("/delete-config-value", async (req, res) => {
+   try {
+    const Config = db.collection("config");
+
+    const { configKey, valueId } = req.query;
+
+    if (!configKey || !valueId) {
+      return res.status(400).json({
+        success: false,
+        message: "configKey and valueId are required",
+      });
+    }
+
+    if (!ObjectId.isValid(valueId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid valueId",
+      });
+    }
+
+    const id = new ObjectId(valueId);
+
+    const result = await Config.findOneAndUpdate(
+      {
+        [`data.${configKey}.values._id`]: id,
+      },
+      {
+        $pull: {
+          [`data.${configKey}.values`]: {
+            _id: id,
+          },
+        },
+        $set: {
+          updatedAt: new Date(),
+        },
+      },
+      {
+        returnDocument: "after",
+      }
+    );
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        message: "Config value not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Value deleted successfully",
+      data: result.data[configKey],
+    });
+  } catch (error) {
+    console.error("Delete config value error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+
+
 
 
 export default router;
