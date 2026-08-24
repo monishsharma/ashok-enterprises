@@ -11,8 +11,8 @@ const InspectionReport = () => {
   let currentHeader = [];
 
   const [csvData, setCsvData] = useState(null);
-  const [supplier, setSupplier] = useState("");
-  const [consumer, setConsumer] = useState("");
+  const [supplier, setSupplier] = useState("ASHOK ENTERPRISES GWALIOR (M. P.)");
+  const [consumer, setConsumer] = useState("CG POWER AND INDUSTRIAL SOLUTION LIMITED");
   const [workOrder, setWorkOrder] = useState("");
   const [isLPTFrame, setIsLPTFrame] = useState(false);
 
@@ -131,13 +131,13 @@ const InspectionReport = () => {
     <div className="mt-4">
       <h2 className="fw-bold mb-4">Inspection Report</h2>
       <div className="mt-2 mb-4">
-        {/* <Form.Check
+        <Form.Check
           type="switch"
           id="custom-switch"
           label="LPT FRAME"
           checked={isLPTFrame}
           onChange={(e) => setIsLPTFrame(e.target.checked)}
-        /> */}
+        />
       </div>
       <div className="row">
         <div className="col-3">
