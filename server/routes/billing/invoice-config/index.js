@@ -731,19 +731,21 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
     const amountInWords = `Indian Rupees  ${convertAmountToWords(
       data.goodsDescription.Total,
     )}`;
-    const invoiceHeight = appConfig.data.pdfConfig.values[0];
+    const invoiceHeightData = appConfig.data.pdfConfig.values;
+    const ashokInvoiceHeight = invoiceHeightData[0];
+    const padmaInvoiceHeight = invoiceHeightData[1];
     const date = new Date(data.invoiceDetail.invoiceDate);
     const formattedDate = `${String(date.getDate()).padStart(2, "0")}-${String(
       date.getMonth() + 1,
     ).padStart(2, "0")}-${date.getFullYear()}`;
     const returnHeight = () => {
       if (data.company === "ASHOK") {
-        if (req.params.downloadOriginal) return `${invoiceHeight.aeOriginalHeight}px`;
-        return `${invoiceHeight.aeDuplicateHeight}px`;
+        if (req.params.downloadOriginal) return `${ashokInvoiceHeight.originalHeight}px`;
+        return `${ashokInvoiceHeight.duplicateHeight}px`;
       }
       if (data.company === "PADMA") {
-        if (req.params.downloadOriginal) return `${invoiceHeight.padmaOriginalHeight}px`;
-        return `${invoiceHeight.padmaDuplicateHeight}px`;
+        if (req.params.downloadOriginal) return `${padmaInvoiceHeight.originalHeight}px`;
+        return `${padmaInvoiceHeight.duplicateHeight}px`;
       }
     };
     const getSealLogoTopValue = () => {
