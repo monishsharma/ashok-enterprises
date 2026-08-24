@@ -3,6 +3,7 @@ import InvoiceConfig from "./schema.js";
 import { db } from "../../../db/connection.js";
 import ejs from "ejs";
 import path from "path";
+import ExcelJS from "exceljs";
 // import puppeteer from 'puppeteer';
 import { fileURLToPath } from "url";
 import { ObjectId } from "mongodb";
@@ -37,10 +38,11 @@ import {
   getYearlyTons,
   monthlySalesQuery,
 } from "../../../helper/growth-api-.js";
-import { groupItem } from "./constant.js";
+import { groupItem, monthNames } from "./constant.js";
 import { checkExistingInvoice, createLedger, createTransaction, updateInvoiceNumber } from "./services.js";
 import { injectId } from "../../../helper/vendor.js";
 import { sealTemplate } from "../../../helper/sealTemplate.js";
+import { addB2BSheet, addHsnSheet } from "../../../helper/gst-report-helper.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -702,6 +704,7 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
     const data = await db
       .collection(collectionName)
       .findOne({ _id: new ObjectId(id) });
+      const appConfig = await db.collection("config").findOne({})
     if (!data) return res.status(404).send("Invoice not found");
     const companyType = data.company || "ASHOK";
     const img = companyType === "ASHOK" ? "ashok.png" : "padma1.png";
@@ -728,16 +731,20 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
     const amountInWords = `Indian Rupees  ${convertAmountToWords(
       data.goodsDescription.Total,
     )}`;
+    const invoiceHeight = appConfig.data.pdfConfig.values[0];
     const date = new Date(data.invoiceDetail.invoiceDate);
     const formattedDate = `${String(date.getDate()).padStart(2, "0")}-${String(
       date.getMonth() + 1,
     ).padStart(2, "0")}-${date.getFullYear()}`;
     const returnHeight = () => {
       if (data.company === "ASHOK") {
-        if (req.params.downloadOriginal) return "220px";
-        return "250px";
+        if (req.params.downloadOriginal) return `${invoiceHeight.aeOriginalHeight}px`;
+        return `${invoiceHeight.aeDuplicateHeight}px`;
       }
-      return "230px";
+      if (data.company === "PADMA") {
+        if (req.params.downloadOriginal) return `${invoiceHeight.padmaOriginalHeight}px`;
+        return `${invoiceHeight.padmaDuplicateHeight}px`;
+      }
     };
     const getSealLogoTopValue = () => {
       if (data.company === "ASHOK") {
@@ -778,6 +785,7 @@ router.get("/generate-pdf/:id/:downloadOriginal", async (req, res) => {
         isUniqueVendor: data.buyerDetail.customer == "67ff5f24083de5839961ea7b",
       },
     );
+
 
     await page.setContent(html, { waitUntil: "networkidle0" });
 
@@ -876,6 +884,67 @@ router.post("/generate-csv", async (req, res) => {
     console.error("Error:", err);
     res.status(500).json({ error: "Server error" });
   }
+});
+
+router.get("/generate-gst-report", async (req, res) => {
+  const { month, year, company } = req.query;
+  if (!month || !year) {
+    return res.status(400).json({ error: "Month and year are required." });
+  }
+  const startDate = new Date(`${year}-${month}-01`);
+  const endDate = new Date(startDate);
+  endDate.setMonth(endDate.getMonth() + 1);
+  try {
+
+    const invoices = await db.collection(collectionName)  .find({
+      company: company,
+      invoiceDate: { $gte: startDate, $lt: endDate },
+    }).toArray();
+
+    const workbook = new ExcelJS.Workbook();
+
+
+    addB2BSheet({
+      workbook,
+      invoices,
+      company,
+    });
+
+    addHsnSheet({
+      workbook,
+      invoices,
+    });
+
+
+    const monthLabel = monthNames[Number(month) - 1];
+
+    const fileName = `${company.toUpperCase()} GST ${monthLabel} ${year}.xlsx`;
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${fileName}"`
+    );
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    res.setHeader("Content-Length", buffer.length);
+
+    return res.send(Buffer.from(buffer));
+
+  } catch (err) {
+      console.error("GST Excel Error:", err);
+
+      res.status(500).json({
+        error: "Server error",
+      })
+    }
+
+
 });
 
 router.get("/hsn-codes", async (req, res) => {

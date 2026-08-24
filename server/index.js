@@ -15,6 +15,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { connectToDB } from "./db/connection.js";
 import verifyToken from "./middleware/auth.js";
+import Config from "./routes/config/index.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -42,6 +43,7 @@ const startServer = async () => {
   app.use("/ASN", ASN)
   app.use("/quotation", Quotation)
   app.use("/transaction", Transaction)
+app.use("/config", Config);
 
   app.get("/health", (req, res) => {
     res.send("OK");

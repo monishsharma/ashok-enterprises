@@ -56,17 +56,18 @@ export const getCSVHeader = ({ forGST, forUnpaid, company }) => {
     if (forGST) {
         return [
             'GSTIN/UIN of Recipient',
+            'Receiver Name',
             'Invoice Number',
             'Invoice date',
-            'Taxable Value',
             'Invoice Value',
             'Place Of Supply',
             'Reverse Charge',
-            'Rate',
+            'Applicable % of Tax Rate',
             'Invoice Type',
-            'IGST Paid',
-            'Central Tax Paid',
-            'State/UT Tax Paid',
+            'E-Commerce GSTIN',
+            'Rate',
+            'Taxable Value',
+            'Cess Amount',
         ]
     }
 
@@ -105,6 +106,7 @@ export const getCsvBody = ({ forGST, forUnpaid, data, company }) => {
     const billNo = item.invoiceDetail?.invoiceNO || '';
     const poNumber = item.goodsDescription?.po || '';
     const invoiceDate = moment(item.invoiceDate).format("DD-MMM-YY");
+    const excelInvoiceDate = new Date(item.invoiceDate);
     const gstin = item.buyerDetail?.GSTIN || '';
     const partyName = item.buyerDetail?.customerName || item.buyerDetail?.customer || '';
     const hsn = item.goodsDescription?.HSN || '';
@@ -124,17 +126,18 @@ export const getCsvBody = ({ forGST, forUnpaid, data, company }) => {
     if (forGST) {
       return [
         gstin,
-        billNo.split("-")[2] || '',
-        invoiceDate,
-        taxableValue,
-        amount,
+        partyName,
+        Number(billNo.split("-")[2] || ''),
+        excelInvoiceDate,
+        Number(amount),
         placeOfSupply,
         'N', // Reverse charge
-        '18', // Rate
-        'Regular B2B', // Invoice type
-        isLocalVendor !== "23" ? igst : 0,
-        isLocalVendor === "23" ? cgst : 0,
-        isLocalVendor === "23" ? sgst : 0
+        '',
+        'Regular B2B',
+        '',
+        Number(18.00), // Rate
+        Number(taxableValue),
+        Number(0.00)
       ];
     }
 
@@ -166,3 +169,136 @@ export const getCsvBody = ({ forGST, forUnpaid, data, company }) => {
     ];
   });
 };
+
+export const getHsnHeaders = () => {
+    return [
+      "HSN",
+      "Description",
+      "UQC",
+      "Total Quantity",
+      "Total Value",
+      "Rate",
+      "Taxable Value",
+      "Integrated Tax Amount",
+      "Central Tax Amount",
+      "State/UT Tax Amount",
+      "Cess Amount",
+  ]
+};
+
+export const getHSNRows = (invoices) => {
+  const hsnMap = {};
+
+  invoices.forEach((invoice) => {
+    const goods = invoice.goodsDescription || {};
+    const buyer = invoice.buyerDetail || {};
+
+    const hsn = goods.HSN || "";
+    const type = goods.type || "";
+
+    if (!hsn) return;
+
+    const uqcMap = {
+      NOS: "NOS-NUMBERS",
+      KGS: "KGS-KILOGRAMS",
+      KG: "KGS-KILOGRAMS",
+      SQF: "SQUARE FEET",
+      SQFT: "SQUARE FEET",
+    };
+
+    const uqc = uqcMap[type.toUpperCase()] || type;
+
+    const totalQty = (goods.items || []).reduce(
+      (sum, item) => sum + (parseFloat(item.qty) || 0),
+      0
+    );
+
+    const totalValue = parseFloat(goods.Total) || 0;
+    const taxableValue = parseFloat(goods.taxableValue) || 0;
+
+    const stateCode =
+      buyer.stateCode ||
+      buyer.GSTIN?.substring(0, 2) ||
+      "";
+
+    const isLocal = stateCode === "23";
+
+    const cgst = isLocal
+      ? parseFloat(goods.CGST) || 0
+      : 0.00;
+
+    const sgst = isLocal
+      ? parseFloat(goods.SGST) || 0
+      : 0;
+
+    const igst = !isLocal
+      ? parseFloat(goods.CGST) + parseFloat(goods.SGST) || 0
+      : 0.00;
+
+    const rate = 18.00;
+
+    // Same HSN but different UQC must be separate
+    const key = `${hsn}_${uqc}_${rate}`;
+
+    if (!hsnMap[key]) {
+      hsnMap[key] = {
+        hsn,
+        description: "",
+        uqc,
+        totalQty: 0,
+        totalValue: 0,
+        rate,
+        taxableValue: 0,
+        igst: 0,
+        cgst: 0,
+        sgst: 0,
+        cess: 0.00,
+      };
+    }
+
+    hsnMap[key].totalQty += totalQty;
+    hsnMap[key].totalValue += totalValue;
+    hsnMap[key].taxableValue += taxableValue;
+    hsnMap[key].igst += igst;
+    hsnMap[key].cgst += cgst;
+    hsnMap[key].sgst += sgst;
+  });
+
+  return Object.values(hsnMap).map((item) => [
+    item.hsn,
+    item.description,
+    item.uqc,
+    Number(item.totalQty.toFixed(2)),
+    Number(item.totalValue.toFixed(2)),
+    item.rate,
+    Number(item.taxableValue.toFixed(2)),
+    Number(item.igst.toFixed(2)),
+    Number(item.cgst.toFixed(2)),
+    Number(item.sgst.toFixed(2)),
+    (item.cess),
+  ]);
+};
+
+export const uniqueRecipients = (invoices) => {
+    return new Set(
+      invoices
+        .map((item) => item.buyerDetail?.GSTIN)
+        .filter(Boolean)
+    ).size;
+}
+
+export const totalInvoiceValue = (invoices) => {
+    return invoices.reduce(
+      (sum, item) =>
+        sum + Number(item.goodsDescription?.Total || 0),
+      0
+    );
+}
+
+export const totalTaxableValue = (invoices) => {
+    return invoices.reduce(
+      (sum, item) =>
+        sum + Number(item.goodsDescription?.taxableValue || 0),
+      0
+    );
+}

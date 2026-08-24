@@ -189,6 +189,7 @@ router.get("/generate-quotation-pdf/:id", async (req, res) => {
         formattedDate,
         logoBase64: logoDataURI,
         sealHtml,
+        gstin:  companyType === "ASHOK" ? "23AQGPS4032C1ZA" : "23CSZPS9067G1ZL",
         sealText:
           companyType === "ASHOK" ? "ASHOK ENTERPRISES" : "PADMA ENGG WORKS",
         height: "250px",
