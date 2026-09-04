@@ -219,7 +219,7 @@ router.get("/get/invoice/report/:company", async (req, res) => {
       },
       customerBreakdown: {
         monthly: calcualteCustomerTotals(currentMonthInvoices),
-        yearly: await getFYCustomerTotals({ invoiceCollection, company }),
+        yearly: await getFYCustomerTotals({ invoiceCollection, company, year }),
       },
       monthlyTotals,
       fyResult: fyResult,

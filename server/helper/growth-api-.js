@@ -163,25 +163,30 @@ export const calcualteCustomerTotals = (invoices) => {
 
   // Define grouping rules (you can add more later easily)
   const groupMap = {
-    "rajasthan explosives / emul trek": "Rajasthan Explosives",
-    "rajasthan explosives": "Rajasthan Explosives",
+    "rajasthan explosives / emul trek": "Emul Tek",
+    "rajasthan explosives": "Emul Tek",
+    "emul tek ": "Emul Tek",
+    "emul trek ": "Emul Tek",
+    "vishvas power ": "Vishvas Power",
 
     "atlanta anand": "Atlanta Group",
     "atlanta banglore": "Atlanta Group",
-    atlanta: "Atlanta Group",
+    "atlanta": "Atlanta Group",
+    "atlanta electricals": "Atlanta Group",
 
     "telawne ambernath": "Telawne Group",
     "telwane rabale": "Telawne Group",
     "telwane taloja": "Telawne Group",
-    telwane: "Telawne Group",
+    "telwane": "Telawne Group",
+    "telawne power": "Telawne Group",
   };
 
   invoices.forEach((inv) => {
-    let rawCustomer =
-      inv?.buyerDetail?.customerName ??
-      inv?.buyerDetail?.customer ??
-      "";
-
+   const rawCustomer = [
+      inv?.buyerDetail?.customerName,
+      inv?.buyerDetail?.customer,
+      inv?.buyerDetail?.name,
+    ].find((value) => typeof value === "string") ?? "";
     let customer =
       typeof rawCustomer === "string"
         ? rawCustomer
@@ -207,8 +212,8 @@ export const calcualteCustomerTotals = (invoices) => {
 export const getYear = (year) => {
 };
 
-export const getFYCustomerTotals = async ({ invoiceCollection, company }) => {
-  const currentYear = new Date().getFullYear();
+export const getFYCustomerTotals = async ({ invoiceCollection, company, year }) => {
+  const currentYear = parseInt(year);
   const currentMonth = new Date().getMonth();
   const fyStart = currentMonth >= 3 ? currentYear : currentYear - 1;
 
