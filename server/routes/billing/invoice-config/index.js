@@ -33,6 +33,7 @@ import {
   getFYYearlyTotals,
   getItemBreakdown,
   getQuery,
+  getRollerBreakdown,
   getYear,
   getYearlySales,
   getYearlyTons,
@@ -171,6 +172,13 @@ router.get("/get/invoice/report/:company", async (req, res) => {
       year,
     });
 
+    const rollerBreakdown = await getRollerBreakdown({
+      invoiceCollection,
+      company,
+      month,
+      year,
+    });
+
     res.status(200).json({
       sales: {
         monthly: currentMonthSales.total,
@@ -223,6 +231,7 @@ router.get("/get/invoice/report/:company", async (req, res) => {
       },
       monthlyTotals,
       fyResult: fyResult,
+      rollerBreakdown
     });
   } catch (error) {
     console.error("❌ Server Error:", error);
