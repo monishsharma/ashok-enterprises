@@ -120,11 +120,10 @@ router.get("/vendor/list", async (req, res) => {
 router.get("/get/invoice/report/:company", async (req, res) => {
   const company = req.params.company;
   const { month, year, type } = req.query;
-  let currentMonthInvoices, prevMonthInvoices;
-  let currentMonthSales, prevMonthSales;
 
   try {
     const invoiceCollection = db.collection(collectionName);
+
     const currentMonthQuery = getQuery({
       month,
       year,
@@ -132,110 +131,183 @@ router.get("/get/invoice/report/:company", async (req, res) => {
       previous: false,
       company,
     });
-    const prevMonthQuery = getQuery({ month, year, previous: true, company, type });
 
-    currentMonthInvoices = await invoiceCollection
-      .find(currentMonthQuery)
-      .sort({ "invoiceDetail.invoiceNO": -1 })
-      .toArray();
-
-    prevMonthInvoices = await invoiceCollection
-      .find(prevMonthQuery)
-      .sort({ "invoiceDetail.invoiceNO": -1 })
-      .toArray();
-
-    currentMonthSales = calculateTotalSales(currentMonthInvoices);
-    prevMonthSales = calculateTotalSales(prevMonthInvoices);
-
-    // CALCULATING MONTHLY SALES IN FINANCIAL YEAR //
-    const financialYearQuery = monthlySalesQuery({ company, year, month });
-
-    const fyInvoices = await invoiceCollection
-      .find(financialYearQuery)
-      .toArray();
-    // SALES MONTHLY TOTALS //
-    const monthlyTotals = calculateFYSales(fyInvoices);
-    // SALES YEARLY TOTALS FOR NEXT 5 YEARS //
-    const fyResult = await getFYYearlyTotals(invoiceCollection, company, year);
-    // const fyResult = monthlyTotals.reduce((total, item) => total + (parseFloat(item) || 0), 0);
-
-    // yearly tons //
-    const yearlyTons = await getYearlyTons({
-      invoiceCollection,
-      company,
-      year,
-    });
-    const yearlyTonsObj = await getYearlyTons({
-      invoiceCollection,
-      company,
-      needObj: true,
-      year,
-    });
-
-    const rollerBreakdown = await getRollerBreakdown({
-      invoiceCollection,
-      company,
+    const prevMonthQuery = getQuery({
       month,
       year,
+      previous: true,
+      company,
+      type,
     });
+
+    const financialYearQuery = monthlySalesQuery({
+      company,
+      year,
+      month,
+    });
+
+    const [
+      currentMonthInvoices,
+      prevMonthInvoices,
+      fyInvoices,
+      fyResult,
+      yearlyTons,
+      yearlyTonsObj,
+      rollerBreakdown,
+      yearlyPaid,
+      yearlyUnpaid,
+      yearlyItemBreakdown,
+      yearlyCustomerBreakdown,
+    ] = await Promise.all([
+      invoiceCollection
+        .find(currentMonthQuery)
+        .sort({ "invoiceDetail.invoiceNO": -1 })
+        .toArray(),
+
+      invoiceCollection
+        .find(prevMonthQuery)
+        .sort({ "invoiceDetail.invoiceNO": -1 })
+        .toArray(),
+
+      invoiceCollection
+        .find(financialYearQuery)
+        .toArray(),
+
+      getFYYearlyTotals(
+        invoiceCollection,
+        company,
+        year
+      ),
+
+      getYearlyTons({
+        invoiceCollection,
+        company,
+        year,
+      }),
+
+      getYearlyTons({
+        invoiceCollection,
+        company,
+        needObj: true,
+        year,
+      }),
+
+      getRollerBreakdown({
+        invoiceCollection,
+        company,
+        month,
+        year,
+      }),
+
+      calculateYearlyPayment({
+        invoiceCollection,
+        company,
+        paid: true,
+        year,
+      }),
+
+      calculateYearlyPayment({
+        invoiceCollection,
+        company,
+        paid: false,
+        year,
+      }),
+
+      getFYItemBreakdown({
+        invoiceCollection,
+        company,
+        year,
+      }),
+
+      getFYCustomerTotals({
+        invoiceCollection,
+        company,
+        year,
+      }),
+    ]);
+
+    const currentMonthSales =
+      calculateTotalSales(currentMonthInvoices);
+
+    const prevMonthSales =
+      calculateTotalSales(prevMonthInvoices);
+
+    const monthlyTotals =
+      calculateFYSales(fyInvoices);
 
     res.status(200).json({
       sales: {
         monthly: currentMonthSales.total,
-        yearly: getYearlySales({ yearlyTotals: fyResult, year }),
+        yearly: getYearlySales({
+          yearlyTotals: fyResult,
+          year,
+        }),
       },
+
       tons: {
         monthly: calculateTotalTons(currentMonthInvoices),
         yearly: yearlyTons,
       },
+
       growth: {
         sales: {
-          monthly: calculateGrowth(currentMonthSales, prevMonthSales),
-          yearly: calculateYearlyGrowth({ yearlyTotals: fyResult, year }),
+          monthly: calculateGrowth(
+            currentMonthSales,
+            prevMonthSales
+          ),
+
+          yearly: calculateYearlyGrowth({
+            yearlyTotals: fyResult,
+            year,
+          }),
         },
+
         tons: {
           monthly: calculateTonsGrowth({
             currentMonthInvoices,
             prevMonthInvoices,
           }),
-          yearly: calculateYearlyGrowth({ yearlyTotals: yearlyTonsObj, year }),
+
+          yearly: calculateYearlyGrowth({
+            yearlyTotals: yearlyTonsObj,
+            year,
+          }),
         },
       },
+
       payment: {
         monthly: {
           paid: currentMonthSales.paid,
           unpaid: currentMonthSales.unpaid,
         },
+
         yearly: {
-          paid: await calculateYearlyPayment({
-            invoiceCollection,
-            company,
-            paid: true,
-            year,
-          }),
-          unpaid: await calculateYearlyPayment({
-            invoiceCollection,
-            company,
-            paid: false,
-            year,
-          }),
+          paid: yearlyPaid,
+          unpaid: yearlyUnpaid,
         },
       },
+
       itemBreakdown: {
         monthly: getItemBreakdown(currentMonthInvoices),
-        yearly: await getFYItemBreakdown({ invoiceCollection, company, year }),
+        yearly: yearlyItemBreakdown,
       },
+
       customerBreakdown: {
-        monthly: calcualteCustomerTotals(currentMonthInvoices),
-        yearly: await getFYCustomerTotals({ invoiceCollection, company, year }),
+        monthly: calcualteCustomerTotals(
+          currentMonthInvoices
+        ),
+        yearly: yearlyCustomerBreakdown,
       },
+
       monthlyTotals,
-      fyResult: fyResult,
-      rollerBreakdown
+      fyResult,
+      rollerBreakdown,
     });
   } catch (error) {
     console.error("❌ Server Error:", error);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({
+      error: "Server error",
+    });
   }
 });
 

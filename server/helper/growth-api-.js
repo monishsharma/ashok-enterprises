@@ -212,41 +212,33 @@ export const calcualteCustomerTotals = (invoices) => {
 export const getYear = (year) => {
 };
 
-export const getFYCustomerTotals = async ({ invoiceCollection, company, year }) => {
+export const getFYCustomerTotals = async ({
+  invoiceCollection,
+  company,
+  year,
+}) => {
   const currentYear = parseInt(year);
   const currentMonth = new Date().getMonth();
-  const fyStart = currentMonth >= 3 ? currentYear : currentYear - 1;
 
-  // Use your aggregation helper for consistent filtering
-  const projection = {
-    "buyerDetail.customer": 1,
-    "goodsDescription.Total": 1,
-  };
-  const condition = [{}, {}, 0];
+  const fyStart =
+    currentMonth >= 3
+      ? currentYear
+      : currentYear - 1;
 
-  await getInvoiceCollectionAgg({
-    invoiceCollection,
-    company,
-    fyStart,
-    projection,
-    condition,
-  });
-
-  // Fetch all invoices for this FY
   const startDate = new Date(`${fyStart}-04-01`);
   const endDate = new Date(`${fyStart + 1}-03-31`);
 
   const invoices = await invoiceCollection
     .find({
       company,
-      invoiceDate: { $gte: startDate, $lte: endDate },
+      invoiceDate: {
+        $gte: startDate,
+        $lte: endDate,
+      },
     })
     .toArray();
 
-  // ♻️ Reuse your same calculation logic
-  const customerTotals = calcualteCustomerTotals(invoices);
-
-  return customerTotals;
+  return calcualteCustomerTotals(invoices);
 };
 
 export const yearlyTotals = ({ monthlyTotals, year }) => {
@@ -471,6 +463,7 @@ export const calculateYearlyPayment = async ({
   return parseInt(result?.[0]?.yearlyTotal);
 };
 
+
 export const getFYItemBreakdown = async ({
   invoiceCollection,
   company,
@@ -478,39 +471,26 @@ export const getFYItemBreakdown = async ({
 }) => {
   const currentYear = parseInt(year);
   const currentMonth = new Date().getMonth();
-  const fyStart = currentMonth >= 3 ? currentYear : currentYear - 1;
 
-  // call your common aggregation helper (keeps consistency)
-  const projection = {
-    "buyerDetail.orderType": 1,
-    "goodsDescription.Total": 1,
-    "goodsDescription.items": 1,
-  };
-  const condition = [{}, {}, 0];
+  const fyStart =
+    currentMonth >= 3
+      ? currentYear
+      : currentYear - 1;
 
-  await getInvoiceCollectionAgg({
-    invoiceCollection,
-    company,
-    fyStart,
-    projection,
-    condition,
-  });
-
-  // Fetch all invoices for this FY
   const startDate = new Date(`${fyStart}-04-01`);
   const endDate = new Date(`${fyStart + 1}-03-31`);
 
   const invoices = await invoiceCollection
     .find({
       company,
-      invoiceDate: { $gte: startDate, $lte: endDate },
+      invoiceDate: {
+        $gte: startDate,
+        $lte: endDate,
+      },
     })
     .toArray();
 
-  // ♻️ Reuse your same item breakdown logic
-  const itemBreakdown = getItemBreakdown(invoices);
-
-  return itemBreakdown;
+  return getItemBreakdown(invoices);
 };
 
 
