@@ -512,6 +512,10 @@ export const getFYItemBreakdown = async ({
 
   return itemBreakdown;
 };
+
+
+
+
 export const getRollerBreakdown = async ({
   invoiceCollection,
   company,
@@ -521,111 +525,133 @@ export const getRollerBreakdown = async ({
   const m = Number(month);
   const y = Number(year);
 
-  const monthStart = `${y}-${String(m).padStart(2, "0")}-01`;
-  const monthEnd =
-    m === 12
-      ? `${y + 1}-01-01`
-      : `${y}-${String(m + 1).padStart(2, "0")}-01`;
-
   const fyStartYear = m >= 4 ? y : y - 1;
 
   if (fyStartYear < 2026) {
-    return { monthly: [], yearly: [] };
+    return [];
   }
 
-  const buildPipeline = (start, end) => [
-    {
-      $match: {
-        company,
-        "buyerDetail.orderType": "Roller",
-        "invoiceDetail.invoiceDate": {
-          $gte: start,
-          $lt: end,
-        },
-      },
+  const fyStart = `${fyStartYear}-04-01`;
+  const fyEnd = `${fyStartYear + 1}-04-01`;
+
+  const validRollerMatch = {
+    "goodsDescription.items.size": {
+      $exists: true,
+      $nin: [null, "", "-", "00"],
     },
-
-    { $unwind: "$goodsDescription.items" },
-
-    {
-      $match: {
-        "goodsDescription.items.size": {
-          $exists: true,
-          $nin: [null, "", "-", "00"],
-        },
-        "goodsDescription.items.sizeType": { $nin: [null, ""] },
-        "goodsDescription.items.edgeType": { $nin: [null, ""] },
-        "goodsDescription.items.rollerType": { $nin: [null, ""] },
-      },
+    "goodsDescription.items.sizeType": {
+      $nin: [null, ""],
     },
+    "goodsDescription.items.edgeType": {
+      $nin: [null, ""],
+    },
+    "goodsDescription.items.rollerType": {
+      $nin: [null, ""],
+    },
+  };
 
-    {
-      $set: {
-        customer: {
-          $switch: {
-            branches: [
-              {
-                case: {
-                  $regexMatch: {
-                    input: {
-                      $toLower: {
-                        $ifNull: ["$buyerDetail.customerName", ""],
-                      },
+  const customerSetStage = {
+    $set: {
+      customer: {
+        $switch: {
+          branches: [
+            {
+              case: {
+                $regexMatch: {
+                  input: {
+                    $toLower: {
+                      $ifNull: ["$buyerDetail.customerName", ""],
                     },
-                    regex: /telawne|telwane|telawane/,
                   },
+                  regex: /telawne|telwane|telawane/,
                 },
-                then: "Telawne",
               },
-              {
-                case: {
-                  $regexMatch: {
-                    input: {
-                      $toLower: {
-                        $ifNull: ["$buyerDetail.customerName", ""],
-                      },
+              then: "Telawne",
+            },
+            {
+              case: {
+                $regexMatch: {
+                  input: {
+                    $toLower: {
+                      $ifNull: ["$buyerDetail.customerName", ""],
                     },
-                    regex: /atlanta/,
                   },
+                  regex: /atlanta/,
                 },
-                then: "Atlanta",
               },
-              {
-                case: {
-                  $regexMatch: {
-                    input: {
-                      $toLower: {
-                        $ifNull: ["$buyerDetail.customerName", ""],
-                      },
+              then: "Atlanta",
+            },
+            {
+              case: {
+                $regexMatch: {
+                  input: {
+                    $toLower: {
+                      $ifNull: ["$buyerDetail.customerName", ""],
                     },
-                    regex: /vishvas/,
                   },
+                  regex: /vishvas/,
                 },
-                then: "Vishvas Power",
               },
-            ],
-            default: {
-              $trim: {
-                input: "$buyerDetail.customerName",
+              then: "Vishvas Power",
+            },
+          ],
+          default: {
+            $trim: {
+              input: {
+                $ifNull: ["$buyerDetail.customerName", ""],
               },
             },
           },
         },
       },
     },
+  };
 
+  const pipeline = [
+    {
+      $match: {
+        company,
+        "buyerDetail.orderType": "Roller",
+        "invoiceDetail.invoiceDate": {
+          $gte: fyStart,
+          $lt: fyEnd,
+        },
+      },
+    },
+
+    {
+      $unwind: "$goodsDescription.items",
+    },
+
+    {
+      $match: validRollerMatch,
+    },
+
+    customerSetStage,
+
+    {
+      $set: {
+        month: {
+          $substr: ["$invoiceDetail.invoiceDate", 0, 7],
+        },
+      },
+    },
+
+    // Customer + month + roller variant
     {
       $group: {
         _id: {
           customerId: {
             $toString: "$buyerDetail.customer",
           },
+          customer: "$customer",
+          month: "$month",
           size: "$goodsDescription.items.size",
           sizeType: "$goodsDescription.items.sizeType",
           edgeType: "$goodsDescription.items.edgeType",
           rollerType: "$goodsDescription.items.rollerType",
         },
-        customer: { $first: "$customer" },
+
         qty: {
           $sum: {
             $convert: {
@@ -639,11 +665,29 @@ export const getRollerBreakdown = async ({
       },
     },
 
+    // Keep roller variants ordered
+    {
+      $sort: {
+        "_id.month": 1,
+        "_id.size": 1,
+        "_id.sizeType": 1,
+        "_id.edgeType": 1,
+      },
+    },
+
+    // Customer + month
     {
       $group: {
-        _id: "$_id.customerId",
-        customer: { $first: "$customer" },
-        totalQty: { $sum: "$qty" },
+        _id: {
+          customerId: "$_id.customerId",
+          customer: "$_id.customer",
+          month: "$_id.month",
+        },
+
+        totalQty: {
+          $sum: "$qty",
+        },
+
         rollers: {
           $push: {
             size: "$_id.size",
@@ -657,32 +701,49 @@ export const getRollerBreakdown = async ({
     },
 
     {
-      $project: {
-        _id: 0,
-        customerId: "$_id",
-        customer: 1,
-        totalQty: 1,
-        rollers: 1,
+      $sort: {
+        "_id.month": 1,
       },
     },
 
-    { $sort: { totalQty: -1 } },
+    // Customer → all months
+    {
+      $group: {
+        _id: {
+          customerId: "$_id.customerId",
+          customer: "$_id.customer",
+        },
+
+        totalQty: {
+          $sum: "$totalQty",
+        },
+
+        monthly: {
+          $push: {
+            month: "$_id.month",
+            totalQty: "$totalQty",
+            rollers: "$rollers",
+          },
+        },
+      },
+    },
+
+    {
+      $project: {
+        _id: 0,
+        customerId: "$_id.customerId",
+        customer: "$_id.customer",
+        totalQty: 1,
+        monthly: 1,
+      },
+    },
+
+    {
+      $sort: {
+        totalQty: -1,
+      },
+    },
   ];
 
-  const [monthly, yearly] = await Promise.all([
-    invoiceCollection
-      .aggregate(buildPipeline(monthStart, monthEnd))
-      .toArray(),
-
-    invoiceCollection
-      .aggregate(
-        buildPipeline(
-          `${fyStartYear}-04-01`,
-          `${fyStartYear + 1}-04-01`
-        )
-      )
-      .toArray(),
-  ]);
-
-  return { monthly, yearly };
+  return invoiceCollection.aggregate(pipeline).toArray();
 };
