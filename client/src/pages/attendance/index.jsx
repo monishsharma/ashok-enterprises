@@ -497,11 +497,11 @@ const Attendance = ({
                     Special Shift
                   </label>
                 </div>
-                {/* <TimePicker dateValue={dateValue} callBack={({punchedTime}) => allPresentHandler({punchedTime})} >
-              <Button variant="success" style={{width: `100%`}}>
-                All Present
-              </Button>
-            </TimePicker> */}
+                <TimePicker dateValue={dateValue} callBack={({punchedTime}) => allPresentHandler({punchedTime})} >
+                  <Button variant="success" style={{width: `100%`}}>
+                    All Present
+                  </Button>
+            </TimePicker>
                 {/* <TimePicker dateValue={dateValue} callBack={({punchedTime}) => checkoutAll({punchedTime})} isDisabled={hasEmptyCheckinTime.length < 5}> */}
                 {/* <Button onClick={()=> bulUploaderToggle(true)} variant="warning"  disabled={hasEmptyCheckinTime.length < 5}>
                 Checkout All
