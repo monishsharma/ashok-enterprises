@@ -38,7 +38,6 @@ async function getBrowser() {
 }
 
 router.get("/get-quotation", async (req, res) => {
-
   let filters = { ...req.query };
 
   if (filters.vendorId) {
@@ -47,6 +46,10 @@ router.get("/get-quotation", async (req, res) => {
   }
 
   if (filters.id) {
+    if (!ObjectId.isValid(filters.id)) {
+      return res.status(400).json({ error: "Invalid quotation ID" });
+    }
+
     filters._id = new ObjectId(filters.id);
     delete filters.id;
   }
@@ -58,58 +61,130 @@ router.get("/get-quotation", async (req, res) => {
 
   try {
     const quotationCollection = db.collection("quotation");
+    const invoiceCollection = db.collection("invoices");
 
-    const quotationList = await quotationCollection.find(filters).toArray();
+    // Fetch quotations using existing filters
+    const quotationList = await quotationCollection
+      .find(filters)
+      .toArray();
 
     if (!quotationList || quotationList.length === 0) {
       return res.status(200).json({ error: "No quotation found" });
     }
 
-    const sortedQuotation = quotationList.sort((a, b) => {
-      const aNum =
-        parseInt(a.quotationDetail.quotationNo.split("-").pop()) || 0;
-      const bNum =
-        parseInt(b.quotationDetail.quotationNo.split("-").pop()) || 0;
-      return bNum - aNum; // descending order
+    // Fetch invoices associated with these quotations
+    const quotationIds = quotationList.map((quotation) =>
+      String(quotation._id)
+    );
+
+
+
+    const invoices = await invoiceCollection
+      .find({
+        referenceQuotation: { $in: quotationIds },
+      })
+      .project({
+        referenceQuotation: 1,
+        "goodsDescription.items.quotationItemId": 1,
+      })
+      .toArray();
+
+      // Map quotation ID -> set of invoiced quotation item IDs
+    const invoicedItemsMap = new Map();
+
+    invoices.forEach((invoice) => {
+      const quotationId = String(invoice.referenceQuotation);
+
+      if (!invoicedItemsMap.has(quotationId)) {
+        invoicedItemsMap.set(quotationId, new Set());
+      }
+
+      const items = invoice.goodsDescription?.items || [];
+
+      items.forEach((item) => {
+        if (item.quotationItemId) {
+          invoicedItemsMap
+            .get(quotationId)
+            .add(String(item.quotationItemId));
+        }
+      });
     });
 
-    res.status(200).json({
+    // Add invoicedItems to each quotation response
+    const updatedQuotationList = quotationList.map((quotation) => ({
+      ...quotation,
+      invoicedItems: [
+        ...(invoicedItemsMap.get(String(quotation._id)) || []),
+      ],
+    }));
+
+    // Sort by quotation number in descending order
+    const sortedQuotation = updatedQuotationList.sort((a, b) => {
+      const aNum =
+        parseInt(a.quotationDetail.quotationNo.split("-").pop()) || 0;
+
+      const bNum =
+        parseInt(b.quotationDetail.quotationNo.split("-").pop()) || 0;
+
+      return bNum - aNum;
+    });
+
+    return res.status(200).json({
       data: sortedQuotation,
     });
   } catch (error) {
     console.error("❌ Server Error:", error);
-    res.status(500).json({ error: "Server error" });
+
+    return res.status(500).json({
+      error: "Server error",
+    });
   }
 });
+
 
 router.post("/save-quotation", async (req, res) => {
   const data = req.body;
   const company = data.quotationDetail.quotationCompany;
+
   data._id = new ObjectId();
   data.quotationDate = new Date(data.quotationDetail.quotationDate);
   data.company = company;
 
+  // Generate an ID for every quotation item
+  data.goodsDescription.items = data.goodsDescription.items.map((item) => ({
+    ...item,
+    _id: item._id ? new ObjectId(item._id) : new ObjectId(),
+  }));
+
   try {
     const collection = db.collection("quotation");
     await collection.insertOne(data);
+
     const { lastDocumentNo, nextNumber } = getNextNumber(
-      data.quotationDetail.quotationNo,
+      data.quotationDetail.quotationNo
     );
 
     await db.collection("billing").updateOne(
-      {}, // assuming only one document
+      {},
       {
         $set: {
           [`quotation.${company}.lastQuotationNo`]: lastDocumentNo,
           [`quotation.${company}.nextQuotationNo`]: nextNumber,
         },
-      },
+      }
     );
-    res.status(200).send({ message: "Quotation saved successfully" });
+
+    res.status(200).send({
+      message: "Quotation saved successfully",
+    });
   } catch (error) {
-    res.status(500).send({ message: "Error saving quotation", error });
+    res.status(500).send({
+      message: "Error saving quotation",
+      error,
+    });
   }
 });
+
 
 router.put("/update-quotation/:id", async (req, res) => {
   try {
@@ -189,7 +264,7 @@ router.get("/generate-quotation-pdf/:id", async (req, res) => {
         formattedDate,
         logoBase64: logoDataURI,
         sealHtml,
-        gstin:  companyType === "ASHOK" ? "23AQGPS4032C1ZA" : "23CSZPS9067G1ZL",
+        gstin:  companyType === "ASHOK" ? "23AQGPS4032C1ZA" : "23CZSPS9067G1ZL",
         sealText:
           companyType === "ASHOK" ? "ASHOK ENTERPRISES" : "PADMA ENGG WORKS",
         height: "250px",
