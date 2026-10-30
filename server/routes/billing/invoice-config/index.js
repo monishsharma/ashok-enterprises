@@ -123,6 +123,8 @@ router.get("/get/invoice/report/:company", async (req, res) => {
 
   try {
     const invoiceCollection = db.collection(collectionName);
+    const appConfig = await db.collection("config").findOne({})
+    const orderTypeOptions = appConfig?.data?.materialType?.values || [];
 
     const currentMonthQuery = getQuery({
       month,
@@ -217,6 +219,7 @@ router.get("/get/invoice/report/:company", async (req, res) => {
         invoiceCollection,
         company,
         year,
+        orderTypeOptions
       }),
 
       getFYCustomerTotals({
@@ -288,7 +291,7 @@ router.get("/get/invoice/report/:company", async (req, res) => {
       },
 
       itemBreakdown: {
-        monthly: getItemBreakdown(currentMonthInvoices),
+        monthly: getItemBreakdown(currentMonthInvoices, orderTypeOptions),
         yearly: yearlyItemBreakdown,
       },
 

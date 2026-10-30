@@ -349,11 +349,15 @@ export const calculateYearlyGrowth = ({ yearlyTotals, year }) => {
   return calculateGrowthPercentage(currentYearSalesTotal, prevYearSalesTotal);
 };
 
-export const getItemBreakdown = (invoices) => {
+export const getItemBreakdown = (invoices, orderTypeOptions) => {
   const itemDetails = {};
 
   invoices.forEach((inv) => {
-    const type = inv.buyerDetail.orderType || "";
+    const orderTypeId = inv.buyerDetail.orderType || "";
+    const orderType = orderTypeOptions.find(
+      (opt) => (opt._id == orderTypeId || opt.type.toLowerCase() == orderTypeId.toLowerCase()),
+    );
+    const type =orderType?.type || "";
     const amount = parseFloat(inv.goodsDescription.Total || 0);
     const items = inv.goodsDescription.items || [];
     const totalItemQty = items.reduce(
@@ -468,6 +472,7 @@ export const getFYItemBreakdown = async ({
   invoiceCollection,
   company,
   year,
+  orderTypeOptions = []
 }) => {
   const currentYear = parseInt(year);
   const currentMonth = new Date().getMonth();
@@ -490,7 +495,7 @@ export const getFYItemBreakdown = async ({
     })
     .toArray();
 
-  return getItemBreakdown(invoices);
+  return getItemBreakdown(invoices, orderTypeOptions);
 };
 
 
