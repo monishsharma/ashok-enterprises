@@ -528,12 +528,10 @@ router.get("/generate-salary-slip-pdf", async (req, res) => {
   const queryKeys = Object.keys(req.query);
   if (queryKeys.length > 0) {
     // Dynamically construct the filter conditions
-    const filterConditions = queryKeys.map((key) => {
-      const value = req.query[key];
-      return {
-        $eq: [`$$item.${key}`, key === "year" ? parseInt(value) : value],
-      };
-    });
+    const filterConditions = [
+      { $eq: ["$$item.month", month] },
+      { $eq: ["$$item.year", Number(year)] },
+    ];
 
     options = {
       projection: {
@@ -647,7 +645,10 @@ router.get("/generate-salary-slip-pdf", async (req, res) => {
         employeesData,
       },
     );
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    await page.setContent(html, {
+      waitUntil: "load",
+      timeout: 15000,
+    });
     const pdfBuffer = await page.pdf({
       format: "LEGAL",
       landscape: true,
