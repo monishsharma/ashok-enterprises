@@ -9,7 +9,7 @@
     "prod": "cross-env NODE_ENV=production nodemon index.js"
   },
   "engines": {
-    "node": "20.x"
+    "node": "26.x"
   },
   "keywords": [],
   "author": "",
